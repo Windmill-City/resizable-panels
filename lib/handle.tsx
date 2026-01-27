@@ -1,257 +1,113 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useResizableContext } from "./context";
 import type { ResizableHandleProps } from "./types";
 
 export function ResizableHandle({
   className = "",
-  collapseButtonClassName = "",
-  maximizeButtonClassName = "",
-  showCollapseButton = false,
-  showMaximizeButton = false,
-  collapseTarget = "before",
-  maximizeTarget = "before",
 }: ResizableHandleProps) {
   const handleRef = useRef<HTMLDivElement>(null);
   const context = useResizableContext();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  
-  // 存储拖拽开始时的状态
-  const dragStateRef = useRef<{
-    startPointer: number;
-    beforePanelId: string | null;
-    afterPanelId: string | null;
-    beforeStartSize: number;
-    afterStartSize: number;
-  } | null>(null);
 
-  // 获取当前手柄前后的面板
-  const getAdjacentPanels = useCallback(() => {
+  // 注册 handle 到 context
+  useEffect(() => {
     const container = handleRef.current?.parentElement;
-    if (!container) return { before: null, after: null };
+    if (!container) return;
 
+    // 找到自己在所有 handle 中的索引
     const allElements = Array.from(container.children);
-    const handleIndex = allElements.findIndex(el => el === handleRef.current);
+    const handles = allElements.filter(el => el.hasAttribute("data-resizable-handle"));
+    const index = handles.indexOf(handleRef.current!);
     
-    if (handleIndex === -1) return { before: null, after: null };
+    if (index === -1) return;
 
-    let beforePanel: Element | null = null;
-    let afterPanel: Element | null = null;
-
-    for (let i = handleIndex - 1; i >= 0; i--) {
+    // 找到前面的面板（往前查找）
+    let beforePanelId: string | null = null;
+    for (let i = allElements.indexOf(handleRef.current!) - 1; i >= 0; i--) {
       const el = allElements[i];
       if (el.hasAttribute("data-resizable-panel")) {
-        beforePanel = el;
+        beforePanelId = el.getAttribute("data-panel-id");
         break;
       }
     }
 
-    for (let i = handleIndex + 1; i < allElements.length; i++) {
+    // 找到后面的面板（往后查找）
+    let afterPanelId: string | null = null;
+    for (let i = allElements.indexOf(handleRef.current!) + 1; i < allElements.length; i++) {
       const el = allElements[i];
       if (el.hasAttribute("data-resizable-panel")) {
-        afterPanel = el;
+        afterPanelId = el.getAttribute("data-panel-id");
         break;
       }
     }
 
-    return {
-      before: beforePanel?.getAttribute("data-panel-id") ?? null,
-      after: afterPanel?.getAttribute("data-panel-id") ?? null,
-    };
-  }, []);
-
-  // 处理指针按下（开始拖拽）
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    const { before, after } = getAdjacentPanels();
-    
-    if (!before || !after) return;
-
-    const beforePanel = context.panels.get(before);
-    const afterPanel = context.panels.get(after);
-    
-    if (!beforePanel || !afterPanel) return;
-
-    if (beforePanel.isCollapsed || afterPanel.isCollapsed) return;
-
-    const isHorizontal = context.orientation === "horizontal";
-    const startPointer = isHorizontal ? e.clientX : e.clientY;
-
-    dragStateRef.current = {
-      startPointer,
-      beforePanelId: before,
-      afterPanelId: after,
-      beforeStartSize: beforePanel.size,
-      afterStartSize: afterPanel.size,
-    };
-
-    setIsDragging(true);
-    context.startDragging(0);
-
-    handleRef.current?.setPointerCapture(e.pointerId);
-  }, [context, getAdjacentPanels]);
-
-  // 处理指针移动（拖拽中）
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || !dragStateRef.current) return;
-
-    const { 
-      startPointer, 
-      beforePanelId, 
-      afterPanelId, 
-      beforeStartSize, 
-      afterStartSize 
-    } = dragStateRef.current;
-
-    const isHorizontal = context.orientation === "horizontal";
-    const currentPointer = isHorizontal ? e.clientX : e.clientY;
-    const delta = currentPointer - startPointer;
-
-    const beforePanel = context.panels.get(beforePanelId!);
-    const afterPanel = context.panels.get(afterPanelId!);
-    
-    if (!beforePanel || !afterPanel) return;
-
-    const beforeMin = beforePanel.minSize ?? 0;
-    const afterMin = afterPanel.minSize ?? 0;
-
-    let newBeforeSize = beforeStartSize + delta;
-    let newAfterSize = afterStartSize - delta;
-
-    if (newBeforeSize < beforeMin) {
-      const diff = beforeMin - newBeforeSize;
-      newBeforeSize = beforeMin;
-      newAfterSize += diff;
+    if (beforePanelId && afterPanelId) {
+      context.registerHandle(index, beforePanelId, afterPanelId);
+      // 更新 handle 位置
+      setTimeout(() => context.updateHandlePositions(), 0);
     }
-    
-    if (newAfterSize < afterMin) {
-      const diff = afterMin - newAfterSize;
-      newAfterSize = afterMin;
-      newBeforeSize += diff;
-    }
+  }, [context]);
 
-    if (beforePanel.collapsible && newBeforeSize <= (beforePanel.collapsedSize ?? 0) + 5) {
-      newBeforeSize = beforePanel.collapsedSize ?? 0;
-      newAfterSize = beforeStartSize + afterStartSize - newBeforeSize;
-    }
-    
-    if (afterPanel.collapsible && newAfterSize <= (afterPanel.collapsedSize ?? 0) + 5) {
-      newAfterSize = afterPanel.collapsedSize ?? 0;
-      newBeforeSize = beforeStartSize + afterStartSize - newAfterSize;
-    }
-
-    context.updatePanelSize(beforePanelId!, newBeforeSize);
-    context.updatePanelSize(afterPanelId!, newAfterSize);
-
-    // 直接更新 DOM
-    const container = handleRef.current?.parentElement;
-    if (container) {
-      const beforeEl = container.querySelector(`[data-panel-id="${beforePanelId}"]`) as HTMLElement;
-      const afterEl = container.querySelector(`[data-panel-id="${afterPanelId}"]`) as HTMLElement;
-      
-      if (beforeEl) beforeEl.style[isHorizontal ? "width" : "height"] = `${newBeforeSize}px`;
-      if (afterEl) afterEl.style[isHorizontal ? "width" : "height"] = `${newAfterSize}px`;
-    }
-  }, [isDragging, context]);
-
-  // 处理指针释放（结束拖拽）
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return;
-
-    setIsDragging(false);
-    context.stopDragging();
-    dragStateRef.current = null;
-
-    handleRef.current?.releasePointerCapture(e.pointerId);
-  }, [isDragging, context]);
-
-  // 处理折叠按钮点击
-  const handleCollapseClick = useCallback(() => {
-    const { before, after } = getAdjacentPanels();
-    const targetId = collapseTarget === "before" ? before : after;
-    
-    if (targetId) {
-      context.setCollapse(targetId);
-    }
-  }, [collapseTarget, getAdjacentPanels, context]);
-
-  // 处理最大化按钮点击
-  const handleMaximizeClick = useCallback(() => {
-    const { before, after } = getAdjacentPanels();
-    const targetId = maximizeTarget === "before" ? before : after;
-    
-    if (targetId) {
-      context.toggleMaximize(targetId);
-    }
-  }, [maximizeTarget, getAdjacentPanels, context]);
+  // 当 panel 大小变化时，更新 handle 位置
+  useEffect(() => {
+    const unsubscribe = context.registerSizeChangeCallback(() => {
+      context.updateHandlePositions();
+    });
+    return unsubscribe;
+  }, [context]);
 
   const isHorizontal = context.orientation === "horizontal";
-  const hasMaximizedPanel = !!context.maximizedPanel;
+  const isHovered = context.hoveredHandleIndex !== -1;
+  const isDragging = context.isDragging;
+
+  // 获取 handle 索引
+  const handleIndex = (() => {
+    const container = handleRef.current?.parentElement;
+    if (!container) return -1;
+    const allElements = Array.from(container.children);
+    const handles = allElements.filter(el => el.hasAttribute("data-resizable-handle"));
+    return handles.indexOf(handleRef.current!);
+  })();
+
+  const isThisHovered = context.hoveredHandleIndex === handleIndex;
+  const isThisDragging = context.dragHandleIndex === handleIndex && context.isDragging;
 
   return (
     <div
       ref={handleRef}
       data-resizable-handle
-      data-dragging={isDragging}
-      data-hover={isHovered}
+      data-handle-index={handleIndex}
+      data-dragging={isThisDragging}
+      data-hover={isThisHovered}
       data-orientation={isHorizontal ? "vertical" : "horizontal"}
-      data-collapse-target={collapseTarget}
-      data-maximize-target={maximizeTarget}
       className={className}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={() => setIsHovered(false)}
-      onPointerEnter={() => setIsHovered(true)}
       style={{
         flexShrink: 0,
+        pointerEvents: "none",
         userSelect: "none",
-        touchAction: "none",
+        // 0 面积控件
+        width: isHorizontal ? 0 : undefined,
+        height: isHorizontal ? undefined : 0,
+        position: "relative",
       }}
     >
-      {/* 扩大点击区域 */}
-      <div 
-        data-resizable-hit-area
+      {/* 视觉指示器 */}
+      <div
+        data-resizable-handle-indicator
         style={{
           position: "absolute",
-          [isHorizontal ? "left" : "top"]: -4,
-          [isHorizontal ? "right" : "bottom"]: -4,
-          [isHorizontal ? "top" : "left"]: 0,
-          [isHorizontal ? "bottom" : "right"]: 0,
+          [isHorizontal ? "left" : "top"]: -2,
+          [isHorizontal ? "width" : "height"]: 4,
+          [isHorizontal ? "height" : "width"]: "100%",
+          backgroundColor: isThisDragging 
+            ? "#0066cc" 
+            : isThisHovered 
+              ? "#666" 
+              : "transparent",
+          transition: "background-color 0.15s",
         }}
       />
-      
-      {/* 折叠按钮 */}
-      {showCollapseButton && (
-        <button
-          data-collapse-button
-          data-target={collapseTarget}
-          onClick={handleCollapseClick}
-          onPointerDown={(e) => e.stopPropagation()}
-          className={collapseButtonClassName}
-        >
-          {isHorizontal 
-            ? (collapseTarget === "before" ? "‹" : "›")
-            : (collapseTarget === "before" ? "˄" : "˅")
-          }
-        </button>
-      )}
-      
-      {/* 最大化按钮 */}
-      {showMaximizeButton && (
-        <button
-          data-maximize-button
-          data-target={maximizeTarget}
-          data-active={hasMaximizedPanel}
-          onClick={handleMaximizeClick}
-          onPointerDown={(e) => e.stopPropagation()}
-          className={maximizeButtonClassName}
-        >
-          {hasMaximizedPanel ? "◱" : "□"}
-        </button>
-      )}
     </div>
   );
 }
