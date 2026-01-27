@@ -70,15 +70,20 @@ export interface GroupValue {
   maximizedPanel?: PanelValue
 }
 
+export interface ResizableContextProps {
+  // Unique Identifier
+  id: string
+  // Child Elements
+  children?: ReactNode
+}
+
 export interface ResizableGroupProps {
   // Unique Identifier
   id: string
-  // Orientation of the Group
-  orientation: Orientation
   // Child Elements
   children?: ReactNode
-  // CSS Class Name
-  className?: string
+  // Orientation of the Group
+  orientation: Orientation
 }
 
 export interface ResizablePanelProps {
