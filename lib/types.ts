@@ -2,7 +2,26 @@ import { ReactNode } from "react"
 
 export type Orientation = "horizontal" | "vertical"
 
-export interface PanelData {
+export interface ContextValue {
+  // Unique Identifier
+  id: string
+  // Groups in the Context
+  groups: Map<string, GroupValue>
+  // Ref of the ResizableContext Element
+  container: HTMLElement
+  // Register Group
+  registerGroup: (group: GroupValue) => void
+  // Unregister Group
+  unregisterGroup: (id: string) => void
+  // Get Group
+  getGroup: (id: string) => GroupValue
+  // Call when Dragging
+  onLayoutChange?: (sizes: Record<string, number>) => void
+  // Call when Mouse Released
+  onLayoutChanged?: (sizes: Record<string, number>) => void
+}
+
+export interface PanelValue {
   // Unique Identifier
   id: string
   // Active Size (px)
@@ -23,53 +42,30 @@ export interface PanelData {
   isMaximized: boolean
 }
 
-export interface ResizableGroupContextValue {
+export interface GroupValue {
   // Unique Identifier
   id: string
   // Orientation of the Resizable Group
   orientation: Orientation
   // Panels in the Group
-  panels: Map<string, PanelData>
+  panels: Map<string, PanelValue>
   // Register Panel
-  registerPanel: (id: string, panel: PanelData) => void
+  registerPanel: (panel: PanelValue) => void
   // Unregister Panel
   unregisterPanel: (id: string) => void
-  // Get Panel Size (px)
-  getPanelSize: (id: string) => number
-  // Update Panel Size (px)
-  updatePanelSize: (id: string, size: number) => void
   // Set Collapse State
   setCollapse: (id: string, collapse: boolean) => void
   // Set Maximize State
   setMaximize: (id: string, maximize: boolean) => void
-  // Start Dragging (handleIndex) - internal use
-  startDragging: (handleIndex: number) => void
-  // Update Drag Position (pointerPosition in px) - internal use
-  updateDrag: (pointerPosition: number) => void
-  // Set Drag Start Pointer Position - internal use
-  setDragStartPointer: (pointerPosition: number) => void
-  // Stop Dragging - internal use
-  stopDragging: () => void
-  // Is Currently Dragging?
+  // Is Dragging?
   isDragging: boolean
-  // Current Drag Handle Index
-  dragHandleIndex: number
-  // Currently Maximized Panel ID
+  // Resizing Handle Index
+  //    V - Index: 1
+  // |P0|P1| - panels: Map<string, PanelValue>
+  // 0  1  2
+  dragIndex: number
+  // Maximized Panel
   maximizedPanel?: string
-  // Register callback for size changes
-  registerSizeChangeCallback: (callback: () => void) => () => void
-  // Register Handle (index, beforePanelId, afterPanelId)
-  registerHandle: (index: number, beforePanelId: string, afterPanelId: string) => void
-  // Update Handle Positions (recalculate handle positions based on current panel sizes)
-  updateHandlePositions: () => void
-  // Find Handle at Position (pointerPosition in px, returns handle index or -1)
-  findHandleAtPosition: (pointerPosition: number) => number
-  // Get Handle Panels (returns before and after panel ids for a handle)
-  getHandlePanels: (handleIndex: number) => { before: string | null; after: string | null }
-  // Currently Hovered Handle Index (-1 if none)
-  hoveredHandleIndex: number
-  // Set Hovered Handle Index
-  setHoveredHandle: (index: number) => void
 }
 
 export interface ResizableGroupProps {
@@ -81,10 +77,6 @@ export interface ResizableGroupProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
-  // Call when Dragging
-  onLayoutChange?: (sizes: Record<string, number>) => void
-  // Call when Mouse Released
-  onLayoutChanged?: (sizes: Record<string, number>) => void
 }
 
 export interface ResizablePanelProps {
@@ -102,9 +94,4 @@ export interface ResizablePanelProps {
   collapsible?: boolean
   // Allow Maximize?
   okMaximize?: boolean
-}
-
-export interface ResizableHandleProps {
-  // CSS Class Name
-  className?: string
 }
