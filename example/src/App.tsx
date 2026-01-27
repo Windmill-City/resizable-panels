@@ -1,30 +1,33 @@
-import { useState } from 'react'
-import BasicDemo from './demos/BasicDemo'
-import IDEDemo from './demos/IDEDemo'
-import NestedDemo from './demos/NestedDemo'
-import VerticalDemo from './demos/VerticalDemo'
+import { useState } from "react";
 
-type DemoType = 'basic' | 'ide' | 'nested' | 'vertical'
+type DemoType = "basic" | "vscode"
 
 function App() {
-  const [currentDemo, setCurrentDemo] = useState<DemoType>('basic')
+  const [currentDemo, setCurrentDemo] = useState<DemoType>("basic")
 
   const demos: { key: DemoType; label: string }[] = [
-    { key: 'basic', label: '基础用法' },
-    { key: 'vertical', label: '垂直布局' },
-    { key: 'ide', label: 'IDE 布局' },
-    { key: 'nested', label: '嵌套布局' },
+    { key: "basic", label: "Basic" },
+    { key: "vscode", label: "VsCode" },
   ]
 
   return (
-    <div className="demo-container">
-      <header className="demo-header">
-        <h1>🎛️ Resizable Panels</h1>
-        <nav className="demo-nav">
+    <div className="flex flex-col">
+      <header className="bg-slate-900 text-white px-5 py-3 flex items-center gap-5 shadow-md">
+        <h1 className="text-base font-medium flex items-center gap-2">
+          Resizable Panels
+        </h1>
+        <nav className="flex gap-2">
           {demos.map((demo) => (
             <button
               key={demo.key}
-              className={currentDemo === demo.key ? 'active' : ''}
+              className={`
+                px-3 py-1.5 rounded text-sm transition-all duration-200
+                ${
+                  currentDemo === demo.key
+                    ? "bg-rose-500 text-white shadow-sm"
+                    : "bg-white/10 hover:bg-white/20 text-white/90"
+                }
+              `}
               onClick={() => setCurrentDemo(demo.key)}
             >
               {demo.label}
@@ -32,12 +35,7 @@ function App() {
           ))}
         </nav>
       </header>
-      <main className="demo-content">
-        {currentDemo === 'basic' && <BasicDemo />}
-        {currentDemo === 'ide' && <IDEDemo />}
-        {currentDemo === 'nested' && <NestedDemo />}
-        {currentDemo === 'vertical' && <VerticalDemo />}
-      </main>
+      <main className="flex-1 overflow-hidden"></main>
     </div>
   )
 }
