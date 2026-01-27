@@ -64,12 +64,12 @@ export function ResizablePanel({
       rafId = requestAnimationFrame(loop);
     };
     
-    if (context.isDragging || context.maximizedPanelId) {
+    if (context.isDragging || context.maximizedPanel) {
       rafId = requestAnimationFrame(loop);
     }
     
     return () => cancelAnimationFrame(rafId);
-  }, [id, context.panels, context.isDragging, context.maximizedPanelId]);
+  }, [id, context.panels, context.isDragging, context.maximizedPanel]);
 
   // 计算当前大小
   const getSize = useCallback(() => {

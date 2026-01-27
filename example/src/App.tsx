@@ -1,43 +1,53 @@
-import { useState } from "react";
-
-type DemoType = "basic" | "vscode"
+import { ResizableGroup, ResizableHandle, ResizablePanel } from "@local/resizable-panels"
+import ActivityBar from "./ui/activity-bar"
+import MenuBar from "./ui/menu-bar"
+import StatusBar from "./ui/status-bar"
 
 function App() {
-  const [currentDemo, setCurrentDemo] = useState<DemoType>("basic")
-
-  const demos: { key: DemoType; label: string }[] = [
-    { key: "basic", label: "Basic" },
-    { key: "vscode", label: "VsCode" },
-  ]
-
   return (
-    <div className="flex flex-col">
-      <header className="bg-slate-900 text-white px-5 py-3 flex items-center gap-5 shadow-md">
-        <h1 className="text-base font-medium flex items-center gap-2">
-          Resizable Panels
-        </h1>
-        <nav className="flex gap-2">
-          {demos.map((demo) => (
-            <button
-              key={demo.key}
-              className={`
-                px-3 py-1.5 rounded text-sm transition-all duration-200
-                ${
-                  currentDemo === demo.key
-                    ? "bg-rose-500 text-white shadow-sm"
-                    : "bg-white/10 hover:bg-white/20 text-white/90"
-                }
-              `}
-              onClick={() => setCurrentDemo(demo.key)}
-            >
-              {demo.label}
-            </button>
-          ))}
-        </nav>
-      </header>
-      <main className="flex-1 overflow-hidden"></main>
-    </div>
+    <ResizableGroup>
+      {/* Menu */}
+      <MenuBar>
+        Menu
+      </MenuBar>
+      {/* Horizontal Layout */}
+      <ResizableGroup>
+        {/* Activity Bar */}
+        <ActivityBar></ActivityBar>
+        {/* 左侧边栏 */}
+        <ResizablePanel className="border-r" collapsible minSize={200}>
+          left
+        </ResizablePanel>
+        {/* 左把手 */}
+        <ResizableHandle />
+        {/* 中间内容 */}
+        <ResizablePanel minSize={300}>
+          {/* 垂直布局 */}
+          <ResizablePanelGroup orientation="vertical">
+            {/* 主内容区 */}
+            <ResizablePanel  collapsible minSize={80}>
+              top
+            </ResizablePanel>
+            {/* 中间把手 */}
+            <ResizableHandle  />
+            {/* 底栏 */}
+            <ResizablePanel className="border-t h-full:border-none" collapsible minSize={80}>
+              bottom
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+        {/* 右把手 */}
+        <ResizableHandle />
+        {/* 右侧边栏 */}
+        <ResizablePanel className="border-l" collapsible minSize={200}>
+          right
+        </ResizablePanel>
+      </ResizablePanelGroup>
+      {/* 状态栏 */}
+      <StatusBar>Status</StatusBar>
+    </ResizablePanelGroup>
   )
 }
 
 export default App
+

@@ -173,7 +173,7 @@ export function ResizableHandle({
     const targetId = collapseTarget === "before" ? before : after;
     
     if (targetId) {
-      context.toggleCollapse(targetId);
+      context.setCollapse(targetId);
     }
   }, [collapseTarget, getAdjacentPanels, context]);
 
@@ -188,7 +188,7 @@ export function ResizableHandle({
   }, [maximizeTarget, getAdjacentPanels, context]);
 
   const isHorizontal = context.orientation === "horizontal";
-  const hasMaximizedPanel = !!context.maximizedPanelId;
+  const hasMaximizedPanel = !!context.maximizedPanel;
 
   return (
     <div
