@@ -1,7 +1,8 @@
 "use client"
 
-import { createContext, useContext } from "react"
-import type { GroupValue, ResizableGroupProps } from "./types"
+import { createContext, useContext, useLayoutEffect, useRef } from "react"
+import { useResizableContext } from "./context"
+import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
 export const GroupContext = createContext<GroupValue | null>(null)
 
@@ -19,22 +20,80 @@ export function ResizableGroup({
   orientation = "horizontal",
   className = "",
 }: ResizableGroupProps) {
-  const ctxGroup = {};
+  const context = useResizableContext()
+
+  const ref = useRef<GroupValue>({
+    id,
+    orientation,
+    panels: new Map<string, PanelValue>(),
+    registerPanel: (panel: PanelValue) => {
+      ref.panels.set(panel.id, panel)
+    },
+    unregisterPanel: (panelId: string) => {
+      ref.panels.delete(panelId)
+    },
+    setCollapse: (panelId: string, collapse: boolean) => {
+      const panel = ref.panels.get(panelId)
+      if (!panel) {
+        console.warn(`[ResizableGroup] Panel not found: ${panelId}`)
+        return
+      }
+      if (!panel.collapsible) return
+      if (collapse) {
+        panel.openSize = panel.size
+        panel.size = 0
+        panel.isCollapsed = true
+      } else {
+        panel.size = panel.openSize
+        panel.isCollapsed = false
+      }
+    },
+    setMaximize: (panelId?: string) => {
+      if (panelId) {
+        const panel = ref.panels.get(panelId)
+        if (!panel) {
+          console.warn(`[ResizableGroup] Panel not found: ${panelId}`)
+          return
+        }
+        if (!panel.okMaximize) return
+        if (ref.maximizedPanel) {
+          ref.maximizedPanel.isMaximized = false
+        }
+        panel.isMaximized = true
+        ref.maximizedPanel = panel
+      } else {
+        if (ref.maximizedPanel) {
+          ref.maximizedPanel.isMaximized = false
+          ref.maximizedPanel = undefined
+        }
+      }
+    },
+    isDragging: false,
+    dragIndex: -1,
+    maximizedPanel: undefined,
+  }).current
+
+  useLayoutEffect(() => {
+    context.registerGroup(ref)
+    return () => context.unregisterGroup(id)
+  })
 
   return (
-    <div
-      data-resizable-group
-      data-group-id={id}
-      data-orientation={orientation}
-      className={className}
-      style={{
-        display: "flex",
-        flexDirection: orientation === "horizontal" ? "row" : "column",
-        flex: 1,
-        overflow: "hidden",
-      }}
-    >
-      {children}
-    </div>
+    <GroupContext.Provider value={ref}>
+      <div
+        data-resizable-group
+        data-group-id={id}
+        data-orientation={orientation}
+        className={className}
+        style={{
+          display: "flex",
+          flexDirection: orientation === "horizontal" ? "row" : "column",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
+        {children}
+      </div>
+    </GroupContext.Provider>
   )
 }

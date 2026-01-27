@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useRef } from "react"
+import { useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { PanelValue, ResizablePanelProps } from "./types"
 
@@ -14,8 +14,9 @@ export function ResizablePanel({
   className = "",
 }: ResizablePanelProps) {
   const context = useGroupContext()
+  const [, setDirty] = useReducer(() => ({}), {})
 
-  const refPanelValue = useRef<PanelValue>({
+  const ref = useRef<PanelValue>({
     id,
     size: defaultSize,
     minSize,
@@ -25,14 +26,14 @@ export function ResizablePanel({
     isCollapsed: false,
     okMaximize,
     isMaximized: false,
-  })
+    setDirty,
+  }).current
 
   useLayoutEffect(() => {
-    context.registerPanel(refPanelValue.current)
+    context.registerPanel(ref)
     return () => context.unregisterPanel(id)
   })
 
-  const ref = refPanelValue.current
   const isHorizontal = context.orientation === "horizontal"
 
   return (

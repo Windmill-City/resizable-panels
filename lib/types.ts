@@ -40,6 +40,8 @@ export interface PanelValue {
   okMaximize: boolean
   // Is Maximized?
   isMaximized: boolean
+  // Trigger Re-render
+  setDirty: () => void
 }
 
 export interface GroupValue {
@@ -52,11 +54,11 @@ export interface GroupValue {
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
-  unregisterPanel: (id: string) => void
+  unregisterPanel: (panelId: string) => void
   // Set Collapse State
-  setCollapse: (id: string, collapse: boolean) => void
+  setCollapse: (panelId: string, collapse: boolean) => void
   // Set Maximize State
-  setMaximize: (id: string, maximize: boolean) => void
+  setMaximize: (panelId?: string) => void
   // Is Dragging?
   isDragging: boolean
   // Resizing Handle Index
@@ -65,7 +67,7 @@ export interface GroupValue {
   // 0  1  2
   dragIndex: number
   // Maximized Panel
-  maximizedPanel?: string
+  maximizedPanel?: PanelValue
 }
 
 export interface ResizableGroupProps {
