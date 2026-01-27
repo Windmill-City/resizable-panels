@@ -13,19 +13,19 @@ function App() {
         <ResizableGroup>
           {/* Activity Bar */}
           <ActivityBar></ActivityBar>
-          {/* 左侧边栏 */}
+          {/* Left Sidebar */}
           <ResizablePanel className="border-r" collapsible minSize={200}>
             left
           </ResizablePanel>
-          {/* 中间内容 */}
+          {/* Center Content */}
           <ResizablePanel minSize={300}>
-            {/* 垂直布局 */}
+            {/* Vertical Layout */}
             <ResizableGroup orientation="vertical">
-              {/* 主内容区 */}
+              {/* Main Content Area */}
               <ResizablePanel collapsible minSize={80}>
                 top
               </ResizablePanel>
-              {/* 底栏 */}
+              {/* Bottom Panel */}
               <ResizablePanel
                 className="border-t h-full:border-none"
                 collapsible
@@ -35,12 +35,12 @@ function App() {
               </ResizablePanel>
             </ResizableGroup>
           </ResizablePanel>
-          {/* 右侧边栏 */}
+          {/* Right Sidebar */}
           <ResizablePanel className="border-l" collapsible minSize={200}>
             right
           </ResizablePanel>
         </ResizableGroup>
-        {/* 状态栏 */}
+        {/* Status Bar */}
         <StatusBar>Status</StatusBar>
       </ResizableGroup>
     </ResizableContext>
