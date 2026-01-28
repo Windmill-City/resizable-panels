@@ -9,11 +9,11 @@ import StatusBar from "./ui/status-bar"
 
 function App() {
   return (
-    <ResizableContext className="h-full flex flex-col">
+    <ResizableContext>
       {/* Menu */}
       <MenuBar>Menu</MenuBar>
       {/* Horizontal Layout */}
-      <ResizableGroup className="h-full flex">
+      <ResizableGroup>
         {/* Activity Bar */}
         <ActivityBar></ActivityBar>
         {/* Left Sidebar */}

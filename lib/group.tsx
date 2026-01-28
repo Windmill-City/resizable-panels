@@ -86,6 +86,8 @@ export function ResizableGroup({
     return () => context.unregisterGroup(id)
   })
 
+  const isHorizontal = orientation == "horizontal"
+
   return (
     <GroupContext.Provider value={ref}>
       <div
@@ -94,6 +96,9 @@ export function ResizableGroup({
         data-group-id={id}
         data-orientation={orientation}
         style={{
+          display: "flex",
+          height: "100%",
+          flexDirection: isHorizontal ? "row" : "column",
           overflow: "hidden",
         }}
         className={className}
