@@ -1,11 +1,11 @@
 "use client"
 
-import { useLayoutEffect, useReducer, useRef } from "react"
+import { useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { PanelValue, ResizablePanelProps } from "./types"
 
 export function ResizablePanel({
-  id,
+  id: idProp,
   children,
   className = "",
   defaultSize = 200,
@@ -15,6 +15,8 @@ export function ResizablePanel({
 }: ResizablePanelProps) {
   const context = useGroupContext()
   const [, setDirty] = useReducer(() => ({}), {})
+
+  const id = idProp ?? useId()
 
   const ref = useRef<PanelValue>({
     id,

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useRef } from "react"
+import { createContext, useContext, useId, useRef } from "react"
 import type { ContextValue, GroupValue, ResizableContextProps } from "./types"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
@@ -14,11 +14,13 @@ export function useResizableContext() {
 }
 
 export function ResizableContext({
-  id,
+  id: idProp,
   children,
   className = "",
 }: ResizableContextProps) {
   const refContainer = useRef<HTMLDivElement>(null)
+
+  const id = idProp ?? useId()
 
   const ref = useRef<ContextValue>({
     id,

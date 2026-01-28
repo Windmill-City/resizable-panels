@@ -72,7 +72,7 @@ export interface GroupValue {
 
 export interface ResizableContextProps {
   // Unique Identifier
-  id: string
+  id?: string
   // Child Elements
   children?: ReactNode
   // CSS Class Name
@@ -81,7 +81,7 @@ export interface ResizableContextProps {
 
 export interface ResizableGroupProps {
   // Unique Identifier
-  id: string
+  id?: string
   // Child Elements
   children?: ReactNode
   // CSS Class Name
@@ -92,7 +92,7 @@ export interface ResizableGroupProps {
 
 export interface ResizablePanelProps {
   // Unique Identifier
-  id: string
+  id?: string
   // Child Elements
   children?: ReactNode
   // CSS Class Name

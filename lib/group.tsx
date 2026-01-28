@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useLayoutEffect, useRef } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
 import { useResizableContext } from "./context"
 import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
@@ -15,12 +15,14 @@ export function useGroupContext() {
 }
 
 export function ResizableGroup({
-  id,
+  id: idProp,
   children,
   className = "",
   orientation = "horizontal",
 }: ResizableGroupProps) {
   const context = useResizableContext()
+
+  const id = idProp ?? useId()
 
   const ref = useRef<GroupValue>({
     id,
