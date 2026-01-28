@@ -20,6 +20,7 @@
     "build": "tsup",
     "dev": "concurrently \"pnpm watch\" \"pnpm -r dev\"",
     "watch": "tsup --watch",
+    "postinstall": "pnpm build",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"
   },
