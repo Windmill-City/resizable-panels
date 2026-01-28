@@ -18,14 +18,11 @@ export function ResizableContext({
   children,
   className = "",
 }: ResizableContextProps) {
-  const refContainer = useRef<HTMLDivElement>(null)
-
   const id = idProp ?? useId()
 
   const ref = useRef<ContextValue>({
     id,
     groups: new Map<string, GroupValue>(),
-    container: refContainer,
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
     },
@@ -44,7 +41,6 @@ export function ResizableContext({
   return (
     <ResizableContextType.Provider value={ref}>
       <div
-        ref={refContainer}
         data-resizable-context
         data-context-id={id}
         style={{

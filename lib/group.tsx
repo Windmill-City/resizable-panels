@@ -1,6 +1,12 @@
 "use client"
 
-import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
+import {
+  createContext,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useRef,
+} from "react"
 import { useResizableContext } from "./context"
 import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
@@ -23,11 +29,13 @@ export function ResizableGroup({
   const context = useResizableContext()
 
   const id = idProp ?? useId()
+  const refContainer = useRef<HTMLDivElement>(null)
 
   const ref = useRef<GroupValue>({
     id,
     orientation,
     panels: new Map<string, PanelValue>(),
+    container: refContainer,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
     },
@@ -81,6 +89,7 @@ export function ResizableGroup({
   return (
     <GroupContext.Provider value={ref}>
       <div
+        ref={refContainer}
         data-resizable-group
         data-group-id={id}
         data-orientation={orientation}
