@@ -99,7 +99,7 @@ export function ResizableGroup({
           flex: 1,
           display: "flex",
           flexDirection: isHorizontal ? "row" : "column",
-          overflow: "auto",
+          overflow: "visible",
         }}
         className={className}
       >
