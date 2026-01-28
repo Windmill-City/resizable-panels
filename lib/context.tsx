@@ -14,7 +14,7 @@ export function useResizableContext() {
 }
 
 export function ResizableContext({ id, children }: ResizableContextProps) {
-  const ref: ContextValue = useRef<ContextValue>({
+  const ref = useRef<ContextValue>({
     id,
     groups: new Map<string, GroupValue>(),
     container: null as unknown as HTMLElement,
