@@ -8,7 +8,7 @@ export interface ContextValue {
   // Groups in the Context
   groups: Map<string, GroupValue>
   // Ref of the ResizableContext Element
-  container: HTMLElement
+  container: React.RefObject<HTMLElement>
   // Register Group
   registerGroup: (group: GroupValue) => void
   // Unregister Group

@@ -14,10 +14,12 @@ export function useResizableContext() {
 }
 
 export function ResizableContext({ id, children }: ResizableContextProps) {
+  const refContainer = useRef<HTMLDivElement>(null)
+
   const ref = useRef<ContextValue>({
     id,
     groups: new Map<string, GroupValue>(),
-    container: null as unknown as HTMLElement,
+    container: refContainer,
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
     },
@@ -35,7 +37,16 @@ export function ResizableContext({ id, children }: ResizableContextProps) {
 
   return (
     <ResizableContextType.Provider value={ref}>
-      <div data-resizable-context data-context-id={id}>
+      <div
+        ref={refContainer}
+        data-resizable-context
+        data-context-id={id}
+        style={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
         {children}
       </div>
     </ResizableContextType.Provider>
