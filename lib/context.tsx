@@ -47,7 +47,6 @@ export function ResizableContext({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          overflow: "auto",
           minWidth: "fit-content",
           minHeight: "fit-content",
         }}
