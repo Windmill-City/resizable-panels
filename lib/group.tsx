@@ -96,10 +96,10 @@ export function ResizableGroup({
         data-group-id={id}
         data-orientation={orientation}
         style={{
+          flex: 1,
           display: "flex",
-          height: "100%",
           flexDirection: isHorizontal ? "row" : "column",
-          overflow: "hidden",
+          overflow: "auto",
         }}
         className={className}
       >

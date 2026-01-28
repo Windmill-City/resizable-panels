@@ -44,10 +44,10 @@ export function ResizableContext({
         data-resizable-context
         data-context-id={id}
         style={{
+          flex: 1,
           display: "flex",
-          height: "100%",
           flexDirection: "column",
-          overflow: "hidden",
+          overflow: "auto",
         }}
         className={className}
       >

@@ -8,7 +8,7 @@ export function ResizablePanel({
   id: idProp,
   children,
   className = "",
-  defaultSize = 200,
+  defaultSize = 300,
   minSize = 200,
   collapsible = false,
   okMaximize = false,
@@ -36,8 +36,6 @@ export function ResizablePanel({
     return () => context.unregisterPanel(id)
   })
 
-  const isHorizontal = context.orientation === "horizontal"
-
   return (
     <div
       data-resizable-panel
@@ -45,8 +43,9 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed}
       data-maximized={ref.isMaximized}
       style={{
-        [isHorizontal ? "width" : "height"]: ref.size,
-        overflow: "hidden",
+        flex: `0 0 ${ref.size}px`,
+        display: "flex",
+        overflow: "auto",
       }}
       className={className}
     >

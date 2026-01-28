@@ -17,7 +17,7 @@ function App() {
         {/* Activity Bar */}
         <ActivityBar></ActivityBar>
         {/* Left Sidebar */}
-        <ResizablePanel className="border-r" collapsible minSize={200}>
+        <ResizablePanel className="border-r" collapsible>
           left
         </ResizablePanel>
         {/* Center Content */}
@@ -39,7 +39,7 @@ function App() {
           </ResizableGroup>
         </ResizablePanel>
         {/* Right Sidebar */}
-        <ResizablePanel className="border-l" collapsible minSize={200}>
+        <ResizablePanel className="border-l" collapsible>
           right
         </ResizablePanel>
       </ResizableGroup>
