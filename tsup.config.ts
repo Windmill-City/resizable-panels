@@ -9,4 +9,5 @@ export default defineConfig({
   clean: true,
   external: ["react", "react-dom"],
   target: "es2024",
+  silent: true,
 })
