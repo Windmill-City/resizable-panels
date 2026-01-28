@@ -2,6 +2,11 @@ import { ReactNode, RefObject } from "react"
 
 export type Orientation = "horizontal" | "vertical"
 
+export enum LayoutEvent {
+  Pre = "pre",
+  OnGoing = "ongoing",
+  Post = "post",
+}
 
 export interface ContextValue {
   // Unique Identifier
@@ -14,10 +19,23 @@ export interface ContextValue {
   unregisterGroup: (id: string) => void
   // Get Group
   getGroup: (id: string) => GroupValue
-  // Call when Dragging
-  onLayoutChange?: (sizes: Record<string, number>) => void
-  // Call when Mouse Released
-  onLayoutChanged?: (sizes: Record<string, number>) => void
+  // Layout event handler
+  onLayoutEvent?: (context: ContextValue, phase: LayoutEvent) => void
+  // Is Dragging Panels?
+  isDragging: boolean
+  // MouseDown Pos
+  startPos: { x: number; y: number }
+  // Panel Open States
+  // indexed by the same index as GroupValue.panels
+  openStates: Map<Orientation, boolean[]>
+  // Index of the resize handle (edge) being dragged
+  // For panels [P0, P1], edges are indexed as:
+  //    V - Edge Index: 1 (drag handle between P0 and P1)
+  // |P0|P1|
+  // 0  1  2   (edge positions)
+  dragIndex: Map<Orientation, number>
+  // Index of the resize handle (edge) being hover
+  hoverIndex: Map<Orientation, number>
 }
 
 export interface PanelValue {

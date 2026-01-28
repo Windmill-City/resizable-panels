@@ -7,6 +7,7 @@ import type {
   Orientation,
   ResizableContextProps,
 } from "./types"
+import { LayoutEvent } from "./types"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
 
@@ -75,24 +76,6 @@ function findEdgeIndexAtPoint(
   return result
 }
 
-interface InternalState {
-  // Is Dragging Panels?
-  isDragging: boolean
-  // MouseDown Pos
-  startPos: { x: number; y: number }
-  // Panel Open States
-  // indexed by the same index as GroupValue.panels
-  openStates: Map<Orientation, boolean[]>
-  // Index of the resize handle (edge) being dragged
-  // For panels [P0, P1], edges are indexed as:
-  //    V - Edge Index: 1 (drag handle between P0 and P1)
-  // |P0|P1|
-  // 0  1  2   (edge positions)
-  dragIndex: Map<Orientation, number>
-  // Index of the resize handle (edge) being hover
-  hoverIndex: Map<Orientation, number>
-}
-
 export function ResizableContext({
   id: idProp,
   children,
@@ -116,9 +99,6 @@ export function ResizableContext({
       }
       return group
     },
-  }).current
-
-  const state = useRef<InternalState>({
     isDragging: false,
     startPos: { x: 0, y: 0 },
     openStates: new Map(),
@@ -128,34 +108,43 @@ export function ResizableContext({
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
-      const edges = findEdgeIndexAtPoint(ref.groups, { x: e.clientX, y: e.clientY })
-      if (edges.size > 0) {
-        state.isDragging = true
-        state.startPos = { x: e.clientX, y: e.clientY }
-        state.dragIndex = edges
+      const edges = findEdgeIndexAtPoint(ref.groups, {
+        x: e.clientX,
+        y: e.clientY,
+      })
+      if (edges.size) {
+        // Set startPos and dragIndex before calling Pre event
+        ref.startPos = { x: e.clientX, y: e.clientY }
+        ref.dragIndex = edges
+        ref.isDragging = true
         e.preventDefault()
+        // Call onLayoutEvent with Pre phase
+        if (ref.onLayoutEvent) {
+          ref.onLayoutEvent(ref, LayoutEvent.Pre)
+        }
       }
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      const edges = findEdgeIndexAtPoint(ref.groups, { x: e.clientX, y: e.clientY })
-      state.hoverIndex = edges
+      const edges = findEdgeIndexAtPoint(ref.groups, {
+        x: e.clientX,
+        y: e.clientY,
+      })
+      ref.hoverIndex = edges
 
-      if (!state.isDragging || state.dragIndex.size === 0) {
+      if (!ref.isDragging || !ref.dragIndex.size) {
         return
       }
 
-      const deltaX = e.clientX - state.startPos.x
-      const deltaY = e.clientY - state.startPos.y
+      const deltaX = e.clientX - ref.startPos.x
+      const deltaY = e.clientY - ref.startPos.y
 
       // Update panel sizes based on dragged edge
       for (const group of ref.groups.values()) {
-        const edgeIndex = state.dragIndex.get(group.orientation)
-        if (edgeIndex === undefined) continue
+        const edgeIndex = ref.dragIndex.get(group.orientation)
+        if (!edgeIndex) continue
 
         const panels = Array.from(group.panels.values())
-        if (edgeIndex < 0 || edgeIndex >= panels.length - 1) continue
-
         const panelBefore = panels[edgeIndex]
         const panelAfter = panels[edgeIndex + 1]
 
@@ -166,46 +155,39 @@ export function ResizableContext({
         const newSizeAfter = panelAfter.size - delta
 
         // Respect minimum size constraints
-        if (newSizeBefore >= panelBefore.minSize && newSizeAfter >= panelAfter.minSize) {
+        if (
+          newSizeBefore >= panelBefore.minSize &&
+          newSizeAfter >= panelAfter.minSize
+        ) {
           panelBefore.size = newSizeBefore
           panelAfter.size = newSizeAfter
           panelBefore.setDirty()
           panelAfter.setDirty()
 
-          // Call onLayoutChange during dragging
-          if (ref.onLayoutChange) {
-            const sizes: Record<string, number> = {}
-            for (const [id, panel] of group.panels) {
-              sizes[id] = panel.size
-            }
-            ref.onLayoutChange(sizes)
+          // Call onLayoutChange during dragging with OnGoing phase
+          if (ref.onLayoutEvent) {
+            ref.onLayoutEvent(ref, LayoutEvent.OnGoing)
           }
         }
       }
 
       // Update start position for next move event
-      state.startPos = { x: e.clientX, y: e.clientY }
+      ref.startPos = { x: e.clientX, y: e.clientY }
     }
 
     const handleMouseUp = (e: MouseEvent) => {
-      if (!state.isDragging) {
+      if (!ref.isDragging) {
         return
       }
 
-      // Call onLayoutChanged when drag ends
-      if (ref.onLayoutChanged) {
-        for (const group of ref.groups.values()) {
-          const sizes: Record<string, number> = {}
-          for (const [id, panel] of group.panels) {
-            sizes[id] = panel.size
-          }
-          ref.onLayoutChanged(sizes)
-        }
+      // Call onLayoutChange with Post phase when drag ends
+      if (ref.onLayoutEvent) {
+        ref.onLayoutEvent(ref, LayoutEvent.Post)
       }
 
       // Reset drag state
-      state.isDragging = false
-      state.dragIndex.clear()
+      ref.isDragging = false
+      ref.dragIndex.clear()
     }
 
     document.addEventListener("mousedown", handleMouseDown)
