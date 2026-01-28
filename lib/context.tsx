@@ -35,7 +35,7 @@ export function ResizableContext({ id, children }: ResizableContextProps) {
 
   return (
     <ResizableContextType.Provider value={ref}>
-      <div data-resizable-group data-group-id={id}>
+      <div data-resizable-context data-context-id={id}>
         {children}
       </div>
     </ResizableContextType.Provider>
