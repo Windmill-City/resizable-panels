@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import { ReactNode, RefObject } from "react"
 
 export type Orientation = "horizontal" | "vertical"
 
@@ -50,7 +50,7 @@ export interface GroupValue {
   // Panels in the Group
   panels: Map<string, PanelValue>
   // Ref of the ResizableGroup Element
-  container: React.RefObject<HTMLElement>
+  container: RefObject<HTMLElement>
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
