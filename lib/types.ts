@@ -2,26 +2,30 @@ import { ReactNode, RefObject } from "react"
 
 export type Orientation = "horizontal" | "vertical"
 
+export type ContextId = string
+export type GroupId = string
+export type PanelId = string
+
 export interface ContextValue {
   // Unique Identifier
-  id: string
+  id: ContextId
   // Groups in the Context
-  groups: Map<string, GroupValue>
+  groups: Map<GroupId, GroupValue>
   // Register Group
   registerGroup: (group: GroupValue) => void
   // Unregister Group
-  unregisterGroup: (id: string) => void
+  unregisterGroup: (id: GroupId) => void
   // Get Group
-  getGroup: (id: string) => GroupValue
+  getGroup: (id: GroupId) => GroupValue
   // Call when Dragging
-  onLayoutChange?: (sizes: Record<string, number>) => void
+  onLayoutChange?: (sizes: Record<GroupId, number>) => void
   // Call when Mouse Released
-  onLayoutChanged?: (sizes: Record<string, number>) => void
+  onLayoutChanged?: (sizes: Record<GroupId, number>) => void
 }
 
 export interface PanelValue {
   // Unique Identifier
-  id: string
+  id: PanelId
   // Active Size (px)
   size: number
   // Minimum Size (px)
@@ -44,28 +48,21 @@ export interface PanelValue {
 
 export interface GroupValue {
   // Unique Identifier
-  id: string
+  id: GroupId
   // Orientation of the Resizable Group
   orientation: Orientation
   // Panels in the Group
-  panels: Map<string, PanelValue>
+  panels: Map<PanelId, PanelValue>
   // Ref of the ResizableGroup Element
   container: RefObject<HTMLElement>
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
-  unregisterPanel: (panelId: string) => void
+  unregisterPanel: (id: PanelId) => void
   // Set Collapse State
-  setCollapse: (panelId: string, collapse: boolean) => void
+  setCollapse: (id: PanelId, collapse: boolean) => void
   // Set Maximize State
-  setMaximize: (panelId?: string) => void
-  // Is Dragging?
-  isDragging: boolean
-  // Resizing Handle Index
-  //    V - Index: 1
-  // |P0|P1| - panels: Map<string, PanelValue>
-  // 0  1  2
-  dragIndex: number
+  setMaximize: (id?: PanelId) => void
   // Maximized Panel
   maximizedPanel?: PanelValue
 }

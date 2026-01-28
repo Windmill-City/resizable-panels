@@ -76,8 +76,6 @@ export function ResizableGroup({
         }
       }
     },
-    isDragging: false,
-    dragIndex: -1,
     maximizedPanel: undefined,
   }).current
 
