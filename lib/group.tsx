@@ -17,6 +17,7 @@ export function useGroupContext() {
 export function ResizableGroup({
   id,
   children,
+  className = "",
   orientation = "horizontal",
 }: ResizableGroupProps) {
   const context = useResizableContext()
@@ -82,11 +83,9 @@ export function ResizableGroup({
         data-group-id={id}
         data-orientation={orientation}
         style={{
-          display: "flex",
-          flexDirection: orientation === "horizontal" ? "row" : "column",
-          flex: 1,
           overflow: "hidden",
         }}
+        className={className}
       >
         {children}
       </div>

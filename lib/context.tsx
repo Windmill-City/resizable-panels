@@ -13,7 +13,11 @@ export function useResizableContext() {
   return context
 }
 
-export function ResizableContext({ id, children }: ResizableContextProps) {
+export function ResizableContext({
+  id,
+  children,
+  className = "",
+}: ResizableContextProps) {
   const refContainer = useRef<HTMLDivElement>(null)
 
   const ref = useRef<ContextValue>({
@@ -42,10 +46,9 @@ export function ResizableContext({ id, children }: ResizableContextProps) {
         data-resizable-context
         data-context-id={id}
         style={{
-          display: "flex",
-          flex: 1,
           overflow: "hidden",
         }}
+        className={className}
       >
         {children}
       </div>

@@ -7,11 +7,11 @@ import type { PanelValue, ResizablePanelProps } from "./types"
 export function ResizablePanel({
   id,
   children,
+  className = "",
   defaultSize = 200,
   minSize = 200,
   collapsible = false,
   okMaximize = false,
-  className = "",
 }: ResizablePanelProps) {
   const context = useGroupContext()
   const [, setDirty] = useReducer(() => ({}), {})
@@ -42,12 +42,11 @@ export function ResizablePanel({
       data-panel-id={id}
       data-collapsed={ref.isCollapsed}
       data-maximized={ref.isMaximized}
-      className={className}
       style={{
         [isHorizontal ? "width" : "height"]: ref.size,
-        flexShrink: 0,
         overflow: "hidden",
       }}
+      className={className}
     >
       {children}
     </div>

@@ -75,6 +75,8 @@ export interface ResizableContextProps {
   id: string
   // Child Elements
   children?: ReactNode
+  // CSS Class Name
+  className?: string
 }
 
 export interface ResizableGroupProps {
@@ -82,8 +84,10 @@ export interface ResizableGroupProps {
   id: string
   // Child Elements
   children?: ReactNode
+  // CSS Class Name
+  className?: string
   // Orientation of the Group
-  orientation: Orientation
+  orientation?: Orientation
 }
 
 export interface ResizablePanelProps {

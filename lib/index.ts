@@ -1,11 +1,12 @@
-export { ResizableGroup } from "./group";
-export { ResizablePanel } from "./panel";
-export { useResizableContext, ResizableContext } from "./context";
+export { ResizableContext, useResizableContext } from "./context"
+export { ResizableGroup } from "./group"
+export { ResizablePanel } from "./panel"
 
 export type {
+  ContextValue, GroupValue,
+  Orientation, PanelValue,
+  ResizableContextProps,
   ResizableGroupProps,
-  ResizablePanelProps,
-  Orientation,
-  PanelValue as PanelData,
-  GroupValue as ResizableGroupContextValue,
-} from "./types";
+  ResizablePanelProps
+} from "./types"
+
