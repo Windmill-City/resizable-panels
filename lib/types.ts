@@ -30,12 +30,12 @@ export interface ContextValue {
   openStates: Map<Orientation, boolean[]>
   // Index of the resize handle (edge) being dragged
   // For panels [P0, P1], edges are indexed as:
-  //    V - Edge Index: 1 (drag handle between P0 and P1)
+  //    V - Edge Index: 0 (drag handle between P0 and P1)
   // |P0|P1|
-  // 0  1  2   (edge positions)
-  dragIndex: Map<Orientation, number>
+  //    0  1   (edge positions)
+  dragIndex: Map<Orientation, [GroupValue, number]>
   // Index of the resize handle (edge) being hover
-  hoverIndex: Map<Orientation, number>
+  hoverIndex: Map<Orientation, [GroupValue, number]>
 }
 
 export interface PanelValue {
@@ -57,6 +57,8 @@ export interface PanelValue {
   okMaximize: boolean
   // Is Maximized?
   isMaximized: boolean
+  // Ref of the ResizablePanel Element
+  container: RefObject<HTMLElement>
   // Trigger Re-render
   setDirty: () => void
 }

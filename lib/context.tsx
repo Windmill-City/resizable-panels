@@ -23,50 +23,49 @@ export function useResizableContext() {
  * The size of the resize handle (px)
  * Used to determine the tolerance area around edges.
  */
-const HANDLE_SIZE = 4
+const HANDLE_SIZE = 8
 
 /**
- * Finds the edge index at a given point within all resizable groups.
+ * Finds the edges near a given point within all resizable groups.
  *
  * Iterates through all groups and checks if the point is near any edge
- * of a resizable group. Returns a map of orientation to edge index.
+ * of a resizable group. Returns a map of orientation to group and edge index.
  *
  * @param groups - Map of group IDs to GroupValue objects
  * @param point - The point coordinates {x, y} to check (viewport coordinates)
  * @returns A Map where keys are orientations ("horizontal" | "vertical") and
- *          values are the corresponding edge indices. Edge index i represents
- *          the boundary between panel[i-1] and panel[i].
+ *          values are tuples of [GroupValue, edgeIndex]. Edge index i represents
+ *          the boundary between panel[i] and panel[i+1].
  */
 function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
   point: { x: number; y: number },
-): Map<Orientation, number> {
-  const result = new Map<Orientation, number>()
+): Map<Orientation, [GroupValue, number]> {
+  const result = new Map<Orientation, [GroupValue, number]>()
 
   for (const group of groups.values()) {
-    const container = group.container.current!
-
     const margin = HANDLE_SIZE / 2
-    const rect = container.getBoundingClientRect()
     const panels = Array.from(group.panels.values())
 
     if (group.orientation === "horizontal") {
-      // Calculate edge positions along x-axis
-      let currentX = rect.left
+      // Calculate edge positions along x-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        currentX += panels[i].size
-        if (Math.abs(point.x - currentX) <= margin) {
-          result.set("horizontal", i)
+        const panel = panels[i].container.current!
+        const rect = panel.getBoundingClientRect()
+        const edgeX = rect.right
+        if (Math.abs(point.x - edgeX) <= margin) {
+          result.set("horizontal", [group, i])
           break
         }
       }
     } else {
-      // Calculate edge positions along y-axis
-      let currentY = rect.top
+      // Calculate edge positions along y-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        currentY += panels[i].size
-        if (Math.abs(point.y - currentY) <= margin) {
-          result.set("vertical", i)
+        const panelEl = panels[i].container.current!
+        const rect = panelEl.getBoundingClientRect()
+        const edgeY = rect.bottom
+        if (Math.abs(point.y - edgeY) <= margin) {
+          result.set("vertical", [group, i])
           break
         }
       }
@@ -140,13 +139,10 @@ export function ResizableContext({
       const deltaY = e.clientY - ref.startPos.y
 
       // Update panel sizes based on dragged edge
-      for (const group of ref.groups.values()) {
-        const edgeIndex = ref.dragIndex.get(group.orientation)
-        if (!edgeIndex) continue
-
+      for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
-        const panelBefore = panels[edgeIndex]
-        const panelAfter = panels[edgeIndex + 1]
+        const panelBefore = panels[index]
+        const panelAfter = panels[index + 1]
 
         const delta = group.orientation === "horizontal" ? deltaX : deltaY
 
@@ -171,11 +167,10 @@ export function ResizableContext({
         }
       }
 
-      // Update start position for next move event
       ref.startPos = { x: e.clientX, y: e.clientY }
     }
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = (_: MouseEvent) => {
       if (!ref.isDragging) {
         return
       }
