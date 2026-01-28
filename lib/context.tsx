@@ -48,6 +48,8 @@ export function ResizableContext({
           display: "flex",
           flexDirection: "column",
           overflow: "auto",
+          minWidth: "fit-content",
+          minHeight: "fit-content",
         }}
         className={className}
       >
