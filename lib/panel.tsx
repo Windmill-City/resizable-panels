@@ -45,7 +45,6 @@ export function ResizablePanel({
       style={{
         flex: `0 0 ${ref.size}px`,
         display: "flex",
-        overflow: "auto",
       }}
       className={className}
     >

@@ -15,7 +15,7 @@ function App() {
       {/* Horizontal Layout */}
       <ResizableGroup>
         {/* Activity Bar */}
-        <ActivityBar></ActivityBar>
+        <ActivityBar>Activity Bar</ActivityBar>
         {/* Left Sidebar */}
         <ResizablePanel className="border-r" collapsible>
           left
