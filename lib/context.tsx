@@ -61,8 +61,8 @@ function findEdgeIndexAtPoint(
     } else {
       // Calculate edge positions along y-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        const panelEl = panels[i].container.current!
-        const rect = panelEl.getBoundingClientRect()
+        const panel = panels[i].container.current!
+        const rect = panel.getBoundingClientRect()
         const edgeY = rect.bottom
         if (Math.abs(point.y - edgeY) <= margin) {
           result.set("vertical", [group, i])
@@ -138,6 +138,8 @@ export function ResizableContext({
       const deltaX = e.clientX - ref.startPos.x
       const deltaY = e.clientY - ref.startPos.y
 
+      let hasResized = false
+
       // Update panel sizes based on dragged edge
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
@@ -159,6 +161,7 @@ export function ResizableContext({
           panelAfter.size = newSizeAfter
           panelBefore.setDirty()
           panelAfter.setDirty()
+          hasResized = true
 
           // Call onLayoutChange during dragging with OnGoing phase
           if (ref.onLayoutEvent) {
@@ -167,7 +170,10 @@ export function ResizableContext({
         }
       }
 
-      ref.startPos = { x: e.clientX, y: e.clientY }
+      // Only update startPos when actually resized to avoid drift
+      if (hasResized) {
+        ref.startPos = { x: e.clientX, y: e.clientY }
+      }
     }
 
     const handleMouseUp = (_: MouseEvent) => {
