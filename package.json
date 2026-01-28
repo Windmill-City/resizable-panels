@@ -18,7 +18,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
+    "dev": "concurrently \"pnpm watch\" \"pnpm -r dev\"",
+    "watch": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"
   },
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
+    "concurrently": "^9.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },

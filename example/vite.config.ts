@@ -4,11 +4,6 @@ import { defineConfig } from "vite"
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    watch: {
-      ignored: ["!**/lib/**"],
-    },
-  },
   optimizeDeps: {
     exclude: ["@local/resizable-panels"],
   },
