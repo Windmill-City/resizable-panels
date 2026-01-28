@@ -13,7 +13,7 @@ function App() {
       {/* Menu */}
       <MenuBar>Menu</MenuBar>
       {/* Horizontal Layout */}
-      <ResizableGroup>
+      <ResizableGroup className="h-full flex">
         {/* Activity Bar */}
         <ActivityBar></ActivityBar>
         {/* Left Sidebar */}
