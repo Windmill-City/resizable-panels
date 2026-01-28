@@ -30,7 +30,7 @@ function App() {
             </ResizablePanel>
             {/* Bottom Panel */}
             <ResizablePanel
-              className="border-t h-full:border-none"
+              className="border-t data-[maximized=true]:border-none"
               collapsible
               minSize={80}
             >
