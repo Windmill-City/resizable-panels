@@ -2,30 +2,27 @@ import { ReactNode, RefObject } from "react"
 
 export type Orientation = "horizontal" | "vertical"
 
-export type ContextId = string
-export type GroupId = string
-export type PanelId = string
 
 export interface ContextValue {
   // Unique Identifier
-  id: ContextId
+  id: string
   // Groups in the Context
-  groups: Map<GroupId, GroupValue>
+  groups: Map<string, GroupValue>
   // Register Group
   registerGroup: (group: GroupValue) => void
   // Unregister Group
-  unregisterGroup: (id: GroupId) => void
+  unregisterGroup: (id: string) => void
   // Get Group
-  getGroup: (id: GroupId) => GroupValue
+  getGroup: (id: string) => GroupValue
   // Call when Dragging
-  onLayoutChange?: (sizes: Record<GroupId, number>) => void
+  onLayoutChange?: (sizes: Record<string, number>) => void
   // Call when Mouse Released
-  onLayoutChanged?: (sizes: Record<GroupId, number>) => void
+  onLayoutChanged?: (sizes: Record<string, number>) => void
 }
 
 export interface PanelValue {
   // Unique Identifier
-  id: PanelId
+  id: string
   // Active Size (px)
   size: number
   // Minimum Size (px)
@@ -48,21 +45,21 @@ export interface PanelValue {
 
 export interface GroupValue {
   // Unique Identifier
-  id: GroupId
+  id: string
   // Orientation of the Resizable Group
   orientation: Orientation
   // Panels in the Group
-  panels: Map<PanelId, PanelValue>
+  panels: Map<string, PanelValue>
   // Ref of the ResizableGroup Element
   container: RefObject<HTMLElement>
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
-  unregisterPanel: (id: PanelId) => void
+  unregisterPanel: (id: string) => void
   // Set Collapse State
-  setCollapse: (id: PanelId, collapse: boolean) => void
+  setCollapse: (id: string, collapse: boolean) => void
   // Set Maximize State
-  setMaximize: (id?: PanelId) => void
+  setMaximize: (id?: string) => void
   // Maximized Panel
   maximizedPanel?: PanelValue
 }
