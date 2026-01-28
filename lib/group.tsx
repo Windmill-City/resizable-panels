@@ -34,8 +34,7 @@ export function ResizableGroup({
     setCollapse: (panelId: string, collapse: boolean) => {
       const panel = ref.panels.get(panelId)
       if (!panel) {
-        console.warn(`[ResizableGroup] Panel not found: ${panelId}`)
-        return
+        throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
       }
       if (!panel.collapsible) return
       if (collapse) {
@@ -51,8 +50,7 @@ export function ResizableGroup({
       if (panelId) {
         const panel = ref.panels.get(panelId)
         if (!panel) {
-          console.warn(`[ResizableGroup] Panel not found: ${panelId}`)
-          return
+          throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
         }
         if (!panel.okMaximize) return
         if (ref.maximizedPanel) {
