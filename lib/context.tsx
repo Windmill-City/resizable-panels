@@ -190,6 +190,7 @@ function calculateClampedDelta(
   delta: number,
 ): number {
   let clamped = delta
+  let collapsedSpace = 0 // Track space from collapsed panels to avoid double counting
 
   while (true) {
     const maxShrinkBefore = panelsBefore.reduce(
@@ -202,7 +203,8 @@ function calculateClampedDelta(
     )
 
     if (delta > 0) {
-      clamped = Math.min(delta, maxShrinkAfter)
+      // Subtract collapsedSpace from maxShrink to avoid double counting
+      clamped = Math.min(delta, maxShrinkAfter + collapsedSpace)
       // Try to collapse collapsible panels in panelsAfter if space is still needed
       const remaining = delta - clamped
       if (remaining > 0) {
@@ -211,7 +213,8 @@ function calculateClampedDelta(
           (p) => p.collapsible && !p.isCollapsed,
         )
         if (collapsiblePanel && remaining > collapsiblePanel.minSize / 2) {
-          // Collapse this panel
+          // Collapse this panel and track its space
+          collapsedSpace += collapsiblePanel.size
           collapsiblePanel.isCollapsed = true
           collapsiblePanel.size = 0
           // Continue loop to recalculate clamped with new space
@@ -219,7 +222,8 @@ function calculateClampedDelta(
         }
       }
     } else if (delta < 0) {
-      clamped = Math.max(delta, -maxShrinkBefore)
+      // Subtract collapsedSpace from maxShrink to avoid double counting
+      clamped = Math.max(delta, -(maxShrinkBefore + collapsedSpace))
       // Try to collapse collapsible panels in panelsBefore if space is still needed
       const remaining = Math.abs(delta) - Math.abs(clamped)
       if (remaining > 0) {
@@ -229,7 +233,8 @@ function calculateClampedDelta(
           .reverse()
           .find((p) => p.collapsible && !p.isCollapsed)
         if (collapsiblePanel && remaining > collapsiblePanel.minSize / 2) {
-          // Collapse this panel
+          // Collapse this panel and track its space
+          collapsedSpace += collapsiblePanel.size
           collapsiblePanel.isCollapsed = true
           collapsiblePanel.size = 0
           // Continue loop to recalculate clamped with new space
@@ -377,6 +382,7 @@ export function ResizableContext({
         console.debug("[Resizable] MouseMove:", {
           delta,
           clamped,
+          group,
         })
 
         // Trigger re-render for all affected panels
