@@ -18,13 +18,13 @@ function App() {
         <ResizableContext>
           <ResizableGroup>
             {/* Left Sidebar */}
-            <ResizablePanel className="border-r" collapsible keepSize>
+            <ResizablePanel className="border-r" collapsible>
               left
             </ResizablePanel>
-            <ResizablePanel>
+            <ResizablePanel expand>
               <ResizableGroup direction="row">
                 {/* Editor */}
-                <ResizablePanel minSize={80} collapsible>
+                <ResizablePanel minSize={80} collapsible expand>
                   top
                 </ResizablePanel>
                 {/* Bottom Panel */}
@@ -32,14 +32,13 @@ function App() {
                   className="border-t data-[maximized=true]:border-none"
                   minSize={80}
                   collapsible
-                  keepSize
                 >
                   bottom
                 </ResizablePanel>
               </ResizableGroup>
             </ResizablePanel>
             {/* Right Sidebar */}
-            <ResizablePanel className="border-l" collapsible keepSize>
+            <ResizablePanel className="border-l" collapsible>
               right
             </ResizablePanel>
           </ResizableGroup>

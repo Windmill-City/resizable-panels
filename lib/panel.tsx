@@ -8,7 +8,7 @@ export function ResizablePanel({
   id: idProp,
   children,
   className = "",
-  keepSize = false,
+  expand = false,
   defaultSize = 300,
   minSize = 200,
   collapsible = false,
@@ -25,7 +25,7 @@ export function ResizablePanel({
     size: defaultSize,
     minSize,
     defaultSize,
-    keepSize,
+    expand,
     prevSize: defaultSize,
     collapsible,
     isCollapsed: false,
@@ -41,7 +41,7 @@ export function ResizablePanel({
   useLayoutEffect(() => {
     context.registerPanel(ref)
 
-    if (keepSize) {
+    if (!expand) {
       return () => context.unregisterPanel(id)
     }
 
@@ -73,7 +73,7 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed}
       data-maximized={ref.isMaximized}
       style={{
-        flex: ref.keepSize ? `0 0 ${ref.size}px` : `1 1 0%`,
+        flex: ref.expand ? `1 1 0%` : `0 0 ${ref.size}px`,
         display: "flex",
         [isCol ? "minWidth" : "minHeight"]: ref.minSize,
       }}

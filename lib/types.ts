@@ -34,8 +34,8 @@ export interface PanelValue {
   size: number
   // Size before Collapse/Resize (px)
   prevSize: number
-  // Keep Active Size when Group Size Change?
-  keepSize: boolean
+  // Grow/Shirk when Group Size Change?
+  expand?: boolean
   // Minimum Size (px)
   minSize: number
   // Default Size (px)
@@ -106,8 +106,8 @@ export interface ResizablePanelProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
-  // Keep Active Size when Group Size Change?
-  keepSize?: boolean
+  // Grow/Shirk when Group Size Change?
+  expand?: boolean
   // Minimum Size (px)
   minSize?: number
   // Default Size (px)
