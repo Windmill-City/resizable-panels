@@ -60,7 +60,7 @@ function findEdgeIndexAtPoint(
     } else {
       // Calculate edge positions along y-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        const panel = panels[i].container.current!
+        const panel = panels[i].containerEl.current!
         const rect = panel.getBoundingClientRect()
         const edgeY = rect.bottom
         if (Math.abs(point.y - edgeY) <= margin) {
