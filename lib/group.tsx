@@ -38,9 +38,21 @@ export function ResizableGroup({
     containerEl,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
+      console.log(
+        "[Group] Register panel:",
+        panel.id,
+        "Panels:",
+        Array.from(ref.panels.keys()),
+      )
     },
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
+      console.log(
+        "[Group] Unregister panel:",
+        panelId,
+        "Panels:",
+        Array.from(ref.panels.keys()),
+      )
     },
     setCollapse: (panelId: string, collapse: boolean) => {
       const panel = ref.panels.get(panelId)
@@ -82,7 +94,7 @@ export function ResizableGroup({
   useLayoutEffect(() => {
     context.registerGroup(ref)
     return () => context.unregisterGroup(id)
-  })
+  }, [])
 
   const isCol = direction === "col"
 

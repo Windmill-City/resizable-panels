@@ -87,9 +87,21 @@ export function ResizableContext({
     groups: new Map<string, GroupValue>(),
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
+      console.log(
+        "[Context] Register group:",
+        group.id,
+        "Groups:",
+        Array.from(ref.groups.keys()),
+      )
     },
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
+      console.log(
+        "[Context] Unregister group:",
+        groupId,
+        "Groups:",
+        Array.from(ref.groups.keys()),
+      )
     },
     onLayoutChanged,
     isDragging: false,
@@ -115,6 +127,18 @@ export function ResizableContext({
           const panelBefore = panels[index]!
           const panelAfter = panels[index + 1]!
 
+          console.log(
+            "[Context] MouseDown: ",
+            "panelBefore:",
+            panelBefore.id,
+            "size:",
+            panelBefore.size,
+            "panelAfter:",
+            panelAfter.id,
+            "size:",
+            panelAfter.size,
+          )
+
           panelBefore.prevSize = panelBefore.size
           panelBefore.prevCollapsed = panelBefore.isCollapsed
           panelAfter.prevSize = panelAfter.size
@@ -139,11 +163,33 @@ export function ResizableContext({
       const deltaX = e.clientX - ref.startPos.x
       const deltaY = e.clientY - ref.startPos.y
 
+      console.log(
+        "[Context] MouseMove - groups:",
+        Array.from(ref.groups.entries()).map(([k, v]) => [
+          k,
+          { dir: v.direction, panels: Array.from(v.panels.keys()) },
+        ]),
+      )
+
       // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
         const panelBefore = panels[index]!
         const panelAfter = panels[index + 1]!
+
+        console.log(
+          "[Context] MouseMove:",
+          "panelBefore:",
+          panelBefore.id,
+          "prevSize:",
+          panelBefore.prevSize,
+          "panelAfter:",
+          panelAfter.id,
+          "prevSize:",
+          panelAfter.prevSize,
+          "delta:",
+          group.direction === "row" ? deltaY : deltaX,
+        )
 
         // Get delta based on direction
         // delta > 0 means edge moved down/right (panelBefore grows, panelAfter shrinks)
@@ -162,7 +208,10 @@ export function ResizableContext({
             // Give all space to panelAfter
             newSizeAfter = panelBefore.prevSize + panelAfter.prevSize
           }
-        } else if (panelBefore.isCollapsed && newSizeBefore > panelBefore.minSize / 2) {
+        } else if (
+          panelBefore.isCollapsed &&
+          newSizeBefore > panelBefore.minSize / 2
+        ) {
           // Expand from collapsed state
           panelBefore.isCollapsed = false
         }
@@ -175,7 +224,10 @@ export function ResizableContext({
             // Give all space to panelBefore
             newSizeBefore = panelBefore.prevSize + panelAfter.prevSize
           }
-        } else if (panelAfter.isCollapsed && newSizeAfter > panelAfter.minSize / 2) {
+        } else if (
+          panelAfter.isCollapsed &&
+          newSizeAfter > panelAfter.minSize / 2
+        ) {
           // Expand from collapsed state
           panelAfter.isCollapsed = false
         }
@@ -207,6 +259,8 @@ export function ResizableContext({
       ref.isDragging = false
       ref.dragIndex.clear()
 
+      console.log("[Context] MouseUp ContextValue:", ref)
+
       // Call onLayoutChanged when drag ends
       if (ref.onLayoutChanged) {
         ref.onLayoutChanged(ref)
@@ -217,12 +271,14 @@ export function ResizableContext({
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
 
+    console.log("[Context] useEffect ContextValue:", ref)
+
     return () => {
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
     }
-  })
+  }, [])
 
   return (
     <ResizableContextType.Provider value={ref}>

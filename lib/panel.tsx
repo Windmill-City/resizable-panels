@@ -68,7 +68,7 @@ export function ResizablePanel({
       observer.disconnect()
       context.unregisterPanel(id)
     }
-  })
+  }, [])
 
   return (
     <div
