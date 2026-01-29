@@ -45,8 +45,13 @@ export function ResizablePanel({
       return () => context.unregisterPanel(id)
     }
 
-    // Observe size changes and update ref.size
     const el = containerEl.current!
+
+    // Initialize size from actual DOM dimensions
+    const rect = el.getBoundingClientRect()
+    ref.size = isCol ? rect.width : rect.height
+
+    // Observe size changes and update ref.size
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const newSize = isCol
