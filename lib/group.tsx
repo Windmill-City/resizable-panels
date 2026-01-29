@@ -59,7 +59,7 @@ export function ResizableGroup({
       if (!panel) {
         throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
       }
-      if (!panel.collapsible) return
+      if (!panel.collapsible || panel.isCollapsed === collapse) return
       if (collapse) {
         panel.prevSize = panel.size
         panel.size = 0
@@ -75,7 +75,7 @@ export function ResizableGroup({
         if (!panel) {
           throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
         }
-        if (!panel.okMaximize) return
+        if (!panel.okMaximize || ref.maximizedPanel === panel) return
         if (ref.maximizedPanel) {
           ref.maximizedPanel.isMaximized = false
         }
