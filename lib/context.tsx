@@ -140,7 +140,8 @@ function distributeSequentially(
         const closestPanel = orderedPanels[0]!
         if (amount > closestPanel.minSize / 2) {
           closestPanel.isCollapsed = false
-          closestPanel.size = amount
+          // Restore to previous size or use amount if larger, ensuring panel doesn't shrink below its previous size
+          closestPanel.size = Math.max(closestPanel.prevSize, amount)
         }
       }
     }
@@ -207,12 +208,9 @@ function calculateClampedDelta(
       if (remaining > 0) {
         // Find collapsible panel from handle outwards (normal order for panelsAfter)
         const collapsiblePanel = panelsAfter.find(
-          (p) => p.collapsible && !p.isCollapsed && p.size > 0,
+          (p) => p.collapsible && !p.isCollapsed,
         )
-        if (
-          collapsiblePanel &&
-          remaining > collapsiblePanel.minSize / 2
-        ) {
+        if (collapsiblePanel && remaining > collapsiblePanel.minSize / 2) {
           // Collapse this panel
           collapsiblePanel.isCollapsed = true
           collapsiblePanel.size = 0
@@ -229,11 +227,8 @@ function calculateClampedDelta(
         const collapsiblePanel = panelsBefore
           .slice()
           .reverse()
-          .find((p) => p.collapsible && !p.isCollapsed && p.size > 0)
-        if (
-          collapsiblePanel &&
-          remaining > collapsiblePanel.minSize / 2
-        ) {
+          .find((p) => p.collapsible && !p.isCollapsed)
+        if (collapsiblePanel && remaining > collapsiblePanel.minSize / 2) {
           // Collapse this panel
           collapsiblePanel.isCollapsed = true
           collapsiblePanel.size = 0
