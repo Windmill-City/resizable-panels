@@ -20,6 +20,11 @@ export function ResizablePanel({
   const id = idProp ?? useId()
   const containerEl = useRef<HTMLDivElement>(null)
 
+  console.assert(
+    defaultSize >= minSize,
+    `[ResizablePanel] defaultSize < minSize: ${id}`,
+  )
+
   const ref = useRef<PanelValue>({
     id,
     size: defaultSize,
