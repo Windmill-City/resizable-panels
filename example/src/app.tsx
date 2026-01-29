@@ -18,7 +18,10 @@ function App() {
         <ResizableContext>
           <ResizableGroup>
             {/* Left Sidebar */}
-            <ResizablePanel className="border-r data-[maximized=true]:border-none data-[collapsed=true]:border-none" collapsible>
+            <ResizablePanel
+              className="border-r data-[maximized=true]:border-none data-[collapsed=true]:border-none"
+              collapsible
+            >
               left
             </ResizablePanel>
             <ResizablePanel expand>
@@ -38,7 +41,10 @@ function App() {
               </ResizableGroup>
             </ResizablePanel>
             {/* Right Sidebar */}
-            <ResizablePanel className="border-l data-[maximized=true]:border-none" collapsible>
+            <ResizablePanel
+              className="border-l  data-[maximized=true]:border-none data-[collapsed=true]:border-none"
+              collapsible
+            >
               right
             </ResizablePanel>
           </ResizableGroup>
