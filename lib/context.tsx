@@ -171,83 +171,6 @@ function distributeSequentially(
   }
 }
 
-/**
- * Calculates the clamped delta value by considering shrinkable space and collapsible panels.
- *
- * Try to satisfy the resize delta by first shrinking panels to their minSize.
- * If delta > clamped (still need more space), try collapsing collapsible panels
- * from the handle outwards. Only collapse when remaining delta > minSize/2.
- * Repeat until no more collapsible panels can be collapsed or delta is satisfied.
- *
- * @param panelsBefore - Panels before the resize handle (in normal order)
- * @param panelsAfter - Panels after the resize handle (in normal order)
- * @param delta - The requested resize delta (positive = panelsBefore grows, negative = panelsBefore shrinks)
- * @returns The clamped delta value after considering collapsible panels
- */
-function calculateClampedDelta(
-  panelsBefore: PanelValue[],
-  panelsAfter: PanelValue[],
-  delta: number,
-): number {
-  let clamped = delta
-  let collapsedSpace = 0 // Track space from collapsed panels to avoid double counting
-
-  while (true) {
-    const maxShrinkBefore = panelsBefore.reduce(
-      (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
-      0,
-    )
-    const maxShrinkAfter = panelsAfter.reduce(
-      (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
-      0,
-    )
-
-    if (delta > 0) {
-      // Subtract collapsedSpace from maxShrink to avoid double counting
-      clamped = Math.min(delta, maxShrinkAfter + collapsedSpace)
-      // Try to collapse collapsible panels in panelsAfter if space is still needed
-      const remaining = delta - clamped
-      if (remaining > 0) {
-        // Find collapsible panel from handle outwards (normal order for panelsAfter)
-        const collapsiblePanel = panelsAfter.find(
-          (p) => p.collapsible && !p.isCollapsed,
-        )
-        if (collapsiblePanel && remaining > collapsiblePanel.minSize / 2) {
-          // Collapse this panel and track its space
-          collapsedSpace += collapsiblePanel.size
-          collapsiblePanel.isCollapsed = true
-          collapsiblePanel.size = 0
-          // Continue loop to recalculate clamped with new space
-          continue
-        }
-      }
-    } else if (delta < 0) {
-      // Subtract collapsedSpace from maxShrink to avoid double counting
-      clamped = Math.max(delta, -(maxShrinkBefore + collapsedSpace))
-      // Try to collapse collapsible panels in panelsBefore if space is still needed
-      const remaining = Math.abs(delta) - Math.abs(clamped)
-      if (remaining > 0) {
-        // Find collapsible panel from handle outwards (reverse order for panelsBefore)
-        const collapsiblePanel = panelsBefore
-          .slice()
-          .reverse()
-          .find((p) => p.collapsible && !p.isCollapsed)
-        if (collapsiblePanel && remaining > collapsiblePanel.minSize / 2) {
-          // Collapse this panel and track its space
-          collapsedSpace += collapsiblePanel.size
-          collapsiblePanel.isCollapsed = true
-          collapsiblePanel.size = 0
-          // Continue loop to recalculate clamped with new space
-          continue
-        }
-      }
-    }
-    break
-  }
-
-  return clamped
-}
-
 export function ResizableContext({
   id: idProp,
   children,
@@ -362,7 +285,67 @@ export function ResizableContext({
         }
 
         // Calculate clamped delta considering collapsible panels
-        const clamped = calculateClampedDelta(panelsBefore, panelsAfter, delta)
+        let clamped = delta
+        let collapsedSpace = 0 // Track space from collapsed panels to avoid double counting
+
+        while (true) {
+          const maxShrinkBefore = panelsBefore.reduce(
+            (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
+            0,
+          )
+          const maxShrinkAfter = panelsAfter.reduce(
+            (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
+            0,
+          )
+
+          if (delta > 0) {
+            // Subtract collapsedSpace from maxShrink to avoid double counting
+            clamped = Math.min(delta, maxShrinkAfter + collapsedSpace)
+            // Try to collapse collapsible panels in panelsAfter if space is still needed
+            const remaining = delta - clamped
+            if (remaining > 0) {
+              // Find collapsible panel from handle outwards (normal order for panelsAfter)
+              const collapsiblePanel = panelsAfter.find(
+                (p) => p.collapsible && !p.isCollapsed,
+              )
+              if (
+                collapsiblePanel &&
+                remaining > collapsiblePanel.minSize / 2
+              ) {
+                // Collapse this panel and track its space
+                collapsedSpace += collapsiblePanel.size
+                collapsiblePanel.isCollapsed = true
+                collapsiblePanel.size = 0
+                // Continue loop to recalculate clamped with new space
+                continue
+              }
+            }
+          } else if (delta < 0) {
+            // Subtract collapsedSpace from maxShrink to avoid double counting
+            clamped = Math.max(delta, -(maxShrinkBefore + collapsedSpace))
+            // Try to collapse collapsible panels in panelsBefore if space is still needed
+            const remaining = Math.abs(delta) - Math.abs(clamped)
+            if (remaining > 0) {
+              // Find collapsible panel from handle outwards (reverse order for panelsBefore)
+              const collapsiblePanel = panelsBefore
+                .slice()
+                .reverse()
+                .find((p) => p.collapsible && !p.isCollapsed)
+              if (
+                collapsiblePanel &&
+                remaining > collapsiblePanel.minSize / 2
+              ) {
+                // Collapse this panel and track its space
+                collapsedSpace += collapsiblePanel.size
+                collapsiblePanel.isCollapsed = true
+                collapsiblePanel.size = 0
+                // Continue loop to recalculate clamped with new space
+                continue
+              }
+            }
+          }
+          break
+        }
 
         // Distribute space sequentially from the resize handle
         // If delta > 0: panelsBefore grows, panelsAfter shrinks
@@ -379,10 +362,24 @@ export function ResizableContext({
           distributeSequentially(panelsBefore, -clamped, false, true)
         }
 
+        // Update maximized state
+        const filtered = [...panelsBefore, ...panelsAfter].filter(
+          (p) => !p.isCollapsed,
+        )
+        if (filtered.length === 1) {
+          const panel = filtered[0]
+          group.setMaximize(panel.id)
+        } else {
+          if (filtered.length > 1) {
+            group.setMaximize(undefined)
+          }
+        }
+
         console.debug("[Resizable] MouseMove:", {
           delta,
           clamped,
           group,
+          filtered,
         })
 
         // Trigger re-render for all affected panels

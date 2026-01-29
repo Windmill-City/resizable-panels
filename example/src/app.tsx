@@ -35,6 +35,7 @@ function App() {
                   className="border-t data-[maximized=true]:border-none data-[collapsed=true]:border-none"
                   minSize={80}
                   collapsible
+                  okMaximize
                 >
                   bottom
                 </ResizablePanel>
