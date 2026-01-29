@@ -153,6 +153,7 @@ export function ResizableContext({
     }
 
     const handleMouseMove = (e: MouseEvent) => {
+      // Update cursor and hover state
       if (!ref.isDragging) {
         const edges = findEdgeIndexAtPoint(ref.groups, {
           x: e.clientX,
@@ -160,17 +161,21 @@ export function ResizableContext({
         })
         ref.hoverIndex = edges
 
-        // Update cursor based on hover state
-        if (edges.size === 0) {
+        switch (edges.size) {
+          case 0:
+            // No edge: show default
           document.body.style.cursor = ""
-        } else if (edges.size === 1) {
+            break
+          case 1:
+            const direction = edges.keys().next().value!
           // Single edge: show bidirectional arrow
-          const direction = edges.keys().next().value as Direction
           document.body.style.cursor =
             direction === "row" ? "ns-resize" : "ew-resize"
-        } else if (edges.size === 2) {
-          // Two edges (intersection): show crosshair/move cursor
+            break
+          case 2:
+            // Two edges (intersection): show crosshair
           document.body.style.cursor = "move"
+            break
         }
         return
       }
