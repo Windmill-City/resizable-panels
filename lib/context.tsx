@@ -400,7 +400,11 @@ export function ResizableContext({
         const panels = Array.from(group.panels.values())
 
         // Collect panels that violate minSize constraint
-        const violations: { panel: PanelValue; deficit: number; index: number }[] = []
+        const violations: {
+          panel: PanelValue
+          deficit: number
+          index: number
+        }[] = []
         for (let i = 0; i < panels.length; i++) {
           const panel = panels[i]!
           if (!panel.isCollapsed && panel.size < panel.minSize) {
@@ -416,10 +420,8 @@ export function ResizableContext({
           // Get donor panels sorted by distance from handle
           const donorsWithDistance = panels
             .map((p, i) => ({ panel: p, index: i }))
-            .filter(({ panel }) => 
-              panel !== violatedPanel && 
-              !panel.isCollapsed && 
-              panel.size > panel.minSize
+            .filter(
+              ({ panel }) => !panel.isCollapsed && panel.size > panel.minSize,
             )
             .map(({ panel, index }) => ({
               panel,
@@ -428,31 +430,15 @@ export function ResizableContext({
             .sort((a, b) => a.distance - b.distance)
 
           for (const { panel: donor } of donorsWithDistance) {
-            if (remainingToCollect <= 0) break
             const available = donor.size - donor.minSize
             const take = Math.min(available, remainingToCollect)
             donor.size -= take
             remainingToCollect -= take
+            if (remainingToCollect <= 0) break
           }
 
           // Give collected space to the violated panel
           violatedPanel.size += deficit - remainingToCollect
-
-          // If still not enough, collapse the panel back
-          if (violatedPanel.size < violatedPanel.minSize / 2) {
-            violatedPanel.isCollapsed = true
-            violatedPanel.size = 0
-            // Return the collected space to donors proportionally
-            const collected = deficit - remainingToCollect
-            if (collected > 0 && donorsWithDistance.length > 0) {
-              const returnPerPanel = Math.floor(collected / donorsWithDistance.length)
-              const returnRemainder = collected % donorsWithDistance.length
-              for (let i = 0; i < donorsWithDistance.length; i++) {
-                donorsWithDistance[i]!.panel.size +=
-                  returnPerPanel + (i === 0 ? returnRemainder : 0)
-              }
-            }
-          }
 
           // Trigger re-render for all affected panels
           for (const panel of panels) {
