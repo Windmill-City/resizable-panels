@@ -7,7 +7,6 @@ import type {
   Orientation,
   ResizableContextProps,
 } from "./types"
-import { LayoutEvent } from "./types"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
 
@@ -79,6 +78,7 @@ export function ResizableContext({
   id: idProp,
   children,
   className = "",
+  onLayoutChanged,
 }: ResizableContextProps) {
   const id = idProp ?? useId()
 
@@ -91,16 +91,9 @@ export function ResizableContext({
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
     },
-    getGroup: (groupId: string): GroupValue => {
-      const group = ref.groups.get(groupId)
-      if (!group) {
-        throw new Error(`[ResizableContext] Group not found: ${groupId}`)
-      }
-      return group
-    },
+    onLayoutChanged,
     isDragging: false,
-    startPos: { x: 0, y: 0 },
-    openStates: new Map(),
+    prevPos: { x: 0, y: 0 },
     dragIndex: new Map(),
     hoverIndex: new Map(),
   }).current
@@ -112,15 +105,10 @@ export function ResizableContext({
         y: e.clientY,
       })
       if (edges.size) {
-        // Set startPos and dragIndex before calling Pre event
-        ref.startPos = { x: e.clientX, y: e.clientY }
+        ref.prevPos = { x: e.clientX, y: e.clientY }
         ref.dragIndex = edges
         ref.isDragging = true
         e.preventDefault()
-        // Call onLayoutEvent with Pre phase
-        if (ref.onLayoutEvent) {
-          ref.onLayoutEvent(ref, LayoutEvent.Pre)
-        }
       }
     }
 
@@ -135,10 +123,8 @@ export function ResizableContext({
         return
       }
 
-      const deltaX = e.clientX - ref.startPos.x
-      const deltaY = e.clientY - ref.startPos.y
-
-      let hasResized = false
+      const deltaX = e.clientX - ref.prevPos.x
+      const deltaY = e.clientY - ref.prevPos.y
 
       // Update panel sizes based on dragged edge
       for (const [group, index] of ref.dragIndex.values()) {
@@ -161,18 +147,8 @@ export function ResizableContext({
           panelAfter.size = newSizeAfter
           panelBefore.setDirty()
           panelAfter.setDirty()
-          hasResized = true
-
-          // Call onLayoutChange during dragging with OnGoing phase
-          if (ref.onLayoutEvent) {
-            ref.onLayoutEvent(ref, LayoutEvent.OnGoing)
-          }
+          ref.prevPos = { x: e.clientX, y: e.clientY }
         }
-      }
-
-      // Only update startPos when actually resized to avoid drift
-      if (hasResized) {
-        ref.startPos = { x: e.clientX, y: e.clientY }
       }
     }
 
@@ -181,14 +157,14 @@ export function ResizableContext({
         return
       }
 
-      // Call onLayoutChange with Post phase when drag ends
-      if (ref.onLayoutEvent) {
-        ref.onLayoutEvent(ref, LayoutEvent.Post)
-      }
-
       // Reset drag state
       ref.isDragging = false
       ref.dragIndex.clear()
+
+      // Call onLayoutChanged when drag ends
+      if (ref.onLayoutChanged) {
+        ref.onLayoutChanged(ref)
+      }
     }
 
     document.addEventListener("mousedown", handleMouseDown)
@@ -210,7 +186,6 @@ export function ResizableContext({
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: "column",
           minWidth: "fit-content",
           minHeight: "fit-content",
         }}

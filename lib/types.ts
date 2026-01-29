@@ -2,12 +2,6 @@ import { ReactNode, RefObject } from "react"
 
 export type Orientation = "horizontal" | "vertical"
 
-export enum LayoutEvent {
-  Pre = "pre",
-  OnGoing = "ongoing",
-  Post = "post",
-}
-
 export interface ContextValue {
   // Unique Identifier
   id: string
@@ -17,14 +11,12 @@ export interface ContextValue {
   registerGroup: (group: GroupValue) => void
   // Unregister Group
   unregisterGroup: (id: string) => void
-  // Get Group
-  getGroup: (id: string) => GroupValue
-  // Layout event handler
-  onLayoutEvent?: (context: ContextValue, phase: LayoutEvent) => void
+  // Layout Changed
+  onLayoutChanged?: (context: ContextValue) => void
   // Is Dragging Panels?
   isDragging: boolean
-  // MouseDown Pos
-  startPos: { x: number; y: number }
+  // Mouse Previous Pos
+  prevPos: { x: number; y: number }
   // Index of the resize handle (edge) being dragged
   // For panels [P0, P1], edges are indexed as:
   //    V - Edge Index: 0 (drag handle between P0 and P1)
@@ -40,18 +32,20 @@ export interface PanelValue {
   id: string
   // Active Size (px)
   size: number
+  // Size before Collapse/Resize (px)
+  prevSize: number
+  // Keep Active Size when Group Size Change?
+  keepSize: boolean
   // Minimum Size (px)
   minSize: number
   // Default Size (px)
   defaultSize: number
-  // Size before Collapse/Resizing (px)
-  prevSize: number
-  // Collapsed beforeResizing
-  prevCollapsed: boolean
   // Allow Collapse?
   collapsible: boolean
   // Is Collapsed?
   isCollapsed: boolean
+  // Is Collapsed before Resize?
+  prevCollapsed: boolean
   // Allow Maximize?
   okMaximize: boolean
   // Is Maximized?
@@ -77,7 +71,7 @@ export interface GroupValue {
   unregisterPanel: (id: string) => void
   // Set Collapse State
   setCollapse: (id: string, collapse: boolean) => void
-  // Set Maximize State
+  // Set Maximize Panel
   setMaximize: (id?: string) => void
   // Maximized Panel
   maximizedPanel?: PanelValue
@@ -90,6 +84,8 @@ export interface ResizableContextProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
+    // Layout Changed
+  onLayoutChanged?: (context: ContextValue) => void
 }
 
 export interface ResizableGroupProps {
@@ -110,6 +106,8 @@ export interface ResizablePanelProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
+  // Keep Active Size when Group Size Change?
+  keepSize?: boolean
   // Minimum Size (px)
   minSize?: number
   // Default Size (px)
