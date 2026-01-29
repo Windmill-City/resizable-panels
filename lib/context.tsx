@@ -98,7 +98,6 @@ function findEdgeIndexAtPoint(
  * @param amount - Amount of space to distribute/collect (in pixels)
  * @param isGrowing - If true, distribute space; if false, collect space
  * @param reverseOrder - If true, iterate from end of array
- * @returns The actual amount of space distributed/collected
  */
 function distributeSequentially(
   panels: PanelValue[],
@@ -138,6 +137,8 @@ function distributeSequentially(
         firstNonCollapsed.size += amount
       }
     }
+
+    // Growing is unlimited, so all the space should be distributed
   } else {
     // Shrinking: reduce size from panels closest to handle
     // Collect space from panels one by one until enough
@@ -154,9 +155,12 @@ function distributeSequentially(
         remaining -= take
       }
     }
-  }
 
-  return remaining
+    console.assert(
+      !remaining,
+      `Unable to collect required size: ${amount}, remaining: ${remaining}`,
+    )
+  }
 }
 
 export function ResizableContext({
@@ -292,18 +296,6 @@ export function ResizableContext({
           clamped = Math.max(delta, -maxShrinkBefore)
         }
 
-        console.debug("[Resizable] MouseMove Begin:", {
-          startPos: ref.startPos,
-          delta,
-          clamped,
-          maxShrinkBefore,
-          maxShrinkAfter,
-          index,
-          group,
-          panelsBefore,
-          panelsAfter,
-        })
-
         // Distribute space sequentially from the resize handle
         // If delta > 0: panelsBefore grows, panelsAfter shrinks
         // If delta < 0: panelsBefore shrinks, panelsAfter grows
@@ -315,9 +307,21 @@ export function ResizableContext({
         } else if (clamped < 0) {
           // panelsBefore shrinks (iterate from handle outwards = reverse)
           // panelsAfter grows (iterate from handle outwards = normal)
-          distributeSequentially(panelsBefore, -clamped, false, true)
           distributeSequentially(panelsAfter, -clamped, true, false)
+          distributeSequentially(panelsBefore, -clamped, false, true)
         }
+
+        console.debug("[Resizable] MouseMove:", {
+          startPos: ref.startPos,
+          delta,
+          clamped,
+          maxShrinkBefore,
+          maxShrinkAfter,
+          index,
+          group,
+          panelsBefore,
+          panelsAfter,
+        })
 
         // Trigger re-render for all affected panels
         for (const panel of [...panelsBefore, ...panelsAfter]) {
