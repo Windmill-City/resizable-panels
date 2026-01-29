@@ -186,8 +186,6 @@ export function ResizableContext({
         style={{
           flex: 1,
           display: "flex",
-          minWidth: "fit-content",
-          minHeight: "fit-content",
         }}
         className={className}
       >
