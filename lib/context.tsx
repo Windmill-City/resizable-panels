@@ -312,15 +312,10 @@ export function ResizableContext({
         }
 
         console.debug("[Resizable] MouseMove:", {
-          startPos: ref.startPos,
           delta,
           clamped,
           maxShrinkBefore,
           maxShrinkAfter,
-          index,
-          group,
-          panelsBefore,
-          panelsAfter,
         })
 
         // Trigger re-render for all affected panels
