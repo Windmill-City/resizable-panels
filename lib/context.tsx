@@ -45,6 +45,17 @@ function findEdgeIndexAtPoint(
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
     const panels = Array.from(group.panels.values())
+    const rect = group.containerEl.current!.getBoundingClientRect()
+
+    // Skip if point is not within group bounds (with margin)
+    if (
+      point.x < rect.x - margin ||
+      point.x > rect.right + margin ||
+      point.y < rect.top - margin ||
+      point.y > rect.bottom + margin
+    ) {
+      continue
+    }
 
     if (group.direction === "row") {
       // Calculate edge positions along y-axis using actual DOM rects
@@ -142,13 +153,25 @@ export function ResizableContext({
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      const edges = findEdgeIndexAtPoint(ref.groups, {
-        x: e.clientX,
-        y: e.clientY,
-      })
-      ref.hoverIndex = edges
+      if (!ref.isDragging) {
+        const edges = findEdgeIndexAtPoint(ref.groups, {
+          x: e.clientX,
+          y: e.clientY,
+        })
+        ref.hoverIndex = edges
 
-      if (!ref.isDragging || !ref.dragIndex.size) {
+        // Update cursor based on hover state
+        if (edges.size === 0) {
+          document.body.style.cursor = ""
+        } else if (edges.size === 1) {
+          // Single edge: show bidirectional arrow
+          const direction = edges.keys().next().value as Direction
+          document.body.style.cursor =
+            direction === "row" ? "ns-resize" : "ew-resize"
+        } else if (edges.size === 2) {
+          // Two edges (intersection): show crosshair/move cursor
+          document.body.style.cursor = "move"
+        }
         return
       }
 
