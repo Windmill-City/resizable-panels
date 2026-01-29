@@ -164,17 +164,17 @@ export function ResizableContext({
         switch (edges.size) {
           case 0:
             // No edge: show default
-          document.body.style.cursor = ""
+            document.body.style.cursor = ""
             break
           case 1:
             const direction = edges.keys().next().value!
-          // Single edge: show bidirectional arrow
-          document.body.style.cursor =
-            direction === "row" ? "ns-resize" : "ew-resize"
+            // Single edge: show bidirectional arrow
+            document.body.style.cursor =
+              direction === "row" ? "ns-resize" : "ew-resize"
             break
           case 2:
             // Two edges (intersection): show crosshair
-          document.body.style.cursor = "move"
+            document.body.style.cursor = "move"
             break
         }
         return
@@ -191,7 +191,7 @@ export function ResizableContext({
 
         // Get delta based on direction
         // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
-        const delta = group.direction === "row" ? deltaY : deltaX
+        let delta = group.direction === "row" ? deltaY : deltaX
 
         console.log("[Resizable] MouseMove", {
           startPos: ref.startPos,
@@ -264,6 +264,25 @@ export function ResizableContext({
           }
         }
 
+        // Calculate maximum shrinkable space for each side
+        // When delta > 0: panelsAfter needs to shrink, limit by its max shrinkable
+        // When delta < 0: panelsBefore needs to shrink, limit by its max shrinkable
+        const maxShrinkBefore = panelsBefore.reduce(
+          (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
+          0,
+        )
+        const maxShrinkAfter = panelsAfter.reduce(
+          (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
+          0,
+        )
+
+        // Clamp delta to available shrinkable space
+        if (delta > 0) {
+          delta = Math.min(delta, maxShrinkAfter)
+        } else if (delta < 0) {
+          delta = Math.max(delta, -maxShrinkBefore)
+        }
+
         // Distribute space sequentially from the resize handle
         // If delta > 0: panelsBefore grows, panelsAfter shrinks
         // If delta < 0: panelsBefore shrinks, panelsAfter grows
@@ -282,54 +301,49 @@ export function ResizableContext({
 
           let remaining = amount
 
-          for (const panel of orderedPanels) {
-            if (remaining <= 0) break
+          if (isGrowing) {
+            // Growing: distribute space to panels with expand=true first
+            // If no expand panels, distribute to all non-collapsed panels proportionally
+            const expandablePanels = orderedPanels.filter(
+              (p) => !p.isCollapsed && p.expand,
+            )
+            const targetPanels =
+              expandablePanels.length > 0
+                ? expandablePanels
+                : orderedPanels.filter((p) => !p.isCollapsed)
 
-            if (isGrowing) {
-              // Skip collapsed panels (they stay at 0 until expanded)
-              if (panel.isCollapsed) {
-                continue
+            // Use while loop to distribute all remaining space
+            while (remaining > 0 && targetPanels.length > 0) {
+              let distributedInRound = 0
+              for (const panel of targetPanels) {
+                if (remaining <= 0) break
+                // Distribute 1px at a time to ensure fair distribution
+                panel.size += 1
+                distributedInRound++
+                remaining--
               }
-              // Growing: only expand panels with expand=true
-              if (panel.expand) {
-                panel.size += remaining
-                remaining = 0
-                break
-              }
-              // Non-expand panel: keep current size, continue to next
-            } else {
-              // Shrinking: reduce size from minSize, can collapse if collapsible
-              if (panel.isCollapsed) {
-                // Already collapsed, skip to next
-                continue
-              }
-
-              const minSize = panel.minSize
-              const available = panel.size - minSize
-
-              if (available >= remaining) {
-                // This panel can provide all needed space
-                panel.size -= remaining
-                remaining = 0
-                break
-              } else {
-                // This panel can't provide enough, take what it can give
-                // Reduce to minimum and continue to next panel
-                panel.size = minSize
-                remaining -= available
-              }
+              // If no space was distributed in this round, break to avoid infinite loop
+              if (distributedInRound === 0) break
             }
-          }
+          } else {
+            // Shrinking: reduce size from panels closest to handle
+            // Use while loop to collect all needed space
+            while (remaining > 0) {
+              let collectedInRound = 0
+              for (const panel of orderedPanels) {
+                if (remaining <= 0) break
+                if (panel.isCollapsed) continue
 
-          // If still have remaining space to grow but no expand panels found,
-          // give it to the panel closest to handle (skip collapsed panels)
-          if (isGrowing && remaining > 0 && panels.length > 0) {
-            const targetPanel = reverseOrder
-              ? panels[panels.length - 1]!
-              : panels[0]!
-            if (!targetPanel.isCollapsed) {
-              targetPanel.size += remaining
-              remaining = 0
+                const minSize = panel.minSize
+                if (panel.size > minSize) {
+                  // This panel can give space
+                  panel.size -= 1
+                  collectedInRound++
+                  remaining--
+                }
+              }
+              // If no space was collected in this round, all panels are at minSize
+              if (collectedInRound === 0) break
             }
           }
 
