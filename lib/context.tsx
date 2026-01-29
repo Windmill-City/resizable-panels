@@ -418,7 +418,7 @@ export function ResizableContext({
           let remainingToCollect = deficit
 
           // Get donor panels sorted by distance from handle
-          const donorsWithDistance = panels
+          const donors = panels
             .map((p, i) => ({ panel: p, index: i }))
             .filter(
               ({ panel }) => !panel.isCollapsed && panel.size > panel.minSize,
@@ -429,7 +429,7 @@ export function ResizableContext({
             }))
             .sort((a, b) => a.distance - b.distance)
 
-          for (const { panel: donor } of donorsWithDistance) {
+          for (const { panel: donor } of donors) {
             const available = donor.size - donor.minSize
             const take = Math.min(available, remainingToCollect)
             donor.size -= take
