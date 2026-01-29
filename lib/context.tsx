@@ -133,15 +133,13 @@ export function ResizableContext({
         ref.isDragging = true
 
         // Save Initial State
-        for (const [group, index] of ref.dragIndex.values()) {
-          const panels = Array.from(group.panels.values())
-          const panelBefore = panels[index]!
-          const panelAfter = panels[index + 1]!
-
-          panelBefore.prevSize = panelBefore.size
-          panelBefore.prevCollapsed = panelBefore.isCollapsed
-          panelAfter.prevSize = panelAfter.size
-          panelAfter.prevCollapsed = panelAfter.isCollapsed
+        for (const [group] of ref.dragIndex.values()) {
+          for (const [, panel] of group.panels) {
+            panel.prevCollapsed = panel.isCollapsed
+            if (!panel.isCollapsed) {
+              panel.prevSize = panel.size
+            }
+          }
         }
 
         console.debug("[Resizable] MouseDown", {
