@@ -136,12 +136,12 @@ function distributeSequentially(
       if (firstNonCollapsed) {
         firstNonCollapsed.size += amount
       } else if (orderedPanels.length > 0) {
-        // All panels collapsed: expand the one closest to handle if amount > minSize/2
-        const closestPanel = orderedPanels[0]!
-        if (amount > closestPanel.minSize / 2) {
-          closestPanel.isCollapsed = false
+        // All panels collapsed: expand the first panel from the handle
+        const firstPanel = orderedPanels[0]!
+        if (amount > firstPanel.minSize / 2) {
+          firstPanel.isCollapsed = false
           // Expand panel to at least its minSize, or more if dragged further
-          closestPanel.size = Math.max(closestPanel.minSize, amount)
+          firstPanel.size = Math.max(firstPanel.minSize, amount)
         }
       }
     }
