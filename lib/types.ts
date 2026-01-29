@@ -25,9 +25,6 @@ export interface ContextValue {
   isDragging: boolean
   // MouseDown Pos
   startPos: { x: number; y: number }
-  // Panel Open States
-  // indexed by the same index as GroupValue.panels
-  openStates: Map<Orientation, boolean[]>
   // Index of the resize handle (edge) being dragged
   // For panels [P0, P1], edges are indexed as:
   //    V - Edge Index: 0 (drag handle between P0 and P1)
@@ -47,8 +44,10 @@ export interface PanelValue {
   minSize: number
   // Default Size (px)
   defaultSize: number
-  // Size before Collapse (px)
-  openSize: number
+  // Size before Collapse/Resizing (px)
+  prevSize: number
+  // Collapsed beforeResizing
+  prevCollapsed: boolean
   // Allow Collapse?
   collapsible: boolean
   // Is Collapsed?

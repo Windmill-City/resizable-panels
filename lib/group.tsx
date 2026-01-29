@@ -49,11 +49,11 @@ export function ResizableGroup({
       }
       if (!panel.collapsible) return
       if (collapse) {
-        panel.openSize = panel.size
+        panel.prevSize = panel.size
         panel.size = 0
         panel.isCollapsed = true
       } else {
-        panel.size = panel.openSize
+        panel.size = panel.prevSize
         panel.isCollapsed = false
       }
     },
