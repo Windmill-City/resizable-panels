@@ -164,10 +164,11 @@ function distributeSequentially(
       }
     }
 
-    console.assert(
-      !remaining,
-      `Unable to collect required size: ${amount}, remaining: ${remaining}`,
-    )
+    console.assert(!remaining, "Unable to collect required size:", {
+      amount,
+      remaining,
+      orderedPanels,
+    })
   }
 }
 
@@ -348,18 +349,18 @@ export function ResizableContext({
         }
 
         // Distribute space sequentially from the resize handle
-        // If delta > 0: panelsBefore grows, panelsAfter shrinks
-        // If delta < 0: panelsBefore shrinks, panelsAfter grows
+        const growAmount = Math.abs(clamped)
+        const shrinkAmount = growAmount - collapsedSpace
         if (clamped > 0) {
           // panelsBefore grows (iterate from handle outwards = reverse)
           // panelsAfter shrinks (iterate from handle outwards = normal)
-          distributeSequentially(panelsBefore, clamped, true, true)
-          distributeSequentially(panelsAfter, clamped, false, false)
+          distributeSequentially(panelsBefore, growAmount, true, true)
+          distributeSequentially(panelsAfter, shrinkAmount, false, false)
         } else if (clamped < 0) {
           // panelsBefore shrinks (iterate from handle outwards = reverse)
           // panelsAfter grows (iterate from handle outwards = normal)
-          distributeSequentially(panelsAfter, -clamped, true, false)
-          distributeSequentially(panelsBefore, -clamped, false, true)
+          distributeSequentially(panelsAfter, growAmount, true, false)
+          distributeSequentially(panelsBefore, shrinkAmount, false, true)
         }
 
         // Update maximized state
