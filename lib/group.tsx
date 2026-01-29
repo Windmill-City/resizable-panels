@@ -24,7 +24,7 @@ export function ResizableGroup({
   id: idProp,
   children,
   className = "",
-  direction = "row",
+  direction = "col",
 }: ResizableGroupProps) {
   const context = useResizableContext()
 
@@ -84,7 +84,7 @@ export function ResizableGroup({
     return () => context.unregisterGroup(id)
   })
 
-  const isRow = direction === "row"
+  const isCol = direction === "col"
 
   return (
     <GroupContext.Provider value={ref}>
@@ -96,7 +96,7 @@ export function ResizableGroup({
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: isRow ? "row" : "column",
+          flexDirection: isCol ? "row" : "column",
         }}
         className={className}
       >

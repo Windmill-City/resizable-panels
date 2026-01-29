@@ -47,23 +47,23 @@ function findEdgeIndexAtPoint(
     const panels = Array.from(group.panels.values())
 
     if (group.direction === "row") {
-      // Calculate edge positions along x-axis using actual DOM rects
-      for (let i = 0; i < panels.length - 1; i++) {
-        const panel = panels[i].containerEl.current!
-        const rect = panel.getBoundingClientRect()
-        const edgeX = rect.right
-        if (Math.abs(point.x - edgeX) <= margin) {
-          result.set("row", [group, i])
-          break
-        }
-      }
-    } else {
       // Calculate edge positions along y-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
         const panel = panels[i].containerEl.current!
         const rect = panel.getBoundingClientRect()
         const edgeY = rect.bottom
         if (Math.abs(point.y - edgeY) <= margin) {
+          result.set("row", [group, i])
+          break
+        }
+      }
+    } else {
+      // Calculate edge positions along x-axis using actual DOM rects
+      for (let i = 0; i < panels.length - 1; i++) {
+        const panel = panels[i].containerEl.current!
+        const rect = panel.getBoundingClientRect()
+        const edgeX = rect.right
+        if (Math.abs(point.x - edgeX) <= margin) {
           result.set("col", [group, i])
           break
         }
@@ -132,7 +132,7 @@ export function ResizableContext({
         const panelBefore = panels[index]
         const panelAfter = panels[index + 1]
 
-        const delta = group.direction === "row" ? deltaX : deltaY
+        const delta = group.direction === "row" ? deltaY : deltaX
 
         // Calculate new sizes
         const newSizeBefore = panelBefore.size + delta

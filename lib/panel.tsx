@@ -41,7 +41,7 @@ export function ResizablePanel({
     return () => context.unregisterPanel(id)
   })
 
-  const isRow = context.direction === "row"
+  const isCol = context.direction === "col"
 
   return (
     <div
@@ -53,7 +53,7 @@ export function ResizablePanel({
       style={{
         flex: `${ref.keepSize ? 0 : 1} ${ref.keepSize ? 0 : 1} {${ref.size}px}`,
         display: "flex",
-        [isRow ? "minWidth" : "minHeight"]: ref.minSize
+        [isCol ? "minWidth" : "minHeight"]: ref.minSize
       }}
       className={className}
     >
