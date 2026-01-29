@@ -29,7 +29,7 @@ export function ResizableGroup({
   const context = useResizableContext()
 
   const id = idProp ?? useId()
-  const refContainer = useRef<HTMLDivElement>(null)
+  const containerEl = useRef<HTMLDivElement>(null)
 
   const ref = useRef<GroupValue>({
     id,
@@ -89,7 +89,7 @@ export function ResizableGroup({
   return (
     <GroupContext.Provider value={ref}>
       <div
-        ref={refContainer}
+        ref={containerEl}
         data-resizable-group
         data-group-id={id}
         data-orientation={orientation}

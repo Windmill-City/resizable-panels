@@ -49,7 +49,7 @@ function findEdgeIndexAtPoint(
     if (group.orientation === "horizontal") {
       // Calculate edge positions along x-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        const panel = panels[i].container.current!
+        const panel = panels[i].containerEl.current!
         const rect = panel.getBoundingClientRect()
         const edgeX = rect.right
         if (Math.abs(point.x - edgeX) <= margin) {

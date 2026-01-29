@@ -18,7 +18,7 @@ export function ResizablePanel({
   const [, setDirty] = useReducer(() => ({}), {})
 
   const id = idProp ?? useId()
-  const refContainer = useRef<HTMLDivElement>(null)
+  const containerEl = useRef<HTMLDivElement>(null)
 
   const ref = useRef<PanelValue>({
     id,
@@ -32,7 +32,7 @@ export function ResizablePanel({
     prevCollapsed: false,
     okMaximize,
     isMaximized: false,
-    container: refContainer,
+    containerEl,
     setDirty,
   }).current
 
@@ -43,7 +43,7 @@ export function ResizablePanel({
 
   return (
     <div
-      ref={refContainer}
+      ref={containerEl}
       data-resizable-panel
       data-panel-id={id}
       data-collapsed={ref.isCollapsed}

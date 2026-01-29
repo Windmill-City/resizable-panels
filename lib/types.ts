@@ -51,7 +51,7 @@ export interface PanelValue {
   // Is Maximized?
   isMaximized: boolean
   // Ref of the ResizablePanel Element
-  container: RefObject<HTMLElement>
+  containerEl: RefObject<HTMLElement>
   // Trigger Re-render
   setDirty: () => void
 }
@@ -64,7 +64,7 @@ export interface GroupValue {
   // Panels in the Group
   panels: Map<string, PanelValue>
   // Ref of the ResizableGroup Element
-  container: RefObject<HTMLElement>
+  containerEl: RefObject<HTMLElement>
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
