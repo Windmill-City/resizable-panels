@@ -17,27 +17,27 @@ function App() {
           {/* Activity Bar */}
           <ActivityBar>Activity Bar</ActivityBar>
           {/* Left Sidebar */}
-          <ResizablePanel className="border-r" collapsible>
+          <ResizablePanel className="border-r" collapsible keepSize>
             left
           </ResizablePanel>
           <ResizablePanel minSize={300}>
             <ResizableGroup orientation="vertical">
               {/* Editor */}
-              <ResizablePanel collapsible minSize={80}>
+              <ResizablePanel collapsible>
                 top
               </ResizablePanel>
               {/* Bottom Panel */}
               <ResizablePanel
                 className="border-t data-[maximized=true]:border-none"
                 collapsible
-                minSize={80}
+                keepSize
               >
                 bottom
               </ResizablePanel>
             </ResizableGroup>
           </ResizablePanel>
           {/* Right Sidebar */}
-          <ResizablePanel className="border-l" collapsible>
+          <ResizablePanel className="border-l" collapsible keepSize>
             right
           </ResizablePanel>
         </ResizableGroup>
