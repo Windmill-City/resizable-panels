@@ -98,7 +98,7 @@ export function ResizableContext({
     groups: new Map<string, GroupValue>(),
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
-      console.log(
+      console.debug(
         "[Context] Register group:",
         group.id,
         "Groups:",
@@ -107,7 +107,7 @@ export function ResizableContext({
     },
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
-      console.log(
+      console.debug(
         "[Context] Unregister group:",
         groupId,
         "Groups:",
@@ -144,7 +144,7 @@ export function ResizableContext({
           panelAfter.prevCollapsed = panelAfter.isCollapsed
         }
 
-        console.log("[Resizable] MouseDown", {
+        console.debug("[Resizable] MouseDown", {
           startPos: ref.startPos,
           dragIndex: ref.dragIndex,
         })
@@ -193,7 +193,7 @@ export function ResizableContext({
         // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
         let delta = group.direction === "row" ? deltaY : deltaX
 
-        console.log("[Resizable] MouseMove", {
+        console.debug("[Resizable] MouseMove", {
           startPos: ref.startPos,
           delta,
           index,
@@ -379,7 +379,7 @@ export function ResizableContext({
       ref.isDragging = false
       ref.dragIndex.clear()
 
-      console.log("[Resizable] MouseUp")
+      console.debug("[Resizable] MouseUp")
 
       // Call onLayoutChanged when drag ends
       if (ref.onLayoutChanged) {
@@ -391,7 +391,7 @@ export function ResizableContext({
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
 
-    console.log("[Context] useEffect ContextValue:", ref)
+    console.debug("[Context] useEffect ContextValue:", ref)
 
     return () => {
       document.removeEventListener("mousedown", handleMouseDown)

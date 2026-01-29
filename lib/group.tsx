@@ -38,7 +38,7 @@ export function ResizableGroup({
     containerEl,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
-      console.log(
+      console.debug(
         "[Group] Register panel:",
         panel.id,
         "Panels:",
@@ -47,7 +47,7 @@ export function ResizableGroup({
     },
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
-      console.log(
+      console.debug(
         "[Group] Unregister panel:",
         panelId,
         "Panels:",
