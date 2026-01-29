@@ -106,7 +106,6 @@ export function ResizableContext({
     onLayoutChanged,
     isDragging: false,
     startPos: { x: 0, y: 0 },
-    offset: { x: 0, y: 0 },
     dragIndex: new Map(),
     hoverIndex: new Map(),
   }).current
@@ -121,20 +120,6 @@ export function ResizableContext({
         ref.startPos = { x: e.clientX, y: e.clientY }
         ref.dragIndex = edges
         ref.isDragging = true
-
-        // Calculate offset from mouse to each dragged edge
-        for (const [group, index] of edges.values()) {
-          const panels = Array.from(group.panels.values())
-          const panelBefore = panels[index]!
-          const rect = panelBefore.containerEl.current!.getBoundingClientRect()
-          const edgePos = group.direction === "row" ? rect.bottom : rect.right
-          const mousePos = group.direction === "row" ? e.clientY : e.clientX
-          if (group.direction === "row") {
-            ref.offset.y = mousePos - edgePos
-          } else {
-            ref.offset.x = mousePos - edgePos
-          }
-        }
 
         // Save Initial State
         for (const [group, index] of ref.dragIndex.values()) {
@@ -167,24 +152,18 @@ export function ResizableContext({
         return
       }
 
+      const deltaX = e.clientX - ref.startPos.x
+      const deltaY = e.clientY - ref.startPos.y
+
       // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
         const panelsBefore = panels.slice(0, index + 1)
         const panelsAfter = panels.slice(index + 1)
 
-        // Calculate expected edge position based on mouse position minus offset
-        const expectedEdgePos =
-          group.direction === "row"
-            ? e.clientY - ref.offset.y
-            : e.clientX - ref.offset.x
-
-        // Calculate delta: how much the edge should move from its initial position
-        // We compare expected position with initial mouse position (which corresponds to initial edge position)
-        const delta =
-          group.direction === "row"
-            ? expectedEdgePos - ref.startPos.y
-            : expectedEdgePos - ref.startPos.x
+        // Get delta based on direction
+        // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
+        const delta = group.direction === "row" ? deltaY : deltaX
 
         console.log("[Resizable] MouseMove", {
           startPos: ref.startPos,
