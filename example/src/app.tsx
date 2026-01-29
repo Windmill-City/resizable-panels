@@ -18,7 +18,7 @@ function App() {
         <ResizableContext>
           <ResizableGroup>
             {/* Left Sidebar */}
-            <ResizablePanel className="border-r" collapsible>
+            <ResizablePanel className="border-r data-[maximized=true]:border-none data-[collapsed=true]:border-none" collapsible>
               left
             </ResizablePanel>
             <ResizablePanel expand>
@@ -29,7 +29,7 @@ function App() {
                 </ResizablePanel>
                 {/* Bottom Panel */}
                 <ResizablePanel
-                  className="border-t data-[maximized=true]:border-none"
+                  className="border-t data-[maximized=true]:border-none data-[collapsed=true]:border-none"
                   minSize={80}
                   collapsible
                 >
@@ -38,7 +38,7 @@ function App() {
               </ResizableGroup>
             </ResizablePanel>
             {/* Right Sidebar */}
-            <ResizablePanel className="border-l" collapsible>
+            <ResizablePanel className="border-l data-[maximized=true]:border-none" collapsible>
               right
             </ResizablePanel>
           </ResizableGroup>

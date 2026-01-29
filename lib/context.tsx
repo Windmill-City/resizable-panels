@@ -127,24 +127,16 @@ export function ResizableContext({
           const panelBefore = panels[index]!
           const panelAfter = panels[index + 1]!
 
-          console.log(
-            "[Context] MouseDown: ",
-            "panelBefore:",
-            panelBefore.id,
-            "size:",
-            panelBefore.size,
-            "panelAfter:",
-            panelAfter.id,
-            "size:",
-            panelAfter.size,
-          )
-
           panelBefore.prevSize = panelBefore.size
           panelBefore.prevCollapsed = panelBefore.isCollapsed
           panelAfter.prevSize = panelAfter.size
           panelAfter.prevCollapsed = panelAfter.isCollapsed
         }
 
+        console.log("[Resizable] MouseDown", {
+          startPos: ref.startPos,
+          dragIndex: ref.dragIndex,
+        })
         e.preventDefault()
       }
     }
@@ -163,90 +155,117 @@ export function ResizableContext({
       const deltaX = e.clientX - ref.startPos.x
       const deltaY = e.clientY - ref.startPos.y
 
-      console.log(
-        "[Context] MouseMove - groups:",
-        Array.from(ref.groups.entries()).map(([k, v]) => [
-          k,
-          { dir: v.direction, panels: Array.from(v.panels.keys()) },
-        ]),
-      )
-
       // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
-        const panelBefore = panels[index]!
-        const panelAfter = panels[index + 1]!
-
-        console.log(
-          "[Context] MouseMove:",
-          "panelBefore:",
-          panelBefore.id,
-          "prevSize:",
-          panelBefore.prevSize,
-          "panelAfter:",
-          panelAfter.id,
-          "prevSize:",
-          panelAfter.prevSize,
-          "delta:",
-          group.direction === "row" ? deltaY : deltaX,
-        )
+        const panelsBefore = panels.slice(0, index + 1)
+        const panelsAfter = panels.slice(index + 1)
 
         // Get delta based on direction
-        // delta > 0 means edge moved down/right (panelBefore grows, panelAfter shrinks)
+        // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
         const delta = group.direction === "row" ? deltaY : deltaX
 
-        // panelBefore: positive delta means growing (edge moves down/right)
-        // panelAfter: positive delta means shrinking (edge moves down/right)
-        let newSizeBefore = panelBefore.prevSize + delta
-        let newSizeAfter = panelAfter.prevSize - delta
+        console.log("[Resizable] MouseMove", {
+          startPos: ref.startPos,
+          delta,
+          index,
+          group,
+          panelsBefore,
+          panelsAfter,
+        })
 
-        // Handle collapse for panelBefore
-        if (panelBefore.collapsible && !panelBefore.isCollapsed) {
-          if (newSizeBefore < panelBefore.minSize / 2) {
-            panelBefore.isCollapsed = true
-            newSizeBefore = 0
-            // Give all space to panelAfter
-            newSizeAfter = panelBefore.prevSize + panelAfter.prevSize
+        // Calculate total prevSize for panels on each side
+        const totalPrevSizeBefore = panelsBefore.reduce(
+          (sum, p) => sum + p.prevSize,
+          0,
+        )
+        const totalPrevSizeAfter = panelsAfter.reduce(
+          (sum, p) => sum + p.prevSize,
+          0,
+        )
+
+        // Calculate new total sizes for each side
+        let newTotalSizeBefore = totalPrevSizeBefore + delta
+        let newTotalSizeAfter = totalPrevSizeAfter - delta
+
+        // Handle collapse for panelsBefore (check the last panel before the handle)
+        const lastPanelBefore = panelsBefore[panelsBefore.length - 1]!
+        if (lastPanelBefore.collapsible && !lastPanelBefore.isCollapsed) {
+          if (newTotalSizeBefore < lastPanelBefore.minSize / 2) {
+            lastPanelBefore.isCollapsed = true
+            // Give all space to panelsAfter
+            newTotalSizeBefore = 0
+            newTotalSizeAfter = totalPrevSizeBefore + totalPrevSizeAfter
           }
         } else if (
-          panelBefore.isCollapsed &&
-          newSizeBefore > panelBefore.minSize / 2
+          lastPanelBefore.isCollapsed &&
+          newTotalSizeBefore > lastPanelBefore.minSize / 2
         ) {
           // Expand from collapsed state
-          panelBefore.isCollapsed = false
+          lastPanelBefore.isCollapsed = false
         }
 
-        // Handle collapse for panelAfter
-        if (panelAfter.collapsible && !panelAfter.isCollapsed) {
-          if (newSizeAfter < panelAfter.minSize / 2) {
-            panelAfter.isCollapsed = true
-            newSizeAfter = 0
-            // Give all space to panelBefore
-            newSizeBefore = panelBefore.prevSize + panelAfter.prevSize
+        // Handle collapse for panelsAfter (check the first panel after the handle)
+        const firstPanelAfter = panelsAfter[0]!
+        if (firstPanelAfter.collapsible && !firstPanelAfter.isCollapsed) {
+          if (newTotalSizeAfter < firstPanelAfter.minSize / 2) {
+            firstPanelAfter.isCollapsed = true
+            // Give all space to panelsBefore
+            newTotalSizeAfter = 0
+            newTotalSizeBefore = totalPrevSizeBefore + totalPrevSizeAfter
           }
         } else if (
-          panelAfter.isCollapsed &&
-          newSizeAfter > panelAfter.minSize / 2
+          firstPanelAfter.isCollapsed &&
+          newTotalSizeAfter > firstPanelAfter.minSize / 2
         ) {
           // Expand from collapsed state
-          panelAfter.isCollapsed = false
+          firstPanelAfter.isCollapsed = false
         }
 
-        // Apply minimum size constraints for non-collapsed panels
-        if (!panelBefore.isCollapsed) {
-          newSizeBefore = Math.max(newSizeBefore, panelBefore.minSize)
-        }
-        if (!panelAfter.isCollapsed) {
-          newSizeAfter = Math.max(newSizeAfter, panelAfter.minSize)
+        // Apply minimum size constraints and distribute space proportionally
+        const distributeSize = (
+          panels: typeof panelsBefore,
+          newTotalSize: number,
+          totalPrevSize: number,
+        ) => {
+          // Calculate minimum required size for non-collapsed panels
+          const minRequiredSize = panels.reduce(
+            (sum, p) => sum + (p.isCollapsed ? 0 : p.minSize),
+            0,
+          )
+
+          // Ensure we don't go below minimum
+          const availableSize = Math.max(newTotalSize, minRequiredSize)
+
+          // Distribute proportionally based on prevSize
+          const nonCollapsedPanels = panels.filter((p) => !p.isCollapsed)
+          const nonCollapsedPrevSize = nonCollapsedPanels.reduce(
+            (sum, p) => sum + p.prevSize,
+            0,
+          )
+
+          if (nonCollapsedPrevSize > 0) {
+            for (const panel of nonCollapsedPanels) {
+              const ratio = panel.prevSize / nonCollapsedPrevSize
+              panel.size = availableSize * ratio
+            }
+          }
+
+          // Collapsed panels get 0 size
+          for (const panel of panels) {
+            if (panel.isCollapsed) {
+              panel.size = 0
+            }
+          }
         }
 
-        // Update panel sizes
-        panelBefore.size = newSizeBefore
-        panelAfter.size = newSizeAfter
+        distributeSize(panelsBefore, newTotalSizeBefore, totalPrevSizeBefore)
+        distributeSize(panelsAfter, newTotalSizeAfter, totalPrevSizeAfter)
 
-        // Trigger re-render
-        panelBefore.setDirty()
-        panelAfter.setDirty()
+        // Trigger re-render for all affected panels
+        for (const panel of [...panelsBefore, ...panelsAfter]) {
+          panel.setDirty()
+        }
       }
     }
 
@@ -259,7 +278,7 @@ export function ResizableContext({
       ref.isDragging = false
       ref.dragIndex.clear()
 
-      console.log("[Context] MouseUp ContextValue:", ref)
+      console.log("[Resizable] MouseUp")
 
       // Call onLayoutChanged when drag ends
       if (ref.onLayoutChanged) {

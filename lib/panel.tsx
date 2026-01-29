@@ -80,7 +80,8 @@ export function ResizablePanel({
       style={{
         flex: ref.expand ? `1 1 0%` : `0 0 ${ref.size}px`,
         display: "flex",
-        [isCol ? "minWidth" : "minHeight"]: ref.minSize,
+        [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? 0 : ref.minSize,
+        overflow: "hidden",
       }}
       className={className}
     >
