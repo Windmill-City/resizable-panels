@@ -17,6 +17,8 @@ export interface ContextValue {
   isDragging: boolean
   // Drag Start Pos
   startPos: { x: number; y: number }
+  // Offset from mouse to edge (to keep relative position during drag)
+  offset: { x: number; y: number }
   // Index of the resize handle (edge) being dragged
   // For panels [P0, P1], edges are indexed as:
   //    V - Edge Index: 0 (drag handle between P0 and P1)
