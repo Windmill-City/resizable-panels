@@ -51,9 +51,9 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed}
       data-maximized={ref.isMaximized}
       style={{
-        flex: `${ref.keepSize ? 0 : 1} ${ref.keepSize ? 0 : 1} {${ref.size}px}`,
+        flex: ref.keepSize ? `0 0 ${ref.size}px` : `1 1 0%`,
         display: "flex",
-        [isCol ? "minWidth" : "minHeight"]: ref.minSize
+        [isCol ? "minWidth" : "minHeight"]: ref.minSize,
       }}
       className={className}
     >
