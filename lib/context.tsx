@@ -99,7 +99,7 @@ export function ResizableContext({
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
       console.debug(
-        "[Context] Register group:",
+        "[ResizableContext] Register group:",
         group.id,
         "Groups:",
         Array.from(ref.groups.keys()),
@@ -108,7 +108,7 @@ export function ResizableContext({
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
       console.debug(
-        "[Context] Unregister group:",
+        "[ResizableContext] Unregister group:",
         groupId,
         "Groups:",
         Array.from(ref.groups.keys()),
