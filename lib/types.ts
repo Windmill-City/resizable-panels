@@ -15,8 +15,8 @@ export interface ContextValue {
   onLayoutChanged?: (context: ContextValue) => void
   // Is Dragging Panels?
   isDragging: boolean
-  // Mouse Previous Pos
-  prevPos: { x: number; y: number }
+  // Drag Start Pos
+  startPos: { x: number; y: number }
   // Index of the resize handle (edge) being dragged
   // For panels [P0, P1], edges are indexed as:
   //    V - Edge Index: 0 (drag handle between P0 and P1)

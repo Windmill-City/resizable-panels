@@ -36,12 +36,34 @@ export function ResizablePanel({
     setDirty,
   }).current
 
+  const isCol = context.direction === "col"
+
   useLayoutEffect(() => {
     context.registerPanel(ref)
-    return () => context.unregisterPanel(id)
-  })
 
-  const isCol = context.direction === "col"
+    if (keepSize) {
+      return () => context.unregisterPanel(id)
+    }
+
+    // Observe size changes and update ref.size
+    const el = containerEl.current!
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const newSize = isCol
+          ? entry.contentRect.width
+          : entry.contentRect.height
+        if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
+          ref.size = newSize
+        }
+      }
+    })
+    observer.observe(el)
+
+    return () => {
+      observer.disconnect()
+      context.unregisterPanel(id)
+    }
+  })
 
   return (
     <div

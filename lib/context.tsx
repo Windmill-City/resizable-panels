@@ -3,8 +3,8 @@
 import { createContext, useContext, useEffect, useId, useRef } from "react"
 import type {
   ContextValue,
-  GroupValue,
   Direction,
+  GroupValue,
   ResizableContextProps,
 } from "./types"
 
@@ -93,7 +93,7 @@ export function ResizableContext({
     },
     onLayoutChanged,
     isDragging: false,
-    prevPos: { x: 0, y: 0 },
+    startPos: { x: 0, y: 0 },
     dragIndex: new Map(),
     hoverIndex: new Map(),
   }).current
@@ -105,9 +105,22 @@ export function ResizableContext({
         y: e.clientY,
       })
       if (edges.size) {
-        ref.prevPos = { x: e.clientX, y: e.clientY }
+        ref.startPos = { x: e.clientX, y: e.clientY }
         ref.dragIndex = edges
         ref.isDragging = true
+
+        // Save Initial State
+        for (const [group, index] of ref.dragIndex.values()) {
+          const panels = Array.from(group.panels.values())
+          const panelBefore = panels[index]!
+          const panelAfter = panels[index + 1]!
+
+          panelBefore.prevSize = panelBefore.size
+          panelBefore.prevCollapsed = panelBefore.isCollapsed
+          panelAfter.prevSize = panelAfter.size
+          panelAfter.prevCollapsed = panelAfter.isCollapsed
+        }
+
         e.preventDefault()
       }
     }
@@ -123,32 +136,65 @@ export function ResizableContext({
         return
       }
 
-      const deltaX = e.clientX - ref.prevPos.x
-      const deltaY = e.clientY - ref.prevPos.y
+      const deltaX = e.clientX - ref.startPos.x
+      const deltaY = e.clientY - ref.startPos.y
 
-      // Update panel sizes based on dragged edge
+      // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
-        const panelBefore = panels[index]
-        const panelAfter = panels[index + 1]
+        const panelBefore = panels[index]!
+        const panelAfter = panels[index + 1]!
 
+        // Get delta based on direction
+        // delta > 0 means edge moved down/right (panelBefore grows, panelAfter shrinks)
         const delta = group.direction === "row" ? deltaY : deltaX
 
-        // Calculate new sizes
-        const newSizeBefore = panelBefore.size + delta
-        const newSizeAfter = panelAfter.size - delta
+        // panelBefore: positive delta means growing (edge moves down/right)
+        // panelAfter: positive delta means shrinking (edge moves down/right)
+        let newSizeBefore = panelBefore.prevSize + delta
+        let newSizeAfter = panelAfter.prevSize - delta
 
-        // Respect minimum size constraints
-        if (
-          newSizeBefore >= panelBefore.minSize &&
-          newSizeAfter >= panelAfter.minSize
-        ) {
-          panelBefore.size = newSizeBefore
-          panelAfter.size = newSizeAfter
-          panelBefore.setDirty()
-          panelAfter.setDirty()
-          ref.prevPos = { x: e.clientX, y: e.clientY }
+        // Handle collapse for panelBefore
+        if (panelBefore.collapsible && !panelBefore.isCollapsed) {
+          if (newSizeBefore < panelBefore.minSize / 2) {
+            panelBefore.isCollapsed = true
+            newSizeBefore = 0
+            // Give all space to panelAfter
+            newSizeAfter = panelBefore.prevSize + panelAfter.prevSize
+          }
+        } else if (panelBefore.isCollapsed && newSizeBefore > panelBefore.minSize / 2) {
+          // Expand from collapsed state
+          panelBefore.isCollapsed = false
         }
+
+        // Handle collapse for panelAfter
+        if (panelAfter.collapsible && !panelAfter.isCollapsed) {
+          if (newSizeAfter < panelAfter.minSize / 2) {
+            panelAfter.isCollapsed = true
+            newSizeAfter = 0
+            // Give all space to panelBefore
+            newSizeBefore = panelBefore.prevSize + panelAfter.prevSize
+          }
+        } else if (panelAfter.isCollapsed && newSizeAfter > panelAfter.minSize / 2) {
+          // Expand from collapsed state
+          panelAfter.isCollapsed = false
+        }
+
+        // Apply minimum size constraints for non-collapsed panels
+        if (!panelBefore.isCollapsed) {
+          newSizeBefore = Math.max(newSizeBefore, panelBefore.minSize)
+        }
+        if (!panelAfter.isCollapsed) {
+          newSizeAfter = Math.max(newSizeAfter, panelAfter.minSize)
+        }
+
+        // Update panel sizes
+        panelBefore.size = newSizeBefore
+        panelAfter.size = newSizeAfter
+
+        // Trigger re-render
+        panelBefore.setDirty()
+        panelAfter.setDirty()
       }
     }
 
