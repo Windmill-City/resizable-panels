@@ -188,79 +188,138 @@ export function ResizableContext({
         let newTotalSizeBefore = totalPrevSizeBefore + delta
         let newTotalSizeAfter = totalPrevSizeAfter - delta
 
-        // Handle collapse for panelsBefore (check the last panel before the handle)
+        // Get panels closest to the resize handle
         const lastPanelBefore = panelsBefore[panelsBefore.length - 1]!
-        if (lastPanelBefore.collapsible && !lastPanelBefore.isCollapsed) {
-          if (newTotalSizeBefore < lastPanelBefore.minSize / 2) {
-            lastPanelBefore.isCollapsed = true
-            // Give all space to panelsAfter
-            newTotalSizeBefore = 0
-            newTotalSizeAfter = totalPrevSizeBefore + totalPrevSizeAfter
-          }
-        } else if (
-          lastPanelBefore.isCollapsed &&
-          newTotalSizeBefore > lastPanelBefore.minSize / 2
-        ) {
-          // Expand from collapsed state
-          lastPanelBefore.isCollapsed = false
-        }
-
-        // Handle collapse for panelsAfter (check the first panel after the handle)
         const firstPanelAfter = panelsAfter[0]!
-        if (firstPanelAfter.collapsible && !firstPanelAfter.isCollapsed) {
-          if (newTotalSizeAfter < firstPanelAfter.minSize / 2) {
+
+        // Handle collapse/expand for panel closest to handle on "before" side
+        if (lastPanelBefore.collapsible) {
+          if (
+            !lastPanelBefore.isCollapsed &&
+            newTotalSizeBefore < lastPanelBefore.minSize / 2
+          ) {
+            // Collapse: drag handle moved too far, panel before collapses
+            lastPanelBefore.isCollapsed = true
+          } else if (
+            lastPanelBefore.isCollapsed &&
+            newTotalSizeBefore > lastPanelBefore.minSize / 2
+          ) {
+            // Expand: drag handle moved back, panel before expands
+            lastPanelBefore.isCollapsed = false
+          }
+        }
+
+        // Handle collapse/expand for panel closest to handle on "after" side
+        if (firstPanelAfter.collapsible) {
+          if (
+            !firstPanelAfter.isCollapsed &&
+            newTotalSizeAfter < firstPanelAfter.minSize / 2
+          ) {
+            // Collapse: drag handle moved too far, panel after collapses
             firstPanelAfter.isCollapsed = true
-            // Give all space to panelsBefore
-            newTotalSizeAfter = 0
-            newTotalSizeBefore = totalPrevSizeBefore + totalPrevSizeAfter
+          } else if (
+            firstPanelAfter.isCollapsed &&
+            newTotalSizeAfter > firstPanelAfter.minSize / 2
+          ) {
+            // Expand: drag handle moved back, panel after expands
+            firstPanelAfter.isCollapsed = false
           }
-        } else if (
-          firstPanelAfter.isCollapsed &&
-          newTotalSizeAfter > firstPanelAfter.minSize / 2
-        ) {
-          // Expand from collapsed state
-          firstPanelAfter.isCollapsed = false
         }
 
-        // Apply minimum size constraints and distribute space proportionally
-        const distributeSize = (
+        // Initialize sizes: collapsed panels get 0, others get at least minSize
+        for (const panel of [...panelsBefore, ...panelsAfter]) {
+          if (panel.isCollapsed) {
+            panel.size = 0
+          } else {
+            // Ensure size is at least minSize when expanding
+            panel.size = Math.max(panel.prevSize, panel.minSize)
+          }
+        }
+
+        // Distribute space sequentially from the resize handle
+        // If delta > 0: panelsBefore grows, panelsAfter shrinks
+        // If delta < 0: panelsBefore shrinks, panelsAfter grows
+
+        const distributeSequentially = (
           panels: typeof panelsBefore,
-          newTotalSize: number,
-          totalPrevSize: number,
+          amount: number,
+          isGrowing: boolean,
+          reverseOrder: boolean,
         ) => {
-          // Calculate minimum required size for non-collapsed panels
-          const minRequiredSize = panels.reduce(
-            (sum, p) => sum + (p.isCollapsed ? 0 : p.minSize),
-            0,
-          )
+          if (amount <= 0) return 0
 
-          // Ensure we don't go below minimum
-          const availableSize = Math.max(newTotalSize, minRequiredSize)
+          // Determine iteration order
+          // reverseOrder: true means start from panel closest to handle (end of array)
+          const orderedPanels = reverseOrder ? [...panels].reverse() : panels
 
-          // Distribute proportionally based on prevSize
-          const nonCollapsedPanels = panels.filter((p) => !p.isCollapsed)
-          const nonCollapsedPrevSize = nonCollapsedPanels.reduce(
-            (sum, p) => sum + p.prevSize,
-            0,
-          )
+          let remaining = amount
 
-          if (nonCollapsedPrevSize > 0) {
-            for (const panel of nonCollapsedPanels) {
-              const ratio = panel.prevSize / nonCollapsedPrevSize
-              panel.size = availableSize * ratio
+          for (const panel of orderedPanels) {
+            if (remaining <= 0) break
+
+            if (isGrowing) {
+              // Skip collapsed panels (they stay at 0 until expanded)
+              if (panel.isCollapsed) {
+                continue
+              }
+              // Growing: only expand panels with expand=true
+              if (panel.expand) {
+                panel.size += remaining
+                remaining = 0
+                break
+              }
+              // Non-expand panel: keep current size, continue to next
+            } else {
+              // Shrinking: reduce size from minSize, can collapse if collapsible
+              if (panel.isCollapsed) {
+                // Already collapsed, skip to next
+                continue
+              }
+
+              const minSize = panel.minSize
+              const available = panel.size - minSize
+
+              if (available >= remaining) {
+                // This panel can provide all needed space
+                panel.size -= remaining
+                remaining = 0
+                break
+              } else {
+                // This panel can't provide enough, take what it can give
+                // Reduce to minimum and continue to next panel
+                panel.size = minSize
+                remaining -= available
+              }
             }
           }
 
-          // Collapsed panels get 0 size
-          for (const panel of panels) {
-            if (panel.isCollapsed) {
-              panel.size = 0
+          // If still have remaining space to grow but no expand panels found,
+          // give it to the panel closest to handle (skip collapsed panels)
+          if (isGrowing && remaining > 0 && panels.length > 0) {
+            const targetPanel = reverseOrder
+              ? panels[panels.length - 1]!
+              : panels[0]!
+            if (!targetPanel.isCollapsed) {
+              targetPanel.size += remaining
+              remaining = 0
             }
           }
+
+          return amount - remaining
         }
 
-        distributeSize(panelsBefore, newTotalSizeBefore, totalPrevSizeBefore)
-        distributeSize(panelsAfter, newTotalSizeAfter, totalPrevSizeAfter)
+        if (delta > 0) {
+          // panelsBefore grows (iterate from handle outwards = reverse)
+          // panelsAfter shrinks (iterate from handle outwards = normal)
+          distributeSequentially(panelsBefore, delta, true, true)
+          distributeSequentially(panelsAfter, delta, false, false)
+        } else if (delta < 0) {
+          // panelsBefore shrinks (iterate from handle outwards = reverse)
+          // panelsAfter grows (iterate from handle outwards = normal)
+          const absDelta = -delta
+          distributeSequentially(panelsBefore, absDelta, false, true)
+          distributeSequentially(panelsAfter, absDelta, true, false)
+        }
 
         // Trigger re-render for all affected panels
         for (const panel of [...panelsBefore, ...panelsAfter]) {
