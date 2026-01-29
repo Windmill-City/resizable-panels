@@ -35,7 +35,7 @@ export function ResizableGroup({
     id,
     orientation,
     panels: new Map<string, PanelValue>(),
-    container: refContainer,
+    containerEl,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
     },
