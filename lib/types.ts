@@ -1,6 +1,6 @@
 import { ReactNode, RefObject } from "react"
 
-export type Orientation = "horizontal" | "vertical"
+export type Direction = "row" | "col"
 
 export interface ContextValue {
   // Unique Identifier
@@ -22,9 +22,9 @@ export interface ContextValue {
   //    V - Edge Index: 0 (drag handle between P0 and P1)
   // |P0|P1|
   //    0  1   (edge positions)
-  dragIndex: Map<Orientation, [GroupValue, number]>
+  dragIndex: Map<Direction, [GroupValue, number]>
   // Index of the resize handle (edge) being hover
-  hoverIndex: Map<Orientation, [GroupValue, number]>
+  hoverIndex: Map<Direction, [GroupValue, number]>
 }
 
 export interface PanelValue {
@@ -59,8 +59,8 @@ export interface PanelValue {
 export interface GroupValue {
   // Unique Identifier
   id: string
-  // Orientation of the Resizable Group
-  orientation: Orientation
+  // Direction of the Resizable Group
+  direction: Direction
   // Panels in the Group
   panels: Map<string, PanelValue>
   // Ref of the ResizableGroup Element
@@ -95,8 +95,8 @@ export interface ResizableGroupProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
-  // Orientation of the Group
-  orientation?: Orientation
+  // Direction of the Group
+  direction?: Direction
 }
 
 export interface ResizablePanelProps {

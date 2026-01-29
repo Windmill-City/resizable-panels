@@ -24,7 +24,7 @@ export function ResizableGroup({
   id: idProp,
   children,
   className = "",
-  orientation = "horizontal",
+  direction = "row",
 }: ResizableGroupProps) {
   const context = useResizableContext()
 
@@ -33,7 +33,7 @@ export function ResizableGroup({
 
   const ref = useRef<GroupValue>({
     id,
-    orientation,
+    direction,
     panels: new Map<string, PanelValue>(),
     containerEl,
     registerPanel: (panel: PanelValue) => {
@@ -81,62 +81,10 @@ export function ResizableGroup({
 
   useLayoutEffect(() => {
     context.registerGroup(ref)
+    return () => context.unregisterGroup(id)
+  })
 
-    const containerEl = ref.containerEl.current!
-
-    // Function to distribute space among panels
-    const distributeSpace = () => {
-      const containerSize =
-        orientation === "horizontal"
-          ? containerEl.clientWidth
-          : containerEl.clientHeight
-
-      const panels = Array.from(ref.panels.values())
-      if (panels.length === 0) return
-
-      // Calculate total size of panels with keepSize=true
-      const keepSizeTotal = panels
-        .filter((p) => p.keepSize)
-        .reduce((sum, p) => sum + p.size, 0)
-
-      // Available space for non-keepSize panels
-      const availableSize = containerSize - keepSizeTotal
-
-      // Get panels that need to be resized (keepSize=false)
-      const resizablePanels = panels.filter((p) => !p.keepSize)
-
-      if (resizablePanels.length > 0 && availableSize > 0) {
-        // Calculate total size of resizable panels
-        const resizableTotal = resizablePanels.reduce(
-          (sum, p) => sum + p.size,
-          0,
-        )
-
-        // Distribute available space proportionally
-        for (const panel of resizablePanels) {
-          const ratio = panel.size / resizableTotal
-          panel.size = availableSize * ratio
-          panel.setDirty()
-        }
-      }
-    }
-
-    // Distribute space on first mount
-    distributeSpace()
-
-    // Watch for container size changes
-    const resizeObserver = new ResizeObserver(() => {
-      distributeSpace()
-    })
-    resizeObserver.observe(containerEl)
-
-    return () => {
-      resizeObserver.disconnect()
-      context.unregisterGroup(id)
-    }
-  }, [])
-
-  const isHorizontal = orientation == "horizontal"
+  const isRow = direction === "row"
 
   return (
     <GroupContext.Provider value={ref}>
@@ -144,11 +92,11 @@ export function ResizableGroup({
         ref={containerEl}
         data-resizable-group
         data-group-id={id}
-        data-orientation={orientation}
+        data-direction={direction}
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: isHorizontal ? "row" : "column",
+          flexDirection: isRow ? "row" : "column",
         }}
         className={className}
       >

@@ -4,7 +4,7 @@ export { ResizablePanel } from "./panel"
 
 export type {
   ContextValue, GroupValue,
-  Orientation, PanelValue,
+  Direction, PanelValue,
   ResizableContextProps,
   ResizableGroupProps,
   ResizablePanelProps

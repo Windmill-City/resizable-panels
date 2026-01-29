@@ -41,6 +41,8 @@ export function ResizablePanel({
     return () => context.unregisterPanel(id)
   })
 
+  const isRow = context.direction === "row"
+
   return (
     <div
       ref={containerEl}
@@ -49,8 +51,9 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed}
       data-maximized={ref.isMaximized}
       style={{
-        flex: `0 0 ${ref.size}px`,
+        flex: `${ref.keepSize ? 0 : 1} ${ref.keepSize ? 0 : 1} {${ref.size}px}`,
         display: "flex",
+        [isRow ? "minWidth" : "minHeight"]: ref.minSize
       }}
       className={className}
     >

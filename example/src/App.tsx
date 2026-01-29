@@ -9,7 +9,7 @@ import StatusBar from "./ui/status-bar"
 
 function App() {
   return (
-    <>
+    <div className="flex-1 flex flex-col min-w-fit">
       {/* Menu */}
       <MenuBar>Menu</MenuBar>
       <ResizableContext>
@@ -20,15 +20,16 @@ function App() {
           <ResizablePanel className="border-r" collapsible keepSize>
             left
           </ResizablePanel>
-          <ResizablePanel minSize={300}>
-            <ResizableGroup orientation="vertical">
+          <ResizablePanel>
+            <ResizableGroup direction="row">
               {/* Editor */}
-              <ResizablePanel collapsible>
+              <ResizablePanel minSize={80} collapsible>
                 top
               </ResizablePanel>
               {/* Bottom Panel */}
               <ResizablePanel
                 className="border-t data-[maximized=true]:border-none"
+                minSize={80}
                 collapsible
                 keepSize
               >
@@ -44,7 +45,7 @@ function App() {
       </ResizableContext>
       {/* Status Bar */}
       <StatusBar>Status</StatusBar>
-    </>
+    </div>
   )
 }
 

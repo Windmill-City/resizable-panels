@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useId, useRef } from "react"
 import type {
   ContextValue,
   GroupValue,
-  Orientation,
+  Direction,
   ResizableContextProps,
 } from "./types"
 
@@ -32,28 +32,28 @@ const HANDLE_SIZE = 8
  *
  * @param groups - Map of group IDs to GroupValue objects
  * @param point - The point coordinates {x, y} to check (viewport coordinates)
- * @returns A Map where keys are orientations ("horizontal" | "vertical") and
+ * @returns A Map where keys are directions ("row" | "col") and
  *          values are tuples of [GroupValue, edgeIndex]. Edge index i represents
  *          the boundary between panel[i] and panel[i+1].
  */
 function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
   point: { x: number; y: number },
-): Map<Orientation, [GroupValue, number]> {
-  const result = new Map<Orientation, [GroupValue, number]>()
+): Map<Direction, [GroupValue, number]> {
+  const result = new Map<Direction, [GroupValue, number]>()
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
     const panels = Array.from(group.panels.values())
 
-    if (group.orientation === "horizontal") {
+    if (group.direction === "row") {
       // Calculate edge positions along x-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
         const panel = panels[i].containerEl.current!
         const rect = panel.getBoundingClientRect()
         const edgeX = rect.right
         if (Math.abs(point.x - edgeX) <= margin) {
-          result.set("horizontal", [group, i])
+          result.set("row", [group, i])
           break
         }
       }
@@ -64,7 +64,7 @@ function findEdgeIndexAtPoint(
         const rect = panel.getBoundingClientRect()
         const edgeY = rect.bottom
         if (Math.abs(point.y - edgeY) <= margin) {
-          result.set("vertical", [group, i])
+          result.set("col", [group, i])
           break
         }
       }
@@ -132,7 +132,7 @@ export function ResizableContext({
         const panelBefore = panels[index]
         const panelAfter = panels[index + 1]
 
-        const delta = group.orientation === "horizontal" ? deltaX : deltaY
+        const delta = group.direction === "row" ? deltaX : deltaY
 
         // Calculate new sizes
         const newSizeBefore = panelBefore.size + delta
