@@ -5,6 +5,7 @@ import type {
   ContextValue,
   Direction,
   GroupValue,
+  PanelValue,
   ResizableContextProps,
 } from "./types"
 
@@ -85,6 +86,79 @@ function findEdgeIndexAtPoint(
   return result
 }
 
+/**
+ * Distributes space sequentially among panels starting from the resize handle.
+ *
+ * When growing: distributes space to panels with expand=true first,
+ * then to all non-collapsed panels. Respects maxSize constraints.
+ * When shrinking: collects space from panels closest to the handle.
+ * Respects minSize constraints and collapsed state.
+ *
+ * @param panels - Array of panels to distribute space among
+ * @param amount - Amount of space to distribute/collect (in pixels)
+ * @param isGrowing - If true, distribute space; if false, collect space
+ * @param reverseOrder - If true, iterate from end of array
+ * @returns The actual amount of space distributed/collected
+ */
+function distributeSequentially(
+  panels: PanelValue[],
+  amount: number,
+  isGrowing: boolean,
+  reverseOrder: boolean,
+): number {
+  if (amount <= 0) return 0
+
+  // Determine iteration order
+  // Before panels need reverse order (end of array first = closest to handle)
+  // After panels need normal order (start of array first = closest to handle)
+  const orderedPanels = reverseOrder ? [...panels].reverse() : panels
+
+  let remaining = amount
+
+  if (isGrowing) {
+    // Growing: distribute space evenly to all expandable panels
+    // If no expand panels, give all space to the first non-collapsed panel
+    const expandablePanels = orderedPanels.filter(
+      (p) => !p.isCollapsed && p.expand,
+    )
+
+    if (expandablePanels.length > 0) {
+      // Distribute space evenly among expandable panels
+      const spacePerPanel = Math.floor(amount / expandablePanels.length)
+      const remainder = amount % expandablePanels.length
+      for (let i = 0; i < expandablePanels.length; i++) {
+        const panel = expandablePanels[i]
+        // Distribute remainder to first panel
+        panel.size += spacePerPanel + (i === 0 ? remainder : 0)
+      }
+    } else {
+      // No expandable panels: give all space to the first non-collapsed panel
+      const firstNonCollapsed = orderedPanels.find((p) => !p.isCollapsed)
+      if (firstNonCollapsed) {
+        firstNonCollapsed.size += amount
+      }
+    }
+  } else {
+    // Shrinking: reduce size from panels closest to handle
+    // Collect space from panels one by one until enough
+    for (const panel of orderedPanels) {
+      if (remaining <= 0) break
+      if (panel.isCollapsed) continue
+
+      const minSize = panel.minSize
+      if (panel.size > minSize) {
+        // Take as much as possible from this panel
+        const available = panel.size - minSize
+        const take = Math.min(available, remaining)
+        panel.size -= take
+        remaining -= take
+      }
+    }
+  }
+
+  return remaining
+}
+
 export function ResizableContext({
   id: idProp,
   children,
@@ -136,6 +210,7 @@ export function ResizableContext({
         for (const [group] of ref.dragIndex.values()) {
           for (const [, panel] of group.panels) {
             panel.prevCollapsed = panel.isCollapsed
+            // prevSize saves panel size before collapse, do not overwrite it
             if (!panel.isCollapsed) {
               panel.prevSize = panel.size
             }
@@ -189,77 +264,12 @@ export function ResizableContext({
 
         // Get delta based on direction
         // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
-        let delta = group.direction === "row" ? deltaY : deltaX
+        const delta = group.direction === "row" ? deltaY : deltaX
 
-        console.debug("[Resizable] MouseMove", {
-          startPos: ref.startPos,
-          delta,
-          index,
-          group,
-          panelsBefore,
-          panelsAfter,
-        })
-
-        // Calculate total prevSize for panels on each side
-        const totalPrevSizeBefore = panelsBefore.reduce(
-          (sum, p) => sum + p.prevSize,
-          0,
-        )
-        const totalPrevSizeAfter = panelsAfter.reduce(
-          (sum, p) => sum + p.prevSize,
-          0,
-        )
-
-        // Calculate new total sizes for each side
-        let newTotalSizeBefore = totalPrevSizeBefore + delta
-        let newTotalSizeAfter = totalPrevSizeAfter - delta
-
-        // Get panels closest to the resize handle
-        const lastPanelBefore = panelsBefore[panelsBefore.length - 1]!
-        const firstPanelAfter = panelsAfter[0]!
-
-        // Handle collapse/expand for panel closest to handle on "before" side
-        if (lastPanelBefore.collapsible) {
-          if (
-            !lastPanelBefore.isCollapsed &&
-            newTotalSizeBefore < lastPanelBefore.minSize / 2
-          ) {
-            // Collapse: drag handle moved too far, panel before collapses
-            lastPanelBefore.isCollapsed = true
-          } else if (
-            lastPanelBefore.isCollapsed &&
-            newTotalSizeBefore > lastPanelBefore.minSize / 2
-          ) {
-            // Expand: drag handle moved back, panel before expands
-            lastPanelBefore.isCollapsed = false
-          }
-        }
-
-        // Handle collapse/expand for panel closest to handle on "after" side
-        if (firstPanelAfter.collapsible) {
-          if (
-            !firstPanelAfter.isCollapsed &&
-            newTotalSizeAfter < firstPanelAfter.minSize / 2
-          ) {
-            // Collapse: drag handle moved too far, panel after collapses
-            firstPanelAfter.isCollapsed = true
-          } else if (
-            firstPanelAfter.isCollapsed &&
-            newTotalSizeAfter > firstPanelAfter.minSize / 2
-          ) {
-            // Expand: drag handle moved back, panel after expands
-            firstPanelAfter.isCollapsed = false
-          }
-        }
-
-        // Initialize sizes: collapsed panels get 0, others get at least minSize
+        // Restore initial states
         for (const panel of [...panelsBefore, ...panelsAfter]) {
-          if (panel.isCollapsed) {
-            panel.size = 0
-          } else {
-            // Ensure size is at least minSize when expanding
-            panel.size = Math.max(panel.prevSize, panel.minSize)
-          }
+          panel.isCollapsed = panel.prevCollapsed
+          panel.size = panel.isCollapsed ? 0 : panel.prevSize
         }
 
         // Calculate maximum shrinkable space for each side
@@ -275,90 +285,38 @@ export function ResizableContext({
         )
 
         // Clamp delta to available shrinkable space
+        let clamped = delta
         if (delta > 0) {
-          delta = Math.min(delta, maxShrinkAfter)
+          clamped = Math.min(delta, maxShrinkAfter)
         } else if (delta < 0) {
-          delta = Math.max(delta, -maxShrinkBefore)
+          clamped = Math.max(delta, -maxShrinkBefore)
         }
+
+        console.debug("[Resizable] MouseMove Begin:", {
+          startPos: ref.startPos,
+          delta,
+          clamped,
+          maxShrinkBefore,
+          maxShrinkAfter,
+          index,
+          group,
+          panelsBefore,
+          panelsAfter,
+        })
 
         // Distribute space sequentially from the resize handle
         // If delta > 0: panelsBefore grows, panelsAfter shrinks
         // If delta < 0: panelsBefore shrinks, panelsAfter grows
-
-        const distributeSequentially = (
-          panels: typeof panelsBefore,
-          amount: number,
-          isGrowing: boolean,
-          reverseOrder: boolean,
-        ) => {
-          if (amount <= 0) return 0
-
-          // Determine iteration order
-          // reverseOrder: true means start from panel closest to handle (end of array)
-          const orderedPanels = reverseOrder ? [...panels].reverse() : panels
-
-          let remaining = amount
-
-          if (isGrowing) {
-            // Growing: distribute space to panels with expand=true first
-            // If no expand panels, distribute to all non-collapsed panels proportionally
-            const expandablePanels = orderedPanels.filter(
-              (p) => !p.isCollapsed && p.expand,
-            )
-            const targetPanels =
-              expandablePanels.length > 0
-                ? expandablePanels
-                : orderedPanels.filter((p) => !p.isCollapsed)
-
-            // Use while loop to distribute all remaining space
-            while (remaining > 0 && targetPanels.length > 0) {
-              let distributedInRound = 0
-              for (const panel of targetPanels) {
-                if (remaining <= 0) break
-                // Distribute 1px at a time to ensure fair distribution
-                panel.size += 1
-                distributedInRound++
-                remaining--
-              }
-              // If no space was distributed in this round, break to avoid infinite loop
-              if (distributedInRound === 0) break
-            }
-          } else {
-            // Shrinking: reduce size from panels closest to handle
-            // Use while loop to collect all needed space
-            while (remaining > 0) {
-              let collectedInRound = 0
-              for (const panel of orderedPanels) {
-                if (remaining <= 0) break
-                if (panel.isCollapsed) continue
-
-                const minSize = panel.minSize
-                if (panel.size > minSize) {
-                  // This panel can give space
-                  panel.size -= 1
-                  collectedInRound++
-                  remaining--
-                }
-              }
-              // If no space was collected in this round, all panels are at minSize
-              if (collectedInRound === 0) break
-            }
-          }
-
-          return amount - remaining
-        }
-
-        if (delta > 0) {
+        if (clamped > 0) {
           // panelsBefore grows (iterate from handle outwards = reverse)
           // panelsAfter shrinks (iterate from handle outwards = normal)
-          distributeSequentially(panelsBefore, delta, true, true)
-          distributeSequentially(panelsAfter, delta, false, false)
-        } else if (delta < 0) {
+          distributeSequentially(panelsBefore, clamped, true, true)
+          distributeSequentially(panelsAfter, clamped, false, false)
+        } else if (clamped < 0) {
           // panelsBefore shrinks (iterate from handle outwards = reverse)
           // panelsAfter grows (iterate from handle outwards = normal)
-          const absDelta = -delta
-          distributeSequentially(panelsBefore, absDelta, false, true)
-          distributeSequentially(panelsAfter, absDelta, true, false)
+          distributeSequentially(panelsBefore, -clamped, false, true)
+          distributeSequentially(panelsAfter, -clamped, true, false)
         }
 
         // Trigger re-render for all affected panels
