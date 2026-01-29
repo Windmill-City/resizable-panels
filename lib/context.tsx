@@ -104,8 +104,8 @@ function distributeSequentially(
   amount: number,
   isGrowing: boolean,
   reverseOrder: boolean,
-): number {
-  if (amount <= 0) return 0
+): void {
+  if (amount <= 0) return
 
   // Determine iteration order
   // Before panels need reverse order (end of array first = closest to handle)
