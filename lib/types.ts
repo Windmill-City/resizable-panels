@@ -84,7 +84,7 @@ export interface ResizableContextProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
-    // Layout Changed
+  // Layout Changed
   onLayoutChanged?: (context: ContextValue) => void
 }
 
