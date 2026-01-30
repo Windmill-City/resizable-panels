@@ -387,10 +387,8 @@ export function ResizableContext({
               clampedGrow = Math.min(clampedGrow, -expandedSpace, -collapsedSpace)
             }
             {
-              clampedShrink = Math.max(
-                delta,
-                -(maxShrinkBefore + collapsedSpace),
-              )
+              // prettier-ignore
+              clampedShrink = Math.max(delta, -(maxShrinkBefore + collapsedSpace))
               // Try to collapse collapsible panels in panelsBefore if space is still needed
               const remaining = Math.abs(delta - clampedShrink)
               if (remaining > 0 && tryCollapsePanel(panelsBefore, remaining)) {
