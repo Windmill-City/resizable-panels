@@ -49,17 +49,17 @@ function findEdgeIndexAtPoint(
 ): Map<Direction, [GroupValue, number]> {
   const result = new Map<Direction, [GroupValue, number]>()
 
-  // Skip if point is too close to window edges (to avoid conflict with window resize)
-  const windowWidth = window.innerWidth
-  const windowHeight = window.innerHeight
-  if (
-    point.x < WINDOW_EDGE_MARGIN ||
-    point.x > windowWidth - WINDOW_EDGE_MARGIN ||
-    point.y < WINDOW_EDGE_MARGIN ||
-    point.y > windowHeight - WINDOW_EDGE_MARGIN
-  ) {
-    return result
-  }
+  // // Skip if point is too close to window edges (to avoid conflict with window resize)
+  // const windowWidth = window.innerWidth
+  // const windowHeight = window.innerHeight
+  // if (
+  //   point.x < WINDOW_EDGE_MARGIN ||
+  //   point.x > windowWidth - WINDOW_EDGE_MARGIN ||
+  //   point.y < WINDOW_EDGE_MARGIN ||
+  //   point.y > windowHeight - WINDOW_EDGE_MARGIN
+  // ) {
+  //   return result
+  // }
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
@@ -381,6 +381,51 @@ export function ResizableContext({
           distributeSequentially(panelsBefore, shrinkAmount, false, true)
         }
 
+        // Check and shrink excess size if total exceeds container
+        // Shrink from panels that grew (based on delta direction), starting from handle
+        // If not enough, shrink from the other side
+        const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce(
+          (sum, panel) => sum + panel.prevSize,
+          0,
+        )
+        const currTotalSize = [...panelsBefore, ...panelsAfter].reduce(
+          (sum, panel) => sum + panel.size,
+          0,
+        )
+
+        let excess = currTotalSize - prevTotalSize
+        if (excess > 0) {
+          // Determine which panels grew based on delta direction
+          // delta > 0: panelsBefore grew, shrink from panelsBefore (closest to handle first = reverse order)
+          // delta < 0: panelsAfter grew, shrink from panelsAfter (closest to handle first = normal order)
+          const primaryPanels =
+            delta > 0 ? [...panelsBefore].reverse() : panelsAfter
+          const secondaryPanels =
+            delta > 0 ? panelsAfter : [...panelsBefore].reverse()
+
+          // Phase 1: Shrink from panels that grew (based on prevSize)
+          for (const panel of primaryPanels) {
+            if (excess <= 0) break
+            if (panel.isCollapsed) continue
+            const shrinkable = Math.max(0, panel.size - panel.minSize)
+            const shrinkAmount = Math.min(shrinkable, excess)
+            panel.size -= shrinkAmount
+            excess -= shrinkAmount
+          }
+
+          // Phase 2: If still have excess, shrink from the other side (based on prevSize)
+          if (excess > 0) {
+            for (const panel of secondaryPanels) {
+              if (excess <= 0) break
+              if (panel.isCollapsed) continue
+              const shrinkable = Math.max(0, panel.size - panel.minSize)
+              const shrinkAmount = Math.min(shrinkable, excess)
+              panel.size -= shrinkAmount
+              excess -= shrinkAmount
+            }
+          }
+        }
+
         // Update maximized state
         const filtered = [...panelsBefore, ...panelsAfter].filter(
           (p) => !p.isCollapsed,
@@ -411,58 +456,6 @@ export function ResizableContext({
     const handleMouseUp = (_: MouseEvent) => {
       if (!ref.isDragging) {
         return
-      }
-
-      // Check and enforce minSize constraints for dragged groups
-      for (const [, [group, handleIndex]] of ref.dragIndex) {
-        const panels = Array.from(group.panels.values())
-
-        // Collect panels that violate minSize constraint
-        const violations: {
-          panel: PanelValue
-          deficit: number
-          index: number
-        }[] = []
-        for (let i = 0; i < panels.length; i++) {
-          const panel = panels[i]!
-          if (!panel.isCollapsed && panel.size < panel.minSize) {
-            const deficit = panel.minSize - panel.size
-            violations.push({ panel, deficit, index: i })
-          }
-        }
-
-        // Try to fix violations by collecting space from other panels
-        for (const { panel: violatedPanel, deficit } of violations) {
-          let remainingToCollect = deficit
-
-          // Get donor panels sorted by distance from handle
-          const donors = panels
-            .map((p, i) => ({ panel: p, index: i }))
-            .filter(
-              ({ panel }) => !panel.isCollapsed && panel.size > panel.minSize,
-            )
-            .map(({ panel, index }) => ({
-              panel,
-              distance: Math.abs(index - handleIndex),
-            }))
-            .sort((a, b) => a.distance - b.distance)
-
-          for (const { panel: donor } of donors) {
-            const available = donor.size - donor.minSize
-            const take = Math.min(available, remainingToCollect)
-            donor.size -= take
-            remainingToCollect -= take
-            if (remainingToCollect <= 0) break
-          }
-
-          // Give collected space to the violated panel
-          violatedPanel.size += deficit - remainingToCollect
-
-          // Trigger re-render for all affected panels
-          for (const panel of panels) {
-            panel.setDirty()
-          }
-        }
       }
 
       // Reset drag state after constraint check
