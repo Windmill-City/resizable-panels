@@ -385,7 +385,7 @@ export function ResizableContext({
         // Shrink from panels that grew (based on delta direction), starting from handle
         // If not enough, shrink from the other side
         const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce(
-          (sum, panel) => sum + panel.prevSize,
+          (sum, panel) => sum + (panel.isCollapsed ? 0 : panel.prevSize),
           0,
         )
         const currTotalSize = [...panelsBefore, ...panelsAfter].reduce(
@@ -442,6 +442,9 @@ export function ResizableContext({
         console.debug("[Resizable] MouseMove:", {
           delta,
           clamped,
+          prevTotalSize,
+          currTotalSize,
+          excess,
           group,
           filtered,
         })
