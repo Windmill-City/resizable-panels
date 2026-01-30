@@ -108,7 +108,10 @@ function findEdgeIndexAtPoint(
  * @param amount - Amount of space to distribute (in pixels)
  */
 function growSequentially(panels: PanelValue[], amount: number): void {
-  if (amount <= 0) return
+  console.assert(
+    amount >= 0,
+    `[ResizableContext] Invalid Grow Space: ${amount}`,
+  )
 
   let remaining = amount
 
@@ -125,7 +128,10 @@ function growSequentially(panels: PanelValue[], amount: number): void {
       remaining -= allocated
     }
 
-    console.assert(remaining === 0, "Space allocation error:", { amount, remaining })
+    console.assert(remaining === 0, "Space allocation error:", {
+      amount,
+      remaining,
+    })
     return
   }
 
@@ -150,7 +156,11 @@ function growSequentially(panels: PanelValue[], amount: number): void {
   }
 
   // Unable to allocate space
-  console.assert(false, "Unable to allocate space:", { amount, remaining, panels })
+  console.assert(false, "Unable to allocate space:", {
+    amount,
+    remaining,
+    panels,
+  })
 }
 
 /**
@@ -160,7 +170,10 @@ function growSequentially(panels: PanelValue[], amount: number): void {
  * @param amount - Amount of space to collect (in pixels)
  */
 function shrinkSequentially(panels: PanelValue[], amount: number): void {
-  if (amount <= 0) return
+  console.assert(
+    amount >= 0,
+    `[ResizableContext] Invalid Shrink Space: ${amount}`,
+  )
 
   let remaining = amount
 
