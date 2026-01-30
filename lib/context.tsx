@@ -138,11 +138,15 @@ function growSequentially(panels: PanelValue[], amount: number): void {
   }
 
   // All panels collapsed or all reached maxSize - this should not happen as expansion is handled in the resize loop
-  console.assert(!remaining, "All panels collapsed or at maxSize, unable to allocate space:", {
-    amount,
-    remaining,
-    panels,
-  })
+  console.assert(
+    !remaining,
+    "All panels collapsed or at maxSize, unable to allocate space:",
+    {
+      amount,
+      remaining,
+      panels,
+    },
+  )
 }
 
 /**
@@ -177,11 +181,15 @@ function shrinkSequentially(panels: PanelValue[], amount: number): void {
   }
 
   // All panels collapsed or all at minSize - this should not happen as it means there's no space to shrink
-  console.assert(!remaining, "All panels collapsed or at minSize, unable to collect space:", {
-    amount,
-    remaining,
-    orderedPanels: panels,
-  })
+  console.assert(
+    !remaining,
+    "All panels collapsed or at minSize, unable to collect space:",
+    {
+      amount,
+      remaining,
+      orderedPanels: panels,
+    },
+  )
 }
 
 export function ResizableContext({
