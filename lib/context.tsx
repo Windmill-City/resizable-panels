@@ -377,6 +377,8 @@ export function ResizableContext({
               // Continue loop to recalculate clamped with new space
               continue
             }
+            // Ensure clamped is at least collapsedSpace to respect minimum space after collapse
+            clamped = Math.max(clamped, collapsedSpace)
           }
 
           // delta < 0 means edge moved left/top (panelsBefore shrinks, panelsAfter grows)
@@ -393,6 +395,8 @@ export function ResizableContext({
               // Continue loop to recalculate clamped with new space
               continue
             }
+            // Ensure clamped is at most -collapsedSpace to respect minimum space after collapse
+            clamped = Math.min(clamped, -collapsedSpace)
           }
           break
         }
