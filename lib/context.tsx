@@ -112,6 +112,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
     amount >= 0,
     `[ResizableContext] Invalid Grow Space: ${amount}`,
   )
+  if (amount <= 0) return
 
   let remaining = amount
 
@@ -174,6 +175,7 @@ function shrinkSequentially(panels: PanelValue[], amount: number): void {
     amount >= 0,
     `[ResizableContext] Invalid Shrink Space: ${amount}`,
   )
+  if (amount <= 0) return
 
   let remaining = amount
 
