@@ -116,7 +116,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
 
   let remaining = amount
 
-  // Phase 1: Try give all space to first non-collapsed panel
+  // Try give all space to first non-collapsed panel
   const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
   if (firstNonCollapsed) {
     firstNonCollapsed.size += remaining
@@ -124,22 +124,9 @@ function growSequentially(panels: PanelValue[], amount: number): void {
     return
   }
 
-  // Phase 2: All panels collapsed - try to expand the first panel
-  if (panels.length > 0) {
-    const firstPanel = panels[0]!
-    // Only expand if amount is significant (more than half of minSize)
-    if (remaining > firstPanel.minSize / 2) {
-      firstPanel.isCollapsed = false
-      firstPanel.size = Math.max(remaining, firstPanel.minSize)
-      remaining = 0
-      return
-    }
-  }
-
-  // Unable to allocate space
-  console.assert(false, "Unable to allocate space:", {
+  // All panels collapsed - this should not happen as expansion is handled in the resize loop
+  console.assert(false, "All panels collapsed, unable to allocate space:", {
     amount,
-    remaining,
     panels,
   })
 }
@@ -302,7 +289,9 @@ export function ResizableContext({
 
         // clamped delta: max possible delta considering collapsible panels
         let clamped = delta
-        // Space collected from collapsed panels
+        // Space distributed by expanding panels
+        let expandedSpace = 0
+        // Space collected by collapsing panels
         let collapsedSpace = 0
 
         // Try to collapse a collapsible panel from the given panels if remaining space is needed
@@ -315,23 +304,36 @@ export function ResizableContext({
             collapsedSpace += nextPanel.size
             nextPanel.isCollapsed = true
             nextPanel.size = 0
+            console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel })
+            return true
+          }
+          return false
+        }
+
+        // Try to expand a collapsed panel from the given panels if there's enough space
+        const tryExpandPanel = (
+          panels: PanelValue[],
+          remaining: number,
+        ): boolean => {
+          const nextPanel = panels.find((p) => p.collapsible && p.isCollapsed)
+          if (nextPanel && remaining > nextPanel.minSize / 2) {
+            expandedSpace += nextPanel.minSize
+            nextPanel.isCollapsed = false
+            nextPanel.size = nextPanel.minSize
+            console.debug("[Resizable] Expanded Panel:", { panel: nextPanel })
             return true
           }
           return false
         }
 
         while (true) {
-          const maxGrowBefore =
-            panelsBefore.every((panel) => panel.isCollapsed) &&
-            Math.abs(delta) <= panelsBefore[0].minSize / 2
-              ? 0
-              : Math.abs(delta)
+          const maxGrowBefore = panelsBefore.every((panel) => panel.isCollapsed)
+            ? 0
+            : Math.abs(delta)
 
-          const maxGrowAfter =
-            panelsAfter.every((panel) => panel.isCollapsed) &&
-            Math.abs(delta) <= panelsAfter[0].minSize / 2
-              ? 0
-              : Math.abs(delta)
+          const maxGrowAfter = panelsAfter.every((panel) => panel.isCollapsed)
+            ? 0
+            : Math.abs(delta)
 
           const maxShrinkBefore = panelsBefore.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
@@ -347,36 +349,68 @@ export function ResizableContext({
           if (delta > 0) {
             clamped = Math.min(
               delta,
+              maxGrowBefore + expandedSpace,
               maxShrinkAfter + collapsedSpace,
-              maxGrowBefore,
             )
 
-            // Try to collapse collapsible panels in panelsAfter if space is still needed
             const remaining = Math.abs(delta - clamped)
+
+            // Try to expand collapsed panels in panelsBefore if they need to grow
+            if (remaining > 0 && tryExpandPanel(panelsBefore, remaining)) {
+              // Continue loop to recalculate clamped with expanded panel
+              continue
+            }
+
+            // Try to collapse collapsible panels in panelsAfter if space is still needed
             if (remaining > 0 && tryCollapsePanel(panelsAfter, remaining)) {
               // Continue loop to recalculate clamped with new space
               continue
             }
-            // Ensure clamped is at least collapsedSpace to respect minimum space after collapse
-            clamped = Math.max(clamped, collapsedSpace)
+
+            // Ensure clamped is at least collapsedSpace and expandedSpace
+            clamped = Math.max(clamped, collapsedSpace, expandedSpace)
+
+            console.debug("[Resizable] Allocate:", {
+              remaining,
+              maxGrowBefore,
+              expandedSpace,
+              maxShrinkAfter,
+              collapsedSpace,
+            })
           }
 
           // delta < 0 means edge moved left/top (panelsBefore shrinks, panelsAfter grows)
           if (delta < 0) {
             clamped = Math.max(
               delta,
+              -(maxGrowAfter + expandedSpace),
               -(maxShrinkBefore + collapsedSpace),
-              -maxGrowAfter,
             )
 
-            // Try to collapse collapsible panels in panelsBefore if space is still needed
             const remaining = Math.abs(delta - clamped)
+
+            // Try to expand collapsed panels in panelsAfter if they need to grow
+            if (remaining > 0 && tryExpandPanel(panelsAfter, remaining)) {
+              // Continue loop to recalculate clamped with expanded panel
+              continue
+            }
+
+            // Try to collapse collapsible panels in panelsBefore if space is still needed
             if (remaining > 0 && tryCollapsePanel(panelsBefore, remaining)) {
               // Continue loop to recalculate clamped with new space
               continue
             }
-            // Ensure clamped is at most -collapsedSpace to respect minimum space after collapse
-            clamped = Math.min(clamped, -collapsedSpace)
+
+            // Ensure clamped is at most -collapsedSpace and -expandedSpace
+            clamped = Math.min(clamped, -collapsedSpace, -expandedSpace)
+
+            console.debug("[Resizable] Allocate:", {
+              remaining,
+              maxGrowAfter,
+              expandedSpace,
+              maxShrinkBefore,
+              collapsedSpace,
+            })
           }
           break
         }
@@ -384,11 +418,11 @@ export function ResizableContext({
         // Distribute space sequentially from the resize handle
         const amount = Math.abs(clamped)
         if (clamped > 0) {
-          growSequentially(panelsBefore, amount)
+          growSequentially(panelsBefore, amount - expandedSpace)
           shrinkSequentially(panelsAfter, amount - collapsedSpace)
         }
         if (clamped < 0) {
-          growSequentially(panelsAfter, amount)
+          growSequentially(panelsAfter, amount - expandedSpace)
           shrinkSequentially(panelsBefore, amount - collapsedSpace)
         }
 
@@ -421,6 +455,7 @@ export function ResizableContext({
           clamped,
           amount,
           collapsedSpace,
+          expandedSpace,
           prevTotalSize,
           currTotalSize,
           diff,
