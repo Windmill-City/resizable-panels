@@ -116,27 +116,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
 
   let remaining = amount
 
-  // Phase 1: Distribute space to expandable panels
-  const expandablePanels = panels.filter((p) => !p.isCollapsed && p.expand)
-  if (expandablePanels.length > 0) {
-    const spacePerPanel = Math.floor(remaining / expandablePanels.length)
-    const remainder = remaining % expandablePanels.length
-
-    for (let i = 0; i < expandablePanels.length; i++) {
-      const panel = expandablePanels[i]
-      const allocated = spacePerPanel + (i === 0 ? remainder : 0)
-      panel.size += allocated
-      remaining -= allocated
-    }
-
-    console.assert(remaining === 0, "Space allocation error:", {
-      amount,
-      remaining,
-    })
-    return
-  }
-
-  // Phase 2: No expandable panels - give all space to first non-collapsed panel
+  // Phase 1: Try give all space to first non-collapsed panel
   const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
   if (firstNonCollapsed) {
     firstNonCollapsed.size += remaining
@@ -144,7 +124,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
     return
   }
 
-  // Phase 3: All panels collapsed - try to expand the first panel
+  // Phase 2: All panels collapsed - try to expand the first panel
   if (panels.length > 0) {
     const firstPanel = panels[0]!
     // Only expand if amount is significant (more than half of minSize)
@@ -447,38 +427,6 @@ export function ResizableContext({
           group,
           nonCollapsed: filtered,
         })
-
-        if (diff > 0) {
-          // Determine which panels grew based on delta direction
-          // delta > 0: panelsBefore grew, shrink from panelsBefore (closest to handle first = reverse order)
-          // delta < 0: panelsAfter grew, shrink from panelsAfter (closest to handle first = normal order)
-          const primaryPanels =
-            delta > 0 ? [...panelsBefore].reverse() : panelsAfter
-          const secondaryPanels =
-            delta > 0 ? panelsAfter : [...panelsBefore].reverse()
-
-          // Phase 1: Shrink from panels that grew (based on prevSize)
-          for (const panel of primaryPanels) {
-            if (diff <= 0) break
-            if (panel.isCollapsed) continue
-            const shrinkable = Math.max(0, panel.size - panel.minSize)
-            const shrinkAmount = Math.min(shrinkable, diff)
-            panel.size -= shrinkAmount
-            diff -= shrinkAmount
-          }
-
-          // Phase 2: If still have excess, shrink from the other side (based on prevSize)
-          if (diff > 0) {
-            for (const panel of secondaryPanels) {
-              if (diff <= 0) break
-              if (panel.isCollapsed) continue
-              const shrinkable = Math.max(0, panel.size - panel.minSize)
-              const shrinkAmount = Math.min(shrinkable, diff)
-              panel.size -= shrinkAmount
-              diff -= shrinkAmount
-            }
-          }
-        }
 
         // Trigger re-render for all affected panels
         for (const panel of [...panelsBefore, ...panelsAfter]) {
