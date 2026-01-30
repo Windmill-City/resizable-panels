@@ -26,6 +26,12 @@ export function useResizableContext() {
 const HANDLE_SIZE = 8
 
 /**
+ * The margin from window edges to exclude from edge detection (px)
+ * Prevents conflict with window resize handles.
+ */
+const WINDOW_EDGE_MARGIN = 8
+
+/**
  * Finds the edges near a given point within all resizable groups.
  *
  * Iterates through all groups and checks if the point is near any edge
@@ -42,6 +48,18 @@ function findEdgeIndexAtPoint(
   point: { x: number; y: number },
 ): Map<Direction, [GroupValue, number]> {
   const result = new Map<Direction, [GroupValue, number]>()
+
+  // Skip if point is too close to window edges (to avoid conflict with window resize)
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
+  if (
+    point.x < WINDOW_EDGE_MARGIN ||
+    point.x > windowWidth - WINDOW_EDGE_MARGIN ||
+    point.y < WINDOW_EDGE_MARGIN ||
+    point.y > windowHeight - WINDOW_EDGE_MARGIN
+  ) {
+    return result
+  }
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
