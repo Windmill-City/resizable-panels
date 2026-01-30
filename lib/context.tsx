@@ -34,9 +34,6 @@ const WINDOW_EDGE_MARGIN = 8
 /**
  * Finds the edges near a given point within all resizable groups.
  *
- * Iterates through all groups and checks if the point is near any edge
- * of a resizable group. Returns a map of orientation to group and edge index.
- *
  * @param groups - Map of group IDs to GroupValue objects
  * @param point - The point coordinates {x, y} to check (viewport coordinates)
  * @returns A Map where keys are directions ("row" | "col") and
@@ -49,17 +46,17 @@ function findEdgeIndexAtPoint(
 ): Map<Direction, [GroupValue, number]> {
   const result = new Map<Direction, [GroupValue, number]>()
 
-  // // Skip if point is too close to window edges (to avoid conflict with window resize)
-  // const windowWidth = window.innerWidth
-  // const windowHeight = window.innerHeight
-  // if (
-  //   point.x < WINDOW_EDGE_MARGIN ||
-  //   point.x > windowWidth - WINDOW_EDGE_MARGIN ||
-  //   point.y < WINDOW_EDGE_MARGIN ||
-  //   point.y > windowHeight - WINDOW_EDGE_MARGIN
-  // ) {
-  //   return result
-  // }
+  // Skip if point is too close to window edges (to avoid conflict with window resize)
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
+  if (
+    point.x < WINDOW_EDGE_MARGIN ||
+    point.x > windowWidth - WINDOW_EDGE_MARGIN ||
+    point.y < WINDOW_EDGE_MARGIN ||
+    point.y > windowHeight - WINDOW_EDGE_MARGIN
+  ) {
+    return result
+  }
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
@@ -105,89 +102,76 @@ function findEdgeIndexAtPoint(
 }
 
 /**
- * Distributes space sequentially among panels starting from the resize handle.
- *
- * When growing: distributes space to panels with expand=true first,
- * then to all non-collapsed panels. Respects maxSize constraints.
- * When shrinking: collects space from panels closest to the handle.
- * Respects minSize constraints and collapsed state.
+ * Distributes space sequentially to panels (growing)
  *
  * @param panels - Array of panels to distribute space among
- * @param amount - Amount of space to distribute/collect (in pixels)
- * @param isGrowing - If true, distribute space; if false, collect space
- * @param reverseOrder - If true, iterate from end of array
+ * @param amount - Amount of space to distribute (in pixels)
  */
-function distributeSequentially(
-  panels: PanelValue[],
-  amount: number,
-  isGrowing: boolean,
-  reverseOrder: boolean,
-): void {
+function growSequentially(panels: PanelValue[], amount: number): void {
   if (amount <= 0) return
 
-  // Determine iteration order
-  // Before panels need reverse order (end of array first = closest to handle)
-  // After panels need normal order (start of array first = closest to handle)
-  const orderedPanels = reverseOrder ? [...panels].reverse() : panels
+  // Growing: distribute space evenly to all expandable panels
+  // If no expand panels, give all space to the first non-collapsed panel
+  const expandablePanels = panels.filter((p) => !p.isCollapsed && p.expand)
+
+  if (expandablePanels.length > 0) {
+    // Distribute space evenly among expandable panels
+    const spacePerPanel = Math.floor(amount / expandablePanels.length)
+    const remainder = amount % expandablePanels.length
+    for (let i = 0; i < expandablePanels.length; i++) {
+      const panel = expandablePanels[i]
+      // Distribute remainder to first panel
+      panel.size += spacePerPanel + (i === 0 ? remainder : 0)
+    }
+  } else {
+    // No expandable panels: give all space to the first non-collapsed panel
+    const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
+    if (firstNonCollapsed) {
+      firstNonCollapsed.size += amount
+    } else if (panels.length > 0) {
+      // All panels collapsed: expand the first panel
+      const firstPanel = panels[0]!
+      if (amount > firstPanel.minSize / 2) {
+        firstPanel.isCollapsed = false
+        // Size should not smaller than minSize
+        firstPanel.size = Math.max(amount, firstPanel.minSize)
+      }
+    }
+  }
+}
+
+/**
+ * Collects space sequentially from panels (shrinking)
+ *
+ * @param panels - Array of panels to collect space from
+ * @param amount - Amount of space to collect (in pixels)
+ */
+function shrinkSequentially(panels: PanelValue[], amount: number): void {
+  if (amount <= 0) return
 
   let remaining = amount
 
-  if (isGrowing) {
-    // Growing: distribute space evenly to all expandable panels
-    // If no expand panels, give all space to the first non-collapsed panel
-    const expandablePanels = orderedPanels.filter(
-      (p) => !p.isCollapsed && p.expand,
-    )
+  // Shrinking: reduce size from panels closest to handle
+  // Collect space from panels one by one until enough
+  for (const panel of panels) {
+    if (remaining <= 0) break
+    if (panel.isCollapsed) continue
 
-    if (expandablePanels.length > 0) {
-      // Distribute space evenly among expandable panels
-      const spacePerPanel = Math.floor(amount / expandablePanels.length)
-      const remainder = amount % expandablePanels.length
-      for (let i = 0; i < expandablePanels.length; i++) {
-        const panel = expandablePanels[i]
-        // Distribute remainder to first panel
-        panel.size += spacePerPanel + (i === 0 ? remainder : 0)
-      }
-    } else {
-      // No expandable panels: give all space to the first non-collapsed panel
-      const firstNonCollapsed = orderedPanels.find((p) => !p.isCollapsed)
-      if (firstNonCollapsed) {
-        firstNonCollapsed.size += amount
-      } else if (orderedPanels.length > 0) {
-        // All panels collapsed: expand the first panel from the handle
-        const firstPanel = orderedPanels[0]!
-        if (amount > firstPanel.minSize / 2) {
-          firstPanel.isCollapsed = false
-          // Size should not smaller than minSize
-          firstPanel.size = Math.max(amount, firstPanel.minSize)
-        }
-      }
+    const minSize = panel.minSize
+    if (panel.size > minSize) {
+      // Take as much as possible from this panel
+      const available = panel.size - minSize
+      const take = Math.min(available, remaining)
+      panel.size -= take
+      remaining -= take
     }
-
-    // Growing is unlimited, so all the space should be distributed
-  } else {
-    // Shrinking: reduce size from panels closest to handle
-    // Collect space from panels one by one until enough
-    for (const panel of orderedPanels) {
-      if (remaining <= 0) break
-      if (panel.isCollapsed) continue
-
-      const minSize = panel.minSize
-      if (panel.size > minSize) {
-        // Take as much as possible from this panel
-        const available = panel.size - minSize
-        const take = Math.min(available, remaining)
-        panel.size -= take
-        remaining -= take
-      }
-    }
-
-    console.assert(!remaining, "Unable to collect required size:", {
-      amount,
-      remaining,
-      orderedPanels,
-    })
   }
+
+  console.assert(!remaining, "Unable to collect required size:", {
+    amount,
+    remaining,
+    orderedPanels: panels,
+  })
 }
 
 export function ResizableContext({
@@ -290,11 +274,10 @@ export function ResizableContext({
       // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = Array.from(group.panels.values())
-        const panelsBefore = panels.slice(0, index + 1)
+        const panelsBefore = panels.slice(0, index + 1).reverse()
         const panelsAfter = panels.slice(index + 1)
 
         // Get delta based on direction
-        // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
         const delta = group.direction === "row" ? deltaY : deltaX
 
         // Restore initial states
@@ -303,127 +286,102 @@ export function ResizableContext({
           panel.size = panel.isCollapsed ? 0 : panel.prevSize
         }
 
-        // Calculate clamped delta considering collapsible panels
+        // Save prevTotalSize for diff check, diff should be 0 after resizing
+        const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce(
+          (sum, panel) => sum + panel.size,
+          0,
+        )
+
+        // clamped delta: max possible delta considering collapsible panels
         let clamped = delta
-        let collapsedSpace = 0 // Track space from collapsed panels to avoid double counting
+        // Space collected from collapsed panels
+        let collapsedSpace = 0
+
+        // Try to collapse a collapsible panel from the given panels if remaining space is needed
+        const tryCollapsePanel = (
+          panels: PanelValue[],
+          remaining: number,
+        ): boolean => {
+          const nextPanel = panels.find((p) => p.collapsible && !p.isCollapsed)
+          if (nextPanel && remaining > nextPanel.minSize / 2) {
+            collapsedSpace += nextPanel.size
+            nextPanel.isCollapsed = true
+            nextPanel.size = 0
+            return true
+          }
+          return false
+        }
 
         while (true) {
+          const maxGrowBefore =
+            panelsBefore.every((panel) => panel.isCollapsed) &&
+            Math.abs(delta) <= panelsBefore[0].minSize / 2
+              ? 0
+              : Math.abs(delta)
+
+          const maxGrowAfter =
+            panelsAfter.every((panel) => panel.isCollapsed) &&
+            Math.abs(delta) <= panelsAfter[0].minSize / 2
+              ? 0
+              : Math.abs(delta)
+
           const maxShrinkBefore = panelsBefore.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
             0,
           )
+
           const maxShrinkAfter = panelsAfter.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
             0,
           )
 
+          // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
           if (delta > 0) {
-            // Subtract collapsedSpace from maxShrink to avoid double counting
-            clamped = Math.min(delta, maxShrinkAfter + collapsedSpace)
+            clamped = Math.min(
+              delta,
+              maxShrinkAfter + collapsedSpace,
+              maxGrowBefore,
+            )
+
             // Try to collapse collapsible panels in panelsAfter if space is still needed
-            const remaining = delta - clamped
-            if (remaining > 0) {
-              // Find collapsible panel from handle outwards (normal order for panelsAfter)
-              const collapsiblePanel = panelsAfter.find(
-                (p) => p.collapsible && !p.isCollapsed,
-              )
-              if (
-                collapsiblePanel &&
-                remaining > collapsiblePanel.minSize / 2
-              ) {
-                // Collapse this panel and track its space
-                collapsedSpace += collapsiblePanel.size
-                collapsiblePanel.isCollapsed = true
-                collapsiblePanel.size = 0
-                // Continue loop to recalculate clamped with new space
-                continue
-              }
+            const remaining = Math.abs(delta - clamped)
+            if (remaining > 0 && tryCollapsePanel(panelsAfter, remaining)) {
+              // Continue loop to recalculate clamped with new space
+              continue
             }
-          } else if (delta < 0) {
-            // Subtract collapsedSpace from maxShrink to avoid double counting
-            clamped = Math.max(delta, -(maxShrinkBefore + collapsedSpace))
+          }
+
+          // delta < 0 means edge moved left/top (panelsBefore shrinks, panelsAfter grows)
+          if (delta < 0) {
+            clamped = Math.max(
+              delta,
+              -(maxShrinkBefore + collapsedSpace),
+              -maxGrowAfter,
+            )
+
             // Try to collapse collapsible panels in panelsBefore if space is still needed
-            const remaining = Math.abs(delta) - Math.abs(clamped)
-            if (remaining > 0) {
-              // Find collapsible panel from handle outwards (reverse order for panelsBefore)
-              const collapsiblePanel = panelsBefore
-                .slice()
-                .reverse()
-                .find((p) => p.collapsible && !p.isCollapsed)
-              if (
-                collapsiblePanel &&
-                remaining > collapsiblePanel.minSize / 2
-              ) {
-                // Collapse this panel and track its space
-                collapsedSpace += collapsiblePanel.size
-                collapsiblePanel.isCollapsed = true
-                collapsiblePanel.size = 0
-                // Continue loop to recalculate clamped with new space
-                continue
-              }
+            const remaining = Math.abs(delta - clamped)
+            if (remaining > 0 && tryCollapsePanel(panelsBefore, remaining)) {
+              // Continue loop to recalculate clamped with new space
+              continue
             }
           }
           break
         }
 
         // Distribute space sequentially from the resize handle
-        const growAmount = Math.abs(clamped)
-        const shrinkAmount = growAmount - collapsedSpace
+        const amount = Math.abs(clamped)
         if (clamped > 0) {
-          // panelsBefore grows (iterate from handle outwards = reverse)
-          // panelsAfter shrinks (iterate from handle outwards = normal)
-          distributeSequentially(panelsBefore, growAmount, true, true)
-          distributeSequentially(panelsAfter, shrinkAmount, false, false)
-        } else if (clamped < 0) {
-          // panelsBefore shrinks (iterate from handle outwards = reverse)
-          // panelsAfter grows (iterate from handle outwards = normal)
-          distributeSequentially(panelsAfter, growAmount, true, false)
-          distributeSequentially(panelsBefore, shrinkAmount, false, true)
+          // panelsBefore grows (iterate from handle outwards)
+          // panelsAfter shrinks (iterate from handle outwards)
+          growSequentially(panelsBefore, amount)
+          shrinkSequentially(panelsAfter, amount - collapsedSpace)
         }
-
-        // Check and shrink excess size if total exceeds container
-        // Shrink from panels that grew (based on delta direction), starting from handle
-        // If not enough, shrink from the other side
-        const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce(
-          (sum, panel) => sum + (panel.isCollapsed ? 0 : panel.prevSize),
-          0,
-        )
-        const currTotalSize = [...panelsBefore, ...panelsAfter].reduce(
-          (sum, panel) => sum + panel.size,
-          0,
-        )
-
-        let excess = currTotalSize - prevTotalSize
-        if (excess > 0) {
-          // Determine which panels grew based on delta direction
-          // delta > 0: panelsBefore grew, shrink from panelsBefore (closest to handle first = reverse order)
-          // delta < 0: panelsAfter grew, shrink from panelsAfter (closest to handle first = normal order)
-          const primaryPanels =
-            delta > 0 ? [...panelsBefore].reverse() : panelsAfter
-          const secondaryPanels =
-            delta > 0 ? panelsAfter : [...panelsBefore].reverse()
-
-          // Phase 1: Shrink from panels that grew (based on prevSize)
-          for (const panel of primaryPanels) {
-            if (excess <= 0) break
-            if (panel.isCollapsed) continue
-            const shrinkable = Math.max(0, panel.size - panel.minSize)
-            const shrinkAmount = Math.min(shrinkable, excess)
-            panel.size -= shrinkAmount
-            excess -= shrinkAmount
-          }
-
-          // Phase 2: If still have excess, shrink from the other side (based on prevSize)
-          if (excess > 0) {
-            for (const panel of secondaryPanels) {
-              if (excess <= 0) break
-              if (panel.isCollapsed) continue
-              const shrinkable = Math.max(0, panel.size - panel.minSize)
-              const shrinkAmount = Math.min(shrinkable, excess)
-              panel.size -= shrinkAmount
-              excess -= shrinkAmount
-            }
-          }
+        if (clamped < 0) {
+          // panelsBefore shrinks (iterate from handle outwards)
+          // panelsAfter grows (iterate from handle outwards)
+          growSequentially(panelsAfter, amount)
+          shrinkSequentially(panelsBefore, amount - collapsedSpace)
         }
 
         // Update maximized state
@@ -439,15 +397,60 @@ export function ResizableContext({
           }
         }
 
+        // Check and shrink excess size if total exceeds container
+        // Shrink from panels that grew (based on delta direction), starting from handle
+        // If not enough, shrink from the other side
+        const currTotalSize = [...panelsBefore, ...panelsAfter].reduce(
+          (sum, panel) => sum + panel.size,
+          0,
+        )
+
+        let diff = currTotalSize - prevTotalSize
+        console.assert(diff === 0, `Group size changed while resizing: ${diff}`)
+
         console.debug("[Resizable] MouseMove:", {
           delta,
           clamped,
+          amount,
+          collapsedSpace,
           prevTotalSize,
           currTotalSize,
-          excess,
+          diff,
           group,
-          filtered,
+          nonCollapsed: filtered,
         })
+
+        if (diff > 0) {
+          // Determine which panels grew based on delta direction
+          // delta > 0: panelsBefore grew, shrink from panelsBefore (closest to handle first = reverse order)
+          // delta < 0: panelsAfter grew, shrink from panelsAfter (closest to handle first = normal order)
+          const primaryPanels =
+            delta > 0 ? [...panelsBefore].reverse() : panelsAfter
+          const secondaryPanels =
+            delta > 0 ? panelsAfter : [...panelsBefore].reverse()
+
+          // Phase 1: Shrink from panels that grew (based on prevSize)
+          for (const panel of primaryPanels) {
+            if (diff <= 0) break
+            if (panel.isCollapsed) continue
+            const shrinkable = Math.max(0, panel.size - panel.minSize)
+            const shrinkAmount = Math.min(shrinkable, diff)
+            panel.size -= shrinkAmount
+            diff -= shrinkAmount
+          }
+
+          // Phase 2: If still have excess, shrink from the other side (based on prevSize)
+          if (diff > 0) {
+            for (const panel of secondaryPanels) {
+              if (diff <= 0) break
+              if (panel.isCollapsed) continue
+              const shrinkable = Math.max(0, panel.size - panel.minSize)
+              const shrinkAmount = Math.min(shrinkable, diff)
+              panel.size -= shrinkAmount
+              diff -= shrinkAmount
+            }
+          }
+        }
 
         // Trigger re-render for all affected panels
         for (const panel of [...panelsBefore, ...panelsAfter]) {
