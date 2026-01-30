@@ -356,7 +356,7 @@ export function ResizableContext({
                 // Continue loop to recalculate clamped with expanded panel
                 continue
               }
-              clampedGrow = Math.max(clampedGrow, expandedSpace)
+              clampedGrow = Math.max(clampedGrow, expandedSpace, collapsedSpace)
             }
             {
               clampedShrink = Math.min(delta, maxShrinkAfter + collapsedSpace)
@@ -366,7 +366,8 @@ export function ResizableContext({
                 // Continue loop to recalculate clamped with new space
                 continue
               }
-              clampedShrink = Math.max(clampedShrink, collapsedSpace)
+              // prettier-ignore
+              clampedShrink = Math.max(clampedShrink, expandedSpace,collapsedSpace)
             }
             clamped = Math.min(clampedGrow, clampedShrink)
           }
@@ -382,7 +383,8 @@ export function ResizableContext({
                 // Continue loop to recalculate clamped with expanded panel
                 continue
               }
-              clampedGrow = Math.min(clampedGrow, -expandedSpace)
+              // prettier-ignore
+              clampedGrow = Math.min(clampedGrow, -expandedSpace, -collapsedSpace)
             }
             {
               clampedShrink = Math.max(
@@ -395,7 +397,8 @@ export function ResizableContext({
                 // Continue loop to recalculate clamped with new space
                 continue
               }
-              clampedShrink = Math.min(clampedShrink, -collapsedSpace)
+              // prettier-ignore
+              clampedShrink = Math.min(clampedShrink, -expandedSpace, -collapsedSpace)
             }
             clamped = Math.max(clampedGrow, clampedShrink)
           }
