@@ -38,6 +38,8 @@ export interface PanelValue {
   expand?: boolean
   // Minimum Size (px)
   minSize: number
+  // Maximum Size (px), undefined means no limit
+  maxSize?: number
   // Default Size (px)
   defaultSize: number
   // Allow Collapse?
@@ -110,6 +112,8 @@ export interface ResizablePanelProps {
   expand?: boolean
   // Minimum Size (px)
   minSize?: number
+  // Maximum Size (px), undefined means no limit
+  maxSize?: number
   // Default Size (px)
   defaultSize?: number
   // Allow Collapse?

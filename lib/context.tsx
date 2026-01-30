@@ -116,19 +116,33 @@ function growSequentially(panels: PanelValue[], amount: number): void {
 
   let remaining = amount
 
-  // Try give all space to first non-collapsed panel
+  // Try give space to first non-collapsed panel (respecting maxSize constraint)
   const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
   if (firstNonCollapsed) {
-    firstNonCollapsed.size += remaining
-    remaining = 0
-    return
+    if (firstNonCollapsed.maxSize !== undefined) {
+      // Apply maxSize constraint
+      const available = firstNonCollapsed.maxSize - firstNonCollapsed.size
+      const give = Math.min(available, remaining)
+      firstNonCollapsed.size += give
+      remaining -= give
+    } else {
+      // No maxSize limit, give all remaining space
+      firstNonCollapsed.size += remaining
+      remaining = 0
+    }
+    if (remaining <= 0) return
   }
 
-  // All panels collapsed - this should not happen as expansion is handled in the resize loop
-  console.assert(false, "All panels collapsed, unable to allocate space:", {
-    amount,
-    panels,
-  })
+  // All panels collapsed or all reached maxSize - this should not happen as expansion is handled in the resize loop
+  console.assert(
+    false,
+    "All panels collapsed or at maxSize, unable to allocate space:",
+    {
+      amount,
+      remaining,
+      panels,
+    },
+  )
 }
 
 /**
@@ -162,7 +176,8 @@ function shrinkSequentially(panels: PanelValue[], amount: number): void {
     }
   }
 
-  console.assert(!remaining, "Unable to collect required size:", {
+  // All panels collapsed or all at minSize - this should not happen as it means there's no space to shrink
+  console.assert(!remaining, "All panels collapsed or at minSize, unable to collect space:", {
     amount,
     remaining,
     orderedPanels: panels,
@@ -327,13 +342,35 @@ export function ResizableContext({
         }
 
         while (true) {
+          // Calculate max grow space considering maxSize constraint
+          // If any non-collapsed panel has no maxSize limit, return Math.abs(delta) (unlimited)
           const maxGrowBefore = panelsBefore.every((panel) => panel.isCollapsed)
             ? 0
-            : Math.abs(delta)
+            : panelsBefore.some(
+                  (p) => !p.isCollapsed && p.maxSize === undefined,
+                )
+              ? Math.abs(delta)
+              : panelsBefore.reduce(
+                  (sum, p) =>
+                    sum +
+                    (p.isCollapsed || p.maxSize === undefined
+                      ? 0
+                      : p.maxSize - p.size),
+                  0,
+                )
 
           const maxGrowAfter = panelsAfter.every((panel) => panel.isCollapsed)
             ? 0
-            : Math.abs(delta)
+            : panelsAfter.some((p) => !p.isCollapsed && p.maxSize === undefined)
+              ? Math.abs(delta)
+              : panelsAfter.reduce(
+                  (sum, p) =>
+                    sum +
+                    (p.isCollapsed || p.maxSize === undefined
+                      ? 0
+                      : p.maxSize - p.size),
+                  0,
+                )
 
           const maxShrinkBefore = panelsBefore.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
