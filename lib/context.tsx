@@ -110,34 +110,47 @@ function findEdgeIndexAtPoint(
 function growSequentially(panels: PanelValue[], amount: number): void {
   if (amount <= 0) return
 
-  // Growing: distribute space evenly to all expandable panels
-  // If no expand panels, give all space to the first non-collapsed panel
-  const expandablePanels = panels.filter((p) => !p.isCollapsed && p.expand)
+  let remaining = amount
 
+  // Phase 1: Distribute space to expandable panels
+  const expandablePanels = panels.filter((p) => !p.isCollapsed && p.expand)
   if (expandablePanels.length > 0) {
-    // Distribute space evenly among expandable panels
-    const spacePerPanel = Math.floor(amount / expandablePanels.length)
-    const remainder = amount % expandablePanels.length
+    const spacePerPanel = Math.floor(remaining / expandablePanels.length)
+    const remainder = remaining % expandablePanels.length
+
     for (let i = 0; i < expandablePanels.length; i++) {
       const panel = expandablePanels[i]
-      // Distribute remainder to first panel
-      panel.size += spacePerPanel + (i === 0 ? remainder : 0)
+      const allocated = spacePerPanel + (i === 0 ? remainder : 0)
+      panel.size += allocated
+      remaining -= allocated
     }
-  } else {
-    // No expandable panels: give all space to the first non-collapsed panel
-    const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
-    if (firstNonCollapsed) {
-      firstNonCollapsed.size += amount
-    } else if (panels.length > 0) {
-      // All panels collapsed: expand the first panel
-      const firstPanel = panels[0]!
-      if (amount > firstPanel.minSize / 2) {
-        firstPanel.isCollapsed = false
-        // Size should not smaller than minSize
-        firstPanel.size = Math.max(amount, firstPanel.minSize)
-      }
+
+    console.assert(remaining === 0, "Space allocation error:", { amount, remaining })
+    return
+  }
+
+  // Phase 2: No expandable panels - give all space to first non-collapsed panel
+  const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
+  if (firstNonCollapsed) {
+    firstNonCollapsed.size += remaining
+    remaining = 0
+    return
+  }
+
+  // Phase 3: All panels collapsed - try to expand the first panel
+  if (panels.length > 0) {
+    const firstPanel = panels[0]!
+    // Only expand if amount is significant (more than half of minSize)
+    if (remaining > firstPanel.minSize / 2) {
+      firstPanel.isCollapsed = false
+      firstPanel.size = Math.max(remaining, firstPanel.minSize)
+      remaining = 0
+      return
     }
   }
+
+  // Unable to allocate space
+  console.assert(false, "Unable to allocate space:", { amount, remaining, panels })
 }
 
 /**
