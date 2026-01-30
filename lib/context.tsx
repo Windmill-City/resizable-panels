@@ -367,7 +367,7 @@ export function ResizableContext({
                 continue
               }
               // prettier-ignore
-              clampedShrink = Math.max(clampedShrink, expandedSpace,collapsedSpace)
+              clampedShrink = Math.max(clampedShrink, expandedSpace, collapsedSpace)
             }
             clamped = Math.min(clampedGrow, clampedShrink)
           }
