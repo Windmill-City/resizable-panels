@@ -86,6 +86,7 @@ export function ResizablePanel({
         flex: ref.expand && !ref.isCollapsed ? `1 1 0%` : `0 0 ${ref.size}px`,
         display: "flex",
         overflow: "hidden",
+        [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? 0 : ref.minSize,
       }}
       className={className}
     >

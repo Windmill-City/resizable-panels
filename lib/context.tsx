@@ -158,8 +158,8 @@ function distributeSequentially(
         const firstPanel = orderedPanels[0]!
         if (amount > firstPanel.minSize / 2) {
           firstPanel.isCollapsed = false
-          // Only distribute the requested amount to avoid container size change
-          firstPanel.size = amount
+          // Size should not smaller than minSize
+          firstPanel.size = Math.max(amount, firstPanel.minSize)
         }
       }
     }
