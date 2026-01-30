@@ -368,7 +368,7 @@ export function ResizableContext({
               }
               clampedShrink = Math.max(clampedShrink, collapsedSpace)
             }
-            clamped = Math.max(clampedGrow, clampedShrink)
+            clamped = Math.min(clampedGrow, clampedShrink)
           }
 
           // delta < 0 means edge moved left/top (panelsBefore shrinks, panelsAfter grows)
@@ -397,7 +397,7 @@ export function ResizableContext({
               }
               clampedShrink = Math.min(clampedShrink, -collapsedSpace)
             }
-            clamped = Math.min(clampedGrow, clampedShrink)
+            clamped = Math.max(clampedGrow, clampedShrink)
           }
           break
         }
