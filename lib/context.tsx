@@ -349,8 +349,8 @@ export function ResizableContext({
           if (delta > 0) {
             let clampedGrow, clampedShrink
             {
-              // Try to expand collapsed panels in panelsBefore if they need to grow
               clampedGrow = Math.min(delta, maxGrowBefore + expandedSpace)
+              // Try to expand collapsed panels in panelsBefore if they need to grow
               const remaining = Math.abs(delta - clampedGrow)
               if (remaining > 0 && tryExpandPanel(panelsBefore, remaining)) {
                 // Continue loop to recalculate clamped with expanded panel
@@ -359,8 +359,8 @@ export function ResizableContext({
               clampedGrow = Math.max(clampedGrow, expandedSpace)
             }
             {
-              // Try to collapse collapsible panels in panelsAfter if space is still needed
               clampedShrink = Math.min(delta, maxShrinkAfter + collapsedSpace)
+              // Try to collapse collapsible panels in panelsAfter if space is still needed
               const remaining = Math.abs(delta - clampedShrink)
               if (remaining > 0 && tryCollapsePanel(panelsAfter, remaining)) {
                 // Continue loop to recalculate clamped with new space
@@ -375,8 +375,8 @@ export function ResizableContext({
           if (delta < 0) {
             let clampedGrow, clampedShrink
             {
-              // Try to expand collapsed panels in panelsAfter if they need to grow
               clampedGrow = Math.max(delta, -(maxGrowAfter + expandedSpace))
+              // Try to expand collapsed panels in panelsAfter if they need to grow
               const remaining = Math.abs(delta - clampedGrow)
               if (remaining > 0 && tryExpandPanel(panelsAfter, remaining)) {
                 // Continue loop to recalculate clamped with expanded panel
@@ -385,11 +385,11 @@ export function ResizableContext({
               clampedGrow = Math.min(clampedGrow, -expandedSpace)
             }
             {
-              // Try to collapse collapsible panels in panelsBefore if space is still needed
               clampedShrink = Math.max(
                 delta,
                 -(maxShrinkBefore + collapsedSpace),
               )
+              // Try to collapse collapsible panels in panelsBefore if space is still needed
               const remaining = Math.abs(delta - clampedShrink)
               if (remaining > 0 && tryCollapsePanel(panelsBefore, remaining)) {
                 // Continue loop to recalculate clamped with new space
