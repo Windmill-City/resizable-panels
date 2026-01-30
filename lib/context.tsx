@@ -385,14 +385,10 @@ export function ResizableContext({
         // Distribute space sequentially from the resize handle
         const amount = Math.abs(clamped)
         if (clamped > 0) {
-          // panelsBefore grows (iterate from handle outwards)
-          // panelsAfter shrinks (iterate from handle outwards)
           growSequentially(panelsBefore, amount)
           shrinkSequentially(panelsAfter, amount - collapsedSpace)
         }
         if (clamped < 0) {
-          // panelsBefore shrinks (iterate from handle outwards)
-          // panelsAfter grows (iterate from handle outwards)
           growSequentially(panelsAfter, amount)
           shrinkSequentially(panelsBefore, amount - collapsedSpace)
         }
