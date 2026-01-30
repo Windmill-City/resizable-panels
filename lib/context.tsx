@@ -116,33 +116,33 @@ function growSequentially(panels: PanelValue[], amount: number): void {
 
   let remaining = amount
 
-  // Try give space to first non-collapsed panel (respecting maxSize constraint)
-  const firstNonCollapsed = panels.find((p) => !p.isCollapsed)
-  if (firstNonCollapsed) {
-    if (firstNonCollapsed.maxSize !== undefined) {
+  // Distribute space to panels one by one until enough
+  for (const panel of panels) {
+    if (remaining <= 0) break
+    if (panel.isCollapsed) continue
+
+    if (panel.maxSize !== undefined) {
       // Apply maxSize constraint
-      const available = firstNonCollapsed.maxSize - firstNonCollapsed.size
-      const give = Math.min(available, remaining)
-      firstNonCollapsed.size += give
-      remaining -= give
+      if (panel.size < panel.maxSize) {
+        const available = panel.maxSize - panel.size
+        const give = Math.min(available, remaining)
+        panel.size += give
+        remaining -= give
+      }
     } else {
-      // No maxSize limit, give all remaining space
-      firstNonCollapsed.size += remaining
+      // No maxSize limit, give all remaining space to this panel
+      panel.size += remaining
       remaining = 0
+      break
     }
-    if (remaining <= 0) return
   }
 
   // All panels collapsed or all reached maxSize - this should not happen as expansion is handled in the resize loop
-  console.assert(
-    false,
-    "All panels collapsed or at maxSize, unable to allocate space:",
-    {
-      amount,
-      remaining,
-      panels,
-    },
-  )
+  console.assert(!remaining, "All panels collapsed or at maxSize, unable to allocate space:", {
+    amount,
+    remaining,
+    panels,
+  })
 }
 
 /**
