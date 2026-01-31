@@ -270,13 +270,16 @@ import type {
 
 ## Known Issues
 
-### Panel size exceeds maxSize after window resize
+### maxSize constraint may be temporarily exceeded after window resize
 
-When a panel has `maxSize` set, and other panels are collapsed in a small window, then the window is enlarged, the panel may exceed its `maxSize` limit. Attempting to open or close other panels at this point may throw errors.
+**Steps to reproduce:**
+1. Set `maxSize` on a panel
+2. Collapse other panels in a small window
+3. Enlarge the window
 
-**Impact**: This does not affect normal usage. Once other panels occupy the excess space, the errors will stop.
+**Result:** The panel with `maxSize` may temporarily exceed its limit. Errors may occur when opening/closing other panels.
 
-**Workaround**: Resize the panel manually or interact with other panels to redistribute space.
+**Note:** This is temporary. The panel will return to normal once other panels expand to occupy the excess space.
 
 ## License
 
