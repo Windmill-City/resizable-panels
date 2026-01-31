@@ -38,7 +38,7 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
       if (!panel) {
         throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
       }
-      if (!panel.collapsible || panel.isCollapsed === collapse) return false
+      if (context.isDragging || !panel.collapsible || panel.isCollapsed === collapse) return false
 
       const panels = Array.from(ref.panels.values())
       const index = panels.indexOf(panel)
@@ -73,7 +73,7 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
         if (!panel) {
           throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
         }
-        if (!panel.okMaximize || panel.isMaximized) return false
+        if (context.isDragging || !panel.okMaximize || panel.isMaximized) return false
 
         const panels = Array.from(ref.panels.values())
         const index = panels.indexOf(panel)
