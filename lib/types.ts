@@ -34,6 +34,8 @@ export interface PanelValue {
   size: number
   // Size before Collapse/Resize/Maximize (px)
   prevSize: number
+  // Deferred Size, changed size when dragging (px)
+  deferredSize: number
   // Grow/Shirk when Group Size Change?
   expand?: boolean
   // Minimum Size (px)
@@ -67,6 +69,8 @@ export interface GroupValue {
   panels: Map<string, PanelValue>
   // Ref of the ResizableGroup Element
   containerEl: RefObject<HTMLElement>
+  // Is Dragging Panels?
+  isDragging: boolean
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel

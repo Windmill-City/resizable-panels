@@ -1,7 +1,6 @@
 "use client"
 
 import { useId, useLayoutEffect, useReducer, useRef } from "react"
-import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
 import type { PanelValue, ResizablePanelProps } from "./types"
 
@@ -16,7 +15,6 @@ export function ResizablePanel({
   collapsible = false,
   okMaximize = false,
 }: ResizablePanelProps) {
-  const context = useResizableContext()
   const group = useGroupContext()
   const [, setDirty] = useReducer(() => ({}), {})
 
@@ -34,6 +32,7 @@ export function ResizablePanel({
     maxSize,
     defaultSize,
     expand,
+    deferredSize: defaultSize,
     prevSize: defaultSize,
     collapsible,
     isCollapsed: false,
@@ -59,10 +58,11 @@ export function ResizablePanel({
 
     // Observe size changes and update ref.size (content-box)
     const observer = new ResizeObserver((entries) => {
-      if (!context.isDragging)
-        for (const entry of entries) {
-          ref.size = isCol ? entry.contentRect.width : entry.contentRect.height
-        }
+      for (const entry of entries) {
+        const newSize = isCol ? entry.contentRect.width : entry.contentRect.height
+        if (!group.isDragging) ref.size = newSize
+        else ref.deferredSize = newSize
+      }
     })
     observer.observe(el)
     return () => observer.disconnect()

@@ -96,22 +96,6 @@ export function findEdgeIndexAtPoint(
 }
 
 /**
- * Saves the previous state of panels
- * Stores current collapsed state and size (if not collapsed) to prevCollapsed and prevSize.
- *
- * @param panels - Array of PanelValue objects to save state for
- */
-export function savePanelState(panels: PanelValue[]) {
-  for (const panel of panels) {
-    panel.prevCollapsed = panel.isCollapsed
-    // prevSize saves panel size before collapse, do not overwrite it
-    if (!panel.isCollapsed) {
-      panel.prevSize = panel.size
-    }
-  }
-}
-
-/**
  * Distributes space sequentially to panels (growing)
  *
  * @param panels - Array of panels to distribute space among
@@ -431,8 +415,14 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
-          const panels = Array.from(group.panels.values())
-          savePanelState(panels)
+          for (const panel of group.panels.values()) {
+            panel.prevCollapsed = panel.isCollapsed
+            // prevSize saves panel size before collapse, do not overwrite it
+            if (!panel.isCollapsed) {
+              panel.prevSize = panel.size
+            }
+          }
+          group.isDragging = true
         }
 
         console.debug("[Resizable] MouseDown", {
@@ -495,6 +485,14 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
     const handleMouseUp = (_: MouseEvent) => {
       if (!ref.isDragging) {
         return
+      }
+
+      // Apply deferred panel size
+      for (const [group] of ref.dragIndex.values()) {
+        for (const panel of group.panels.values()) {
+          panel.size = panel.deferredSize
+        }
+        group.isDragging = false
       }
 
       // Reset drag state after constraint check
