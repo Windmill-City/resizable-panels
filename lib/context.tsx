@@ -102,7 +102,7 @@ function findEdgeIndexAtPoint(
  * @param amount - Amount of space to distribute (in pixels)
  */
 function growSequentially(panels: PanelValue[], amount: number): void {
-  console.assert(amount >= 0, `[ResizableContext] Invalid Grow Space: ${amount}`)
+  console.assert(amount >= 0, `[Resizable] Invalid Grow Space: ${amount}`)
   if (amount <= 0) return
 
   let remaining = amount
@@ -122,7 +122,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
   }
 
   // All panels collapsed or all reached maxSize - this should not happen as expansion is handled in the resize loop
-  console.assert(!remaining, "All panels collapsed or at maxSize, unable to allocate space:", {
+  console.assert(!remaining, "[Resizable] All panels collapsed or at maxSize, unable to allocate space:", {
     amount,
     remaining,
     panels,
@@ -136,7 +136,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
  * @param amount - Amount of space to collect (in pixels)
  */
 function shrinkSequentially(panels: PanelValue[], amount: number): void {
-  console.assert(amount >= 0, `[ResizableContext] Invalid Shrink Space: ${amount}`)
+  console.assert(amount >= 0, `[Resizable] Invalid Shrink Space: ${amount}`)
   if (amount <= 0) return
 
   let remaining = amount
@@ -158,7 +158,7 @@ function shrinkSequentially(panels: PanelValue[], amount: number): void {
   }
 
   // All panels collapsed or all at minSize - this should not happen as it means there's no space to shrink
-  console.assert(!remaining, "All panels collapsed or at minSize, unable to collect space:", {
+  console.assert(!remaining, "[Resizable] All panels collapsed or at minSize, unable to collect space:", {
     amount,
     remaining,
     panels,
@@ -432,7 +432,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         // Check and shrink excess size if total exceeds container
         const currTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
         let diff = currTotalSize - prevTotalSize
-        console.assert(diff === 0, `Group size changed while resizing: ${diff}`)
+        console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
         console.debug("[Resizable] MouseMove:", {
           delta,
@@ -475,7 +475,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
 
-    console.debug("[Context] useEffect ContextValue:", ref)
+    console.debug("[Resizable] useEffect ContextValue:", ref)
 
     return () => {
       document.removeEventListener("mousedown", handleMouseDown)

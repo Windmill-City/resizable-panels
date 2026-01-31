@@ -27,11 +27,11 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
     containerEl,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
-      console.debug("[Group] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
+      console.debug("[ResizableGroup] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
     },
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
-      console.debug("[Group] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
+      console.debug("[ResizableGroup] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
     },
     setCollapse: (panelId: string, collapse: boolean) => {
       const panel = ref.panels.get(panelId)
