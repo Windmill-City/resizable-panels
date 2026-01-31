@@ -1,8 +1,4 @@
-import {
-  ResizableContext,
-  ResizableGroup,
-  ResizablePanel,
-} from "@local/resizable-panels"
+import { ResizableContext, ResizableGroup, ResizablePanel } from "@local/resizable-panels"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import StatusBar from "./ui/status-bar"

@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useId, useLayoutEffect, useReducer, useRef } from "react"
-import { useGroupContext } from "./group"
-import type { PanelValue, ResizablePanelProps } from "./types"
+import { useId, useLayoutEffect, useReducer, useRef } from "react";
+import { useGroupContext } from "./group";
+import type { PanelValue, ResizablePanelProps } from "./types";
 
 export function ResizablePanel({
   id: idProp,
@@ -15,26 +15,23 @@ export function ResizablePanel({
   collapsible = false,
   okMaximize = false,
 }: ResizablePanelProps) {
-  const context = useGroupContext()
-  const [, setDirty] = useReducer(() => ({}), {})
+  const group = useGroupContext();
+  const [, setDirty] = useReducer(() => ({}), {});
 
-  const id = idProp ?? useId()
-  const containerEl = useRef<HTMLDivElement>(null)
+  const id = idProp ?? useId();
+  const containerEl = useRef<HTMLDivElement>(null);
 
-  console.assert(
-    defaultSize >= minSize,
-    `[ResizablePanel] defaultSize < minSize: ${id}`,
-  )
+  console.assert(defaultSize >= minSize, `[ResizablePanel] defaultSize < minSize: ${id}`);
 
   console.assert(
     maxSize === undefined || defaultSize <= maxSize,
     `[ResizablePanel] defaultSize > maxSize: ${id}`,
-  )
+  );
 
   console.assert(
     maxSize === undefined || minSize <= maxSize,
     `[ResizablePanel] minSize > maxSize: ${id}`,
-  )
+  );
 
   const ref = useRef<PanelValue>({
     id,
@@ -51,41 +48,34 @@ export function ResizablePanel({
     isMaximized: false,
     containerEl,
     setDirty,
-  }).current
+  }).current;
 
-  const isCol = context.direction === "col"
+  const isCol = group.direction === "col";
 
   useLayoutEffect(() => {
-    context.registerPanel(ref)
+    group.registerPanel(ref);
+    return () => group.unregisterPanel(id);
+  }, []);
 
-    if (!expand) {
-      return () => context.unregisterPanel(id)
-    }
-
-    const el = containerEl.current!
+  useLayoutEffect(() => {
+    const el = containerEl.current!;
 
     // Initialize size from actual DOM dimensions
-    const rect = el.getBoundingClientRect()
-    ref.size = isCol ? rect.width : rect.height
+    const rect = el.getBoundingClientRect();
+    ref.size = isCol ? rect.width : rect.height;
 
     // Observe size changes and update ref.size
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const newSize = isCol
-          ? entry.contentRect.width
-          : entry.contentRect.height
+        const newSize = isCol ? entry.contentRect.width : entry.contentRect.height;
         if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
-          ref.size = newSize
+          ref.size = newSize;
         }
       }
-    })
-    observer.observe(el)
-
-    return () => {
-      observer.disconnect()
-      context.unregisterPanel(id)
-    }
-  }, [])
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
@@ -104,5 +94,5 @@ export function ResizablePanel({
     >
       {children}
     </div>
-  )
+  );
 }

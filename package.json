@@ -42,6 +42,7 @@
     "typescript"
   ],
   "prettier": {
+    "semi": false,
     "printWidth": 120
   },
   "license": "MIT",

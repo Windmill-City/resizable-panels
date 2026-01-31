@@ -1,12 +1,6 @@
 "use client"
 
-import {
-  createContext,
-  useContext,
-  useId,
-  useLayoutEffect,
-  useRef,
-} from "react"
+import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
 import { useResizableContext } from "./context"
 import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
@@ -20,12 +14,7 @@ export function useGroupContext() {
   return context
 }
 
-export function ResizableGroup({
-  id: idProp,
-  children,
-  className = "",
-  direction = "col",
-}: ResizableGroupProps) {
+export function ResizableGroup({ id: idProp, children, className = "", direction = "col" }: ResizableGroupProps) {
   const context = useResizableContext()
 
   const id = idProp ?? useId()
@@ -38,21 +27,11 @@ export function ResizableGroup({
     containerEl,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
-      console.debug(
-        "[Group] Register panel:",
-        panel.id,
-        "Panels:",
-        Array.from(ref.panels.keys()),
-      )
+      console.debug("[Group] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
     },
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
-      console.debug(
-        "[Group] Unregister panel:",
-        panelId,
-        "Panels:",
-        Array.from(ref.panels.keys()),
-      )
+      console.debug("[Group] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
     },
     setCollapse: (panelId: string, collapse: boolean) => {
       const panel = ref.panels.get(panelId)
