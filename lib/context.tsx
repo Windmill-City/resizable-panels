@@ -161,7 +161,7 @@ function shrinkSequentially(panels: PanelValue[], amount: number): void {
   console.assert(!remaining, "All panels collapsed or at minSize, unable to collect space:", {
     amount,
     remaining,
-    orderedPanels: panels,
+    panels,
   })
 }
 
