@@ -17,9 +17,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "concurrently \"pnpm watch\" \"pnpm -r dev\"",
-    "watch": "tsup --watch",
+    "build": "tsup --minify",
+    "dev": "concurrently \"tsup -- watch\" \"pnpm -r dev\"",
+    "dev-minify": "concurrently \"tsup --watch --minify\" \"pnpm -r dev\"",
     "postinstall": "pnpm build",
     "typecheck": "tsc --noEmit"
   },
