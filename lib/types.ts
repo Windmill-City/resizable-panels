@@ -32,7 +32,7 @@ export interface PanelValue {
   id: string
   // Active Size (px)
   size: number
-  // Size before Collapse/Resize (px)
+  // Size before Collapse/Resize/Maximize (px)
   prevSize: number
   // Grow/Shirk when Group Size Change?
   expand?: boolean

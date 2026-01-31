@@ -412,8 +412,8 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         for (const [group] of ref.dragIndex.values()) {
           for (const [, panel] of group.panels) {
             panel.prevCollapsed = panel.isCollapsed
-            // prevSize saves panel size before collapse, do not overwrite it
-            if (!panel.isCollapsed) {
+            // prevSize saves panel size before collapse/maximize, do not overwrite it
+            if (!panel.isCollapsed || !panel.isMaximized) {
               panel.prevSize = panel.size
             }
           }
