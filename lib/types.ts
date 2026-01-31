@@ -34,7 +34,7 @@ export interface PanelValue {
   size: number
   // Size before Collapse/Resize/Maximize (px)
   prevSize: number
-  // Deferred Size, changed size when dragging (px)
+  // Deferred Size, changed size while dragging (px)
   deferredSize?: number
   // Grow/Shirk when Group Size Change?
   expand?: boolean
