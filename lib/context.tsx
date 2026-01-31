@@ -264,15 +264,13 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         // Save prevTotalSize for diff check, diff should be 0 after resizing
         const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
 
+        // Constraints - With Expand
         const maxGrowBeforeWithExpand = panelsBefore.reduce((sum, p) => sum + (p.maxSize - p.size), 0)
-
         const maxGrowAfterWithExpand = panelsAfter.reduce((sum, p) => sum + (p.maxSize - p.size), 0)
-
         const maxShrinkBeforeWithCollapse = panelsBefore.reduce(
           (sum, p) => sum + (p.collapsible ? p.size : p.size - p.minSize),
           0,
         )
-
         const maxShrinkAfterWithCollapse = panelsAfter.reduce(
           (sum, p) => sum + (p.collapsible ? p.size : p.size - p.minSize),
           0,
@@ -319,18 +317,16 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         }
 
         while (true) {
+          // Constraints - No Expand
           const maxGrowBeforeNoExpand = panelsBefore.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.maxSize - p.size),
             0,
           )
-
           const maxGrowAfterNoExpand = panelsAfter.reduce((sum, p) => sum + (p.isCollapsed ? 0 : p.maxSize - p.size), 0)
-
           const maxShrinkBeforeNoCollapse = panelsBefore.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
             0,
           )
-
           const maxShrinkAfterNoCollapse = panelsAfter.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
             0,
