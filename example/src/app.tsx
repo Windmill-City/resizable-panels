@@ -18,6 +18,7 @@ function App() {
             <ResizablePanel
               className="border-r data-[maximized=true]:border-none data-[collapsed=true]:border-none"
               collapsible
+              collapsed
             >
               left
             </ResizablePanel>
