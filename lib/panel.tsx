@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useId, useLayoutEffect, useReducer, useRef } from "react";
-import { useGroupContext } from "./group";
-import type { PanelValue, ResizablePanelProps } from "./types";
+import { useId, useLayoutEffect, useReducer, useRef } from "react"
+import { useGroupContext } from "./group"
+import type { PanelValue, ResizablePanelProps } from "./types"
 
 export function ResizablePanel({
   id: idProp,
@@ -15,23 +15,15 @@ export function ResizablePanel({
   collapsible = false,
   okMaximize = false,
 }: ResizablePanelProps) {
-  const group = useGroupContext();
-  const [, setDirty] = useReducer(() => ({}), {});
+  const group = useGroupContext()
+  const [, setDirty] = useReducer(() => ({}), {})
 
-  const id = idProp ?? useId();
-  const containerEl = useRef<HTMLDivElement>(null);
+  const id = idProp ?? useId()
+  const containerEl = useRef<HTMLDivElement>(null)
 
-  console.assert(defaultSize >= minSize, `[ResizablePanel] defaultSize < minSize: ${id}`);
-
-  console.assert(
-    maxSize === undefined || defaultSize <= maxSize,
-    `[ResizablePanel] defaultSize > maxSize: ${id}`,
-  );
-
-  console.assert(
-    maxSize === undefined || minSize <= maxSize,
-    `[ResizablePanel] minSize > maxSize: ${id}`,
-  );
+  console.assert(defaultSize >= minSize, `[ResizablePanel] defaultSize < minSize: ${id}`)
+  console.assert(maxSize === undefined || defaultSize <= maxSize, `[ResizablePanel] defaultSize > maxSize: ${id}`)
+  console.assert(maxSize === undefined || minSize <= maxSize, `[ResizablePanel] minSize > maxSize: ${id}`)
 
   const ref = useRef<PanelValue>({
     id,
@@ -48,35 +40,34 @@ export function ResizablePanel({
     isMaximized: false,
     containerEl,
     setDirty,
-  }).current;
+  }).current
 
-  const isCol = group.direction === "col";
-
-  useLayoutEffect(() => {
-    group.registerPanel(ref);
-    return () => group.unregisterPanel(id);
-  }, []);
+  const isCol = group.direction === "col"
 
   useLayoutEffect(() => {
-    const el = containerEl.current!;
+    group.registerPanel(ref)
+    return () => group.unregisterPanel(id)
+  }, [])
 
-    // Initialize size from actual DOM dimensions (border-box)
-    ref.size = isCol ? el.offsetWidth : el.offsetHeight;
+  if (expand)
+    useLayoutEffect(() => {
+      const el = containerEl.current!
 
-    // Observe size changes and update ref.size (border-box)
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const newSize = isCol
-          ? entry.borderBoxSize[0].inlineSize
-          : entry.borderBoxSize[0].blockSize;
-        if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
-          ref.size = newSize;
+      // Initialize size from actual DOM dimensions (border-box)
+      ref.size = isCol ? el.offsetWidth : el.offsetHeight
+
+      // Observe size changes and update ref.size (border-box)
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const newSize = isCol ? entry.borderBoxSize[0].inlineSize : entry.borderBoxSize[0].blockSize
+          if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
+            ref.size = newSize
+          }
         }
-      }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+      })
+      observer.observe(el)
+      return () => observer.disconnect()
+    }, [])
 
   return (
     <div
@@ -95,5 +86,5 @@ export function ResizablePanel({
     >
       {children}
     </div>
-  );
+  )
 }
