@@ -2,7 +2,7 @@
 
 # Resizable Panels
 
-一个 Headless 的可调整大小面板 React 组件库。基于 TypeScript 构建，为创建可调整大小的界面提供灵活、无样式的基础。
+一个仿照 VSCode 面板实现的 Headless React 组件库，用于构建可调整大小的面板布局。
 
 ## 特性
 

@@ -2,7 +2,7 @@
 
 # Resizable Panels
 
-A headless React component library for building resizable panel layouts. Built with TypeScript, it provides a flexible, unstyled foundation for creating resizable interfaces.
+A headless React component library for building resizable panel layouts, inspired by VSCode panels.
 
 ## Features
 
