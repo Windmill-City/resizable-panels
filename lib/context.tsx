@@ -279,13 +279,15 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
           ? Math.abs(delta)
           : panelsAfter.reduce((sum, p) => sum + (p.maxSize! - p.size), 0)
 
-        const maxShrinkBeforeWithCollapse = panelsBefore
-          .filter((p) => p.collapsible && !p.isCollapsed)
-          .reduce((sum, p) => sum + p.size, 0)
+        const maxShrinkBeforeWithCollapse = panelsBefore.reduce(
+          (sum, p) => sum + (p.collapsible ? p.size : p.size - p.minSize),
+          0,
+        )
 
-        const maxShrinkAfterWithCollapse = panelsAfter
-          .filter((p) => p.collapsible && !p.isCollapsed)
-          .reduce((sum, p) => sum + p.size, 0)
+        const maxShrinkAfterWithCollapse = panelsAfter.reduce(
+          (sum, p) => sum + (p.collapsible ? p.size : p.size - p.minSize),
+          0,
+        )
 
         console.debug("[Resizable] Constraints:", {
           maxGrowBeforeWithExpand,
