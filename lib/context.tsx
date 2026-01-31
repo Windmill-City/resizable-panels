@@ -487,7 +487,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         return
       }
 
-      // Apply deferred panel size, in case total size has changed
+      // Update panel size, in case group size changed while resizing
       for (const [group] of ref.dragIndex.values()) {
         for (const panel of group.panels.values()) {
           const el = panel.containerEl.current!
