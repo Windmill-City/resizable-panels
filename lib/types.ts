@@ -75,8 +75,6 @@ export interface GroupValue {
   setCollapse: (id: string, collapse: boolean) => boolean
   // Set Maximize Panel, returns true if successful
   setMaximize: (id?: string) => boolean
-  // Maximized Panel
-  maximizedPanel?: PanelValue
 }
 
 export interface ResizableContextProps {

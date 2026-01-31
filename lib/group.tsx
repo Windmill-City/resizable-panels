@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
-import { useResizableContext } from "./context"
+import { adjustPanelByDelta, savePanelState, useResizableContext } from "./context"
 import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
 export const GroupContext = createContext<GroupValue | null>(null)
@@ -33,41 +33,73 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
       ref.panels.delete(panelId)
       console.debug("[ResizableGroup] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
     },
-    setCollapse: (panelId: string, collapse: boolean) => {
+    setCollapse: (panelId: string, collapse: boolean): boolean => {
       const panel = ref.panels.get(panelId)
       if (!panel) {
         throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
       }
-      if (!panel.collapsible || panel.isCollapsed === collapse) return
+      if (!panel.collapsible || panel.isCollapsed === collapse) return false
+
+      const panels = Array.from(ref.panels.values())
+      const index = panels.indexOf(panel)
+
+      const panelsBefore = panels.slice(0, index + 1).reverse()
+      const panelsAfter = panels.slice(index + 1)
+
       if (collapse) {
-        panel.prevSize = panel.size
-        panel.size = 0
-        panel.isCollapsed = true
+        adjustPanelByDelta(panelsBefore, panelsAfter, -panel.size, ref)
       } else {
-        panel.size = panel.prevSize
-        panel.isCollapsed = false
+        adjustPanelByDelta(panelsBefore, panelsAfter, panel.prevSize, ref)
       }
+
+      // Check if the operation succeeded
+      return panel.isCollapsed === collapse
     },
-    setMaximize: (panelId?: string) => {
+    setMaximize: (panelId?: string): boolean => {
       if (panelId) {
         const panel = ref.panels.get(panelId)
         if (!panel) {
           throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
         }
-        if (!panel.okMaximize || ref.maximizedPanel === panel) return
-        if (ref.maximizedPanel) {
-          ref.maximizedPanel.isMaximized = false
+        if (!panel.okMaximize || panel.isMaximized) return false
+
+        const panels = Array.from(ref.panels.values())
+        const index = panels.indexOf(panel)
+
+        // Save current state for all panels before maximizing
+        savePanelState(panels)
+
+        // Simulate dragging left handle (collapse left panels)
+        if (index > 0) {
+          const leftPanels = panels.slice(0, index)
+          const leftTotalSize = leftPanels.reduce((sum, p) => sum + (p.isCollapsed ? 0 : p.size), 0)
+          if (leftTotalSize > 0) {
+            // Negative delta: panelsBefore shrinks, panelsAfter grows
+            // We want left panels to shrink, so we use negative delta
+            const panelsBefore = panels.slice(0, index).reverse()
+            const panelsAfter = panels.slice(index)
+            adjustPanelByDelta(panelsBefore, panelsAfter, -leftTotalSize, ref)
+          }
         }
-        panel.isMaximized = true
-        ref.maximizedPanel = panel
+
+        // Simulate dragging right handle (collapse right panels)
+        if (index < panels.length - 1) {
+          const rightPanels = panels.slice(index + 1)
+          const rightTotalSize = rightPanels.reduce((sum, p) => sum + (p.isCollapsed ? 0 : p.size), 0)
+          if (rightTotalSize > 0) {
+            // Positive delta: panelsBefore grows, panelsAfter shrinks
+            // We want right panels to shrink, so we drag the handle at current panel with positive delta
+            const panelsBefore = panels.slice(0, index + 1).reverse()
+            const panelsAfter = panels.slice(index + 1)
+            adjustPanelByDelta(panelsBefore, panelsAfter, rightTotalSize, ref)
+          }
+        }
+
+        return true
       } else {
-        if (ref.maximizedPanel) {
-          ref.maximizedPanel.isMaximized = false
-          ref.maximizedPanel = undefined
-        }
+
       }
     },
-    maximizedPanel: undefined,
   }).current
 
   useLayoutEffect(() => {

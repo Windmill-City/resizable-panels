@@ -17,13 +17,13 @@ export function useResizableContext() {
  * The size of the resize handle (px)
  * Used to determine the tolerance area around edges.
  */
-const HANDLE_SIZE = 8
+export const HANDLE_SIZE = 8
 
 /**
  * The margin from window edges to exclude from edge detection (px)
  * Prevents conflict with window resize handles.
  */
-const WINDOW_EDGE_MARGIN = 8
+export const WINDOW_EDGE_MARGIN = 8
 
 /**
  * Finds the edges near a given point within all resizable groups.
@@ -34,7 +34,7 @@ const WINDOW_EDGE_MARGIN = 8
  *          values are tuples of [GroupValue, edgeIndex]. Edge index i represents
  *          the boundary between panel[i] and panel[i+1].
  */
-function findEdgeIndexAtPoint(
+export function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
   point: { x: number; y: number },
 ): Map<Direction, [GroupValue, number]> {
@@ -93,6 +93,40 @@ function findEdgeIndexAtPoint(
   }
 
   return result
+}
+
+/**
+ * Saves the previous state of panels
+ * Stores current collapsed state and size (if not collapsed) to prevCollapsed and prevSize.
+ *
+ * @param panels - Array of PanelValue objects to save state for
+ */
+export function savePanelState(panels: PanelValue[]) {
+  for (const panel of panels) {
+    panel.prevCollapsed = panel.isCollapsed
+    // prevSize saves panel size before collapse, do not overwrite it
+    if (!panel.isCollapsed) {
+      panel.prevSize = panel.size
+    }
+  }
+}
+
+/**
+ * Updates the maximized state of panels based on how many are non-collapsed.
+ * If only one panel is non-collapsed, it gets maximized.
+ * If multiple panels are non-collapsed, none are maximized.
+ *
+ * @param nonCollapsed - nonCollapsed panels to update
+ */
+export function updateMaximized(nonCollapsed: PanelValue[]) {
+  if (nonCollapsed.length === 1) {
+    const panel = nonCollapsed[0]
+    panel.isMaximized = true
+  } else if (nonCollapsed.length > 1) {
+    for (const panel of nonCollapsed) {
+      panel.isMaximized = false
+    }
+  }
 }
 
 /**
@@ -342,15 +376,7 @@ export function adjustPanelByDelta(
   }
 
   // Update maximized state
-  const nonCollapsed = [...panelsBefore, ...panelsAfter].filter((p) => !p.isCollapsed)
-  if (nonCollapsed.length === 1) {
-    const panel = nonCollapsed[0]
-    group.setMaximize(panel.id)
-  } else {
-    if (nonCollapsed.length > 1) {
-      group.setMaximize(undefined)
-    }
-  }
+  updateMaximized([...panelsBefore, ...panelsAfter].filter((p) => !p.isCollapsed))
 
   // Check and shrink excess size if total exceeds container
   const currTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
@@ -367,7 +393,6 @@ export function adjustPanelByDelta(
     currTotalSize,
     diff,
     group,
-    nonCollapsed,
   })
 
   // Trigger re-render for all affected panels
@@ -410,12 +435,13 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
-          for (const [, panel] of group.panels) {
-            panel.prevCollapsed = panel.isCollapsed
-            // prevSize saves panel size before collapse/maximize, do not overwrite it
-            if (!panel.isCollapsed || !panel.isMaximized) {
-              panel.prevSize = panel.size
-            }
+          const panels = Array.from(group.panels.values())
+          const isAnyMaximized = panels.some((p) => p.isMaximized)
+
+          // Do touch if any panel has maximized,
+          // as there are states saved in prevCollapsed & prevSize
+          if (!isAnyMaximized) {
+            savePanelState(panels)
           }
         }
 
@@ -507,20 +533,30 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
   }, [])
 
   useLayoutEffect(() => {
-    // Distribute Group space respect the maxSize constraints
     for (const group of ref.groups.values()) {
-      const panels = Array.from(group.panels.values()).filter((p) => !p.isCollapsed)
+      // Ensure prevSize is within constraints
+      for (const panel of group.panels.values()) {
+        if (!panel.isCollapsed) continue
+        panel.prevSize = Math.max(panel.minSize, Math.min(panel.prevSize, panel.maxSize))
+      }
+
+      const nonCollapsed = Array.from(group.panels.values()).filter((p) => !p.isCollapsed)
+
+      // Update maximized state
+      updateMaximized(nonCollapsed)
+
+      // Distribute Group space respect the maxSize constraints
 
       // Total Group space
-      const totalSize = panels.reduce((sum, p) => sum + p.size, 0)
+      const totalSize = nonCollapsed.reduce((sum, p) => sum + p.size, 0)
       if (totalSize <= 0) continue
 
       // Maximum size required in total
-      const totalMaxSize = panels.reduce((sum, p) => sum + p.maxSize, 0)
+      const totalMaxSize = nonCollapsed.reduce((sum, p) => sum + p.maxSize, 0)
       if (totalMaxSize < totalSize) continue
 
       // Check if any panel violates the maxSize constraint
-      const violates = panels.filter((p) => p.size > p.maxSize)
+      const violates = nonCollapsed.filter((p) => p.size > p.maxSize)
       if (!violates.length) continue
 
       // Exceeded size that need to distribute
@@ -532,19 +568,11 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
       }
 
       // Distribute exceeds
-      growSequentially(panels, exceeds)
+      growSequentially(nonCollapsed, exceeds)
 
       // Trigger Re-render
-      for (const panel of panels) {
+      for (const panel of nonCollapsed) {
         panel.setDirty()
-      }
-    }
-
-    // Ensure prevSize is within constraints
-    for (const group of ref.groups.values()) {
-      for (const panel of group.panels.values()) {
-        if (!panel.isCollapsed) continue
-        panel.prevSize = Math.max(panel.minSize, Math.min(panel.prevSize, panel.maxSize))
       }
     }
   }, [])
