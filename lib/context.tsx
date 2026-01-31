@@ -112,24 +112,6 @@ export function savePanelState(panels: PanelValue[]) {
 }
 
 /**
- * Updates the maximized state of panels based on how many are non-collapsed.
- * If only one panel is non-collapsed, it gets maximized.
- * If multiple panels are non-collapsed, none are maximized.
- *
- * @param nonCollapsed - nonCollapsed panels to update
- */
-export function updateMaximized(nonCollapsed: PanelValue[]) {
-  if (nonCollapsed.length === 1) {
-    const panel = nonCollapsed[0]
-    panel.isMaximized = true
-  } else if (nonCollapsed.length > 1) {
-    for (const panel of nonCollapsed) {
-      panel.isMaximized = false
-    }
-  }
-}
-
-/**
  * Distributes space sequentially to panels (growing)
  *
  * @param panels - Array of panels to distribute space among
@@ -227,8 +209,9 @@ export function adjustPanelByDelta(
   delta: number,
   group: GroupValue,
 ): void {
+  const panels = [...panelsBefore, ...panelsAfter]
   // Save prevTotalSize for diff check, diff should be 0 after resizing
-  const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
+  const prevTotalSize = panels.reduce((sum, panel) => sum + panel.size, 0)
 
   // Constraints - the max possible grow/shrink considering the collapsed panels
   const maxGrowBeforeWithExpand = panelsBefore.reduce((sum, p) => sum + (p.maxSize - p.size), 0)
@@ -376,10 +359,20 @@ export function adjustPanelByDelta(
   }
 
   // Update maximized state
-  updateMaximized([...panelsBefore, ...panelsAfter].filter((p) => !p.isCollapsed))
+  const nonCollapsed = panels.filter((p) => !p.isCollapsed)
+  if (nonCollapsed.length === 1) {
+    group.prevMaximize = panels.map((p) => [p.prevCollapsed, p.prevSize])
+    const panel = nonCollapsed[0]
+    panel.isMaximized = true
+  } else if (nonCollapsed.length > 1) {
+    for (const panel of nonCollapsed) {
+      panel.isMaximized = false
+      group.prevMaximize = undefined
+    }
+  }
 
   // Check and shrink excess size if total exceeds container
-  const currTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
+  const currTotalSize = panels.reduce((sum, panel) => sum + panel.size, 0)
   let diff = currTotalSize - prevTotalSize
   console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
@@ -393,10 +386,11 @@ export function adjustPanelByDelta(
     currTotalSize,
     diff,
     group,
+    nonCollapsed,
   })
 
   // Trigger re-render for all affected panels
-  for (const panel of [...panelsBefore, ...panelsAfter]) {
+  for (const panel of panels) {
     panel.setDirty()
   }
 }
@@ -537,7 +531,12 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
       const nonCollapsed = Array.from(group.panels.values()).filter((p) => !p.isCollapsed)
 
       // Update maximized state
-      updateMaximized(nonCollapsed)
+      if (nonCollapsed.length > 1) {
+        for (const panel of nonCollapsed) {
+          panel.isMaximized = false
+          group.prevMaximize = undefined
+        }
+      }
 
       // Distribute Group space respect the maxSize constraints
 
