@@ -61,10 +61,7 @@ export function ResizablePanel({
     const observer = new ResizeObserver((entries) => {
       if (!context.isDragging)
         for (const entry of entries) {
-          const newSize = isCol ? entry.contentRect.width : entry.contentRect.height
-          if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
-            ref.size = newSize
-          }
+          ref.size = isCol ? entry.contentRect.width : entry.contentRect.height
         }
     })
     observer.observe(el)
