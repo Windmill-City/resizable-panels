@@ -33,6 +33,7 @@ function App() {
                   minSize={80}
                   collapsible
                   okMaximize
+                  collapsed
                 >
                   bottom
                 </ResizablePanel>
@@ -42,6 +43,7 @@ function App() {
             <ResizablePanel
               className="border-l  data-[maximized=true]:border-none data-[collapsed=true]:border-none"
               collapsible
+              collapsed
             >
               right
             </ResizablePanel>

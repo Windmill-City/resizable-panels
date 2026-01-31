@@ -13,6 +13,7 @@ export function ResizablePanel({
   minSize = 200,
   maxSize = Infinity,
   collapsible = false,
+  collapsed = false,
   okMaximize = false,
 }: ResizablePanelProps) {
   const group = useGroupContext()
@@ -27,14 +28,14 @@ export function ResizablePanel({
 
   const ref = useRef<PanelValue>({
     id,
-    size: defaultSize,
+    size: collapsed ? 0 : defaultSize,
     minSize,
     maxSize,
     defaultSize,
     expand,
     prevSize: defaultSize,
     collapsible,
-    isCollapsed: false,
+    isCollapsed: collapsed,
     prevCollapsed: false,
     okMaximize,
     isMaximized: false,

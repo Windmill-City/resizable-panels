@@ -122,6 +122,8 @@ export interface ResizablePanelProps {
   defaultSize?: number
   // Allow Collapse?
   collapsible?: boolean
+  // Initial Collapsed State?
+  collapsed?: boolean
   // Allow Maximize?
   okMaximize?: boolean
 }
