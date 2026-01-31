@@ -41,6 +41,9 @@
     "headless",
     "typescript"
   ],
+  "prettier": {
+    "printWidth": 120
+  },
   "license": "MIT",
   "private": true,
   "packageManager": "pnpm@9.0.0"
