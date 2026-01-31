@@ -419,12 +419,12 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         }
 
         // Update maximized state
-        const filtered = [...panelsBefore, ...panelsAfter].filter((p) => !p.isCollapsed)
-        if (filtered.length === 1) {
-          const panel = filtered[0]
+        const nonCollapsed = [...panelsBefore, ...panelsAfter].filter((p) => !p.isCollapsed)
+        if (nonCollapsed.length === 1) {
+          const panel = nonCollapsed[0]
           group.setMaximize(panel.id)
         } else {
-          if (filtered.length > 1) {
+          if (nonCollapsed.length > 1) {
             group.setMaximize(undefined)
           }
         }
@@ -444,7 +444,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
           currTotalSize,
           diff,
           group,
-          nonCollapsed: filtered,
+          nonCollapsed,
         })
 
         // Trigger re-render for all affected panels
