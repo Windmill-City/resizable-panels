@@ -259,7 +259,7 @@ export function adjustPanelByDelta(
       expandedSpace += nextPanel.minSize
       nextPanel.isCollapsed = false
       nextPanel.size = nextPanel.minSize
-      console.debug("[Resizable] Expanded Panel:", { panel: nextPanel, remaining, maxGrowBeforeWithExpand })
+      console.debug("[Resizable] Expanded Panel:", { panel: nextPanel, remaining, maxShrinkWithCollapse })
       return true
     }
     return false
