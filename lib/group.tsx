@@ -43,6 +43,9 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
       const panels = Array.from(ref.panels.values())
       const index = panels.indexOf(panel)
 
+      // Save current state before operation
+      const prevState = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
+
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
 
@@ -52,8 +55,17 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
         adjustPanelByDelta(panelsBefore, panelsAfter, panel.prevSize, ref)
       }
 
-      // Check if the operation succeeded
-      return panel.isCollapsed === collapse
+      // Check if the operation succeeded, rollback if failed
+      if (panel.isCollapsed !== collapse) {
+        panels.forEach((p, i) => {
+          const [wasCollapsed, prevSize] = prevState[i]
+          p.isCollapsed = wasCollapsed
+          p.size = prevSize
+        })
+        return false
+      }
+
+      return true
     },
     setMaximize: (panelId?: string): boolean => {
       if (panelId) {
@@ -95,7 +107,18 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
           }
         }
 
-        return panel.isMaximized
+        // If maximize failed, restore to previous state
+        if (!panel.isMaximized) {
+          panels.forEach((p, i) => {
+            const [wasCollapsed, prevSize] = ref.prevMaximize![i]
+            p.isCollapsed = wasCollapsed
+            p.size = prevSize
+          })
+          ref.prevMaximize = undefined
+          return false
+        }
+
+        return true
       } else {
         // Restore all panels to previous state
         const prevState = ref.prevMaximize
