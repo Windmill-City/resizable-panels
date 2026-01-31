@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
+import { createContext, useContext, useEffect, useId, useRef } from "react"
 import type { ContextValue, Direction, GroupValue, PanelValue, ResizableContextProps } from "./types"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
@@ -519,56 +519,6 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
-    }
-  }, [])
-
-  useLayoutEffect(() => {
-    for (const group of ref.groups.values()) {
-      // Ensure prevSize is within constraints
-      for (const panel of group.panels.values()) {
-        if (!panel.isCollapsed) continue
-        panel.prevSize = Math.max(panel.minSize, Math.min(panel.prevSize, panel.maxSize))
-      }
-
-      const nonCollapsed = Array.from(group.panels.values()).filter((p) => !p.isCollapsed)
-
-      // Update maximized state
-      if (nonCollapsed.length > 1) {
-        for (const panel of nonCollapsed) {
-          panel.isMaximized = false
-          group.prevMaximize = undefined
-        }
-      }
-
-      // Distribute Group space respect the maxSize constraints
-
-      // Total Group space
-      const totalSize = nonCollapsed.reduce((sum, p) => sum + p.size, 0)
-      if (totalSize <= 0) continue
-
-      // Maximum size required in total
-      const totalMaxSize = nonCollapsed.reduce((sum, p) => sum + p.maxSize, 0)
-      if (totalMaxSize < totalSize) continue
-
-      // Check if any panel violates the maxSize constraint
-      const violates = nonCollapsed.filter((p) => p.size > p.maxSize)
-      if (!violates.length) continue
-
-      // Exceeded size that need to distribute
-      const exceeds = violates.reduce((sum, p) => sum + p.size - p.maxSize, 0)
-
-      // Reset violates to their maxSize
-      for (const panel of violates) {
-        panel.size = panel.maxSize
-      }
-
-      // Distribute exceeds
-      growSequentially(nonCollapsed, exceeds)
-
-      // Trigger Re-render
-      for (const panel of nonCollapsed) {
-        panel.setDirty()
-      }
     }
   }, [])
 
