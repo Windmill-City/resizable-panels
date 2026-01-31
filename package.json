@@ -18,8 +18,8 @@
   ],
   "scripts": {
     "build": "tsup --minify",
-    "dev": "concurrently \"tsup -- watch\" \"pnpm -r dev\"",
-    "dev-minify": "concurrently \"tsup --watch --minify\" \"pnpm -r dev\"",
+    "dev": "concurrently \"tsup --watch\" \"pnpm -r dev\"",
+    "dev:minify": "concurrently \"tsup --watch --minify\" \"pnpm -r dev\"",
     "postinstall": "pnpm build",
     "typecheck": "tsc --noEmit"
   },
