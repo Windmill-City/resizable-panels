@@ -364,7 +364,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
             }
             clamped = Math.min(clampedGrow, clampedShrink)
 
-            console.debug("[Resizable] Allocate:", {
+            console.debug("[Resizable] Clamped:", {
               delta,
               clamped,
               clampedGrow,
@@ -397,7 +397,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
             }
             clamped = Math.max(clampedGrow, clampedShrink)
 
-            console.debug("[Resizable] Allocate:", {
+            console.debug("[Resizable] Clamped:", {
               delta,
               clamped,
               clampedGrow,
