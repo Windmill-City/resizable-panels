@@ -49,25 +49,24 @@ export function ResizablePanel({
     return () => group.unregisterPanel(id)
   }, [])
 
-  if (expand)
-    useLayoutEffect(() => {
-      const el = containerEl.current!
+  useLayoutEffect(() => {
+    const el = containerEl.current!
 
-      // Initialize size from actual DOM dimensions (content-box)
-      ref.size = isCol ? el.clientWidth : el.clientHeight
+    // Initialize size from actual DOM dimensions (content-box)
+    ref.size = isCol ? el.clientWidth : el.clientHeight
 
-      // Observe size changes and update ref.size (content-box)
-      const observer = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const newSize = isCol ? entry.contentBoxSize[0].inlineSize : entry.contentBoxSize[0].blockSize
-          if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
-            ref.size = newSize
-          }
+    // Observe size changes and update ref.size (content-box)
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const newSize = isCol ? entry.contentBoxSize[0].inlineSize : entry.contentBoxSize[0].blockSize
+        if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
+          ref.size = newSize
         }
-      })
-      observer.observe(el)
-      return () => observer.disconnect()
-    }, [])
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div
