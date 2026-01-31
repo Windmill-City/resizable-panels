@@ -72,7 +72,7 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed || undefined}
       data-maximized={ref.isMaximized || undefined}
       style={{
-        flex: ref.expand && !ref.isCollapsed ? `1 1 0%` : `0 1 ${ref.size}px`,
+        flex: ref.isCollapsed ? `0 1 ${ref.size}px` : ref.expand ? `999 1 0%` : `1 1 ${ref.size}px`,
         display: "flex",
         overflow: "hidden",
         [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? 0 : ref.minSize,
