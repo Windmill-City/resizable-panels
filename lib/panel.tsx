@@ -32,7 +32,6 @@ export function ResizablePanel({
     maxSize,
     defaultSize,
     expand,
-    deferredSize: defaultSize,
     prevSize: defaultSize,
     collapsible,
     isCollapsed: false,
