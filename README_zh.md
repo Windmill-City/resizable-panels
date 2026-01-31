@@ -19,11 +19,7 @@
 ## 安装
 
 ```bash
-npm install @local/resizable-panels
-# 或
 pnpm add @local/resizable-panels
-# 或
-yarn add @local/resizable-panels
 ```
 
 ## 开发

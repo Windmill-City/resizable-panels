@@ -11,7 +11,7 @@ A headless React component library for building resizable panel layouts. Built w
 - 🗂️ **Nested Groups** - Support for complex nested layouts
 - 📏 **Smart Constraints** - min/max size constraints with intelligent space distribution
 - 🔄 **Collapsible Panels** - Panels can be collapsed and expanded
-- 🔍 **Maximizable Panels** - Support for maximizing panels
+- 🔍 **Maximize Panels** - Support for maximizing panels
 - 🌱 **Expand Mode** - Panels can grow/shrink when container size changes
 - ⚡ **Performance** - Efficient resize handling with minimal re-renders
 - 🔷 **TypeScript** - Full type safety support
@@ -19,11 +19,7 @@ A headless React component library for building resizable panel layouts. Built w
 ## Installation
 
 ```bash
-npm install @local/resizable-panels
-# or
 pnpm add @local/resizable-panels
-# or
-yarn add @local/resizable-panels
 ```
 
 ## Development
