@@ -2,7 +2,7 @@
 
 # Resizable Panels
 
-一个仿照 VSCode 面板实现的 Headless React 组件库，用于构建可调整大小的面板布局。
+一个用于构建类 IDE 布局（类似 VSCode）的 Headless React 组件库。
 
 ## 特性
 

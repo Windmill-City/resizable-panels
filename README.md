@@ -2,7 +2,7 @@
 
 # Resizable Panels
 
-A headless React component library for building resizable panel layouts, inspired by VSCode panels.
+A headless React component library designed for building IDE-like layouts (similar to VSCode).
 
 ## Features
 
