@@ -434,14 +434,13 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Update cursor and hover state
       if (!ref.isDragging) {
         const edges = findEdgeIndexAtPoint(ref.groups, {
           x: e.clientX,
           y: e.clientY,
         })
-        ref.hoverIndex = edges
 
+        // Update cursor
         switch (edges.size) {
           case 0:
             // No edge: show default
@@ -456,6 +455,23 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
             // Two edges (intersection): show crosshair
             document.body.style.cursor = "move"
             break
+        }
+
+        // Update hover state
+        for (const [group, index] of ref.hoverIndex.values()) {
+          const handle = group.handles.at(index)
+          if (handle) {
+            handle.isHovered = false
+            handle.setDirty()
+          }
+        }
+        ref.hoverIndex = edges
+        for (const [group, index] of ref.hoverIndex.values()) {
+          const handle = group.handles.at(index)
+          if (handle) {
+            handle.isHovered = true
+            handle.setDirty()
+          }
         }
         return
       }

@@ -65,6 +65,8 @@ export interface HandleValue {
   index: number
   // Is Mouse Hovered
   isHovered: boolean
+  // Trigger Re-render
+  setDirty: () => void
 }
 
 export interface GroupValue {

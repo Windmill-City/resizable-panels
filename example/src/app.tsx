@@ -1,4 +1,4 @@
-import { ResizableContext, ResizableGroup, ResizablePanel } from "@local/resizable-panels"
+import { ResizableContext, ResizableGroup, ResizableHandle, ResizablePanel } from "@local/resizable-panels"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import StatusBar from "./ui/status-bar"
@@ -22,12 +22,14 @@ function App() {
             >
               left
             </ResizablePanel>
+            <ResizableHandle />
             <ResizablePanel expand>
               <ResizableGroup direction="row">
                 {/* Editor */}
                 <ResizablePanel minSize={80} collapsible expand>
                   top
                 </ResizablePanel>
+                <ResizableHandle />
                 {/* Bottom Panel */}
                 <ResizablePanel
                   className="border-t data-maximized:border-none data-collapsed:border-none"
@@ -40,6 +42,7 @@ function App() {
                 </ResizablePanel>
               </ResizableGroup>
             </ResizablePanel>
+            <ResizableHandle />
             {/* Right Sidebar */}
             <ResizablePanel
               className="border-l  data-maximized:border-none data-collapsed:border-none"

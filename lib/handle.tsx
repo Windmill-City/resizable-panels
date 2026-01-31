@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useLayoutEffect, useRef } from "react"
+import { useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { HandleValue, ResizableHandleProps } from "./types"
 
@@ -8,11 +8,13 @@ export function ResizableHandle({ className = "", children }: ResizableHandlePro
   const group = useGroupContext()
 
   const id = useId()
+  const [, setDirty] = useReducer(() => ({}), {})
 
   const ref = useRef<HandleValue>({
     id,
     index: group.handles.length,
     isHovered: false,
+    setDirty,
   }).current
 
   useLayoutEffect(() => {
