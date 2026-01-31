@@ -18,7 +18,7 @@ export function ResizableHandle({ className = "", children }: ResizableHandlePro
   useLayoutEffect(() => {
     group.registerHandle(ref)
     return () => group.unregisterHandle(id)
-  }, [id])
+  }, [])
 
   return (
     <div
