@@ -268,24 +268,6 @@ import type {
 } from '@local/resizable-panels';
 ```
 
-## Known Issues
-
-### maxSize constraint may be exceeded after window resize
-
-**Steps to reproduce:**
-
-1. Set `maxSize` on a panel
-2. Collapse other panels in a small window
-3. Enlarge the window
-
-**Result:** The panel with `maxSize` may temporarily exceed its limit. Errors may occur when resizing other panels.
-
-**Note:** The panel will return to normal once other panels expand to occupy the excess space.
-
-**Recommendation:** Avoid using `maxSize` if possible to prevent this issue.
-
-**Status:** This issue will not be fixed.
-
 ## License
 
 MIT

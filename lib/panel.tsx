@@ -75,6 +75,7 @@ export function ResizablePanel({
         display: "flex",
         overflow: "hidden",
         [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? 0 : ref.minSize,
+        [isCol ? "maxWidth" : "maxHeight"]: ref.maxSize === Infinity ? undefined : ref.maxSize,
       }}
       className={className}
     >
