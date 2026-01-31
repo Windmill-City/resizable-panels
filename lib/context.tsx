@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useRef } from "react"
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
 import type { ContextValue, Direction, GroupValue, PanelValue, ResizableContextProps } from "./types"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
@@ -460,10 +460,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         }
 
         // Check and shrink excess size if total exceeds container
-        // Shrink from panels that grew (based on delta direction), starting from handle
-        // If not enough, shrink from the other side
         const currTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
-
         let diff = currTotalSize - prevTotalSize
         console.assert(diff === 0, `Group size changed while resizing: ${diff}`)
 
@@ -514,6 +511,51 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    // Distribute Group space respect the maxSize constraints
+    for (const group of ref.groups.values()) {
+      const panels = Array.from(group.panels.values()).filter((p) => !p.isCollapsed)
+
+      // Total Group space
+      const totalSize = panels.reduce((sum, p) => sum + p.size, 0)
+      if (totalSize <= 0) continue
+
+      // Maximum size required in total
+      const totalMaxSize = panels.some((p) => p.maxSize === undefined)
+        ? undefined
+        : panels.reduce((sum, p) => sum + p.maxSize!, 0)
+      if (totalMaxSize && totalMaxSize < totalSize) continue
+
+      // Check if any panel violates the maxSize constraint
+      const violates = panels.filter((p) => p.maxSize && p.size > p.maxSize)
+      if (!violates.length) continue
+
+      // Exceeded size that need to distribute
+      const exceeds = violates.reduce((sum, p) => sum + p.size - p.maxSize!, 0)
+
+      // Reset violates to their maxSize
+      for (const panel of violates) {
+        panel.size = panel.maxSize!
+      }
+
+      // Distribute exceeds
+      growSequentially(panels, exceeds)
+
+      // Trigger Re-render
+      for (const panel of panels) {
+        panel.setDirty()
+      }
+    }
+
+    // Ensure prevSize is within constraints
+    for (const group of ref.groups.values()) {
+      for (const panel of group.panels.values()) {
+        if (!panel.isCollapsed) continue
+        panel.prevSize = Math.max(panel.minSize, Math.min(panel.prevSize, panel.maxSize ?? Infinity))
+      }
     }
   }, [])
 
