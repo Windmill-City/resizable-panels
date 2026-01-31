@@ -306,9 +306,9 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         }
 
         // Try to expand a collapsed panel from the given panels if there's enough space
-        const tryExpandPanel = (panels: PanelValue[], remaining: number, maxShrintWithCollapse: number): boolean => {
+        const tryExpandPanel = (panels: PanelValue[], remaining: number, maxShrinkWithCollapse: number): boolean => {
           const nextPanel = panels.find((p) => p.collapsible && p.isCollapsed)
-          if (nextPanel && remaining > nextPanel.minSize / 2 && nextPanel.minSize <= maxShrintWithCollapse) {
+          if (nextPanel && remaining > nextPanel.minSize / 2 && nextPanel.minSize <= maxShrinkWithCollapse) {
             expandedSpace += nextPanel.minSize
             nextPanel.isCollapsed = false
             nextPanel.size = nextPanel.minSize
