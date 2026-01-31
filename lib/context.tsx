@@ -281,26 +281,26 @@ export function adjustPanelByDelta(
 
     // delta > 0 means edge moved down/right (panelsBefore grows, panelsAfter shrinks)
     if (delta > 0) {
+      let minDelta = Math.max(delta, expandedSpace, collapsedSpace)
+
       let clampedGrow, clampedShrink
       {
-        clampedGrow = Math.min(delta, maxGrowBeforeNoExpand + expandedSpace)
+        clampedGrow = Math.min(minDelta, maxGrowBeforeNoExpand + expandedSpace)
         // Try to expand collapsed panels in panelsBefore if they need to grow
-        const remaining = Math.abs(delta - clampedGrow)
+        const remaining = Math.abs(minDelta - clampedGrow)
         if (remaining > 0 && tryExpandPanel(panelsBefore, remaining, maxShrinkAfterWithCollapse)) {
           // Continue loop to recalculate clamped with expanded panel
           continue
         }
-        clampedGrow = Math.max(clampedGrow, expandedSpace, collapsedSpace)
       }
       {
-        clampedShrink = Math.min(delta, maxShrinkAfterNoCollapse + collapsedSpace)
+        clampedShrink = Math.min(minDelta, maxShrinkAfterNoCollapse + collapsedSpace)
         // Try to collapse collapsible panels in panelsAfter if space is still needed
-        const remaining = Math.abs(delta - clampedShrink)
+        const remaining = Math.abs(minDelta - clampedShrink)
         if (remaining > 0 && tryCollapsePanel(panelsAfter, remaining, maxGrowBeforeWithExpand)) {
           // Continue loop to recalculate clamped with new space
           continue
         }
-        clampedShrink = Math.max(clampedShrink, expandedSpace, collapsedSpace)
       }
       clamped = Math.min(clampedGrow, clampedShrink)
 
@@ -314,26 +314,26 @@ export function adjustPanelByDelta(
 
     // delta < 0 means edge moved left/top (panelsBefore shrinks, panelsAfter grows)
     if (delta < 0) {
+      let minDelta = Math.min(delta, -expandedSpace, -collapsedSpace)
+      
       let clampedGrow, clampedShrink
       {
-        clampedGrow = Math.max(delta, -(maxGrowAfterNoExpand + expandedSpace))
+        clampedGrow = Math.max(minDelta, -(maxGrowAfterNoExpand + expandedSpace))
         // Try to expand collapsed panels in panelsAfter if they need to grow
-        const remaining = Math.abs(delta - clampedGrow)
+        const remaining = Math.abs(minDelta - clampedGrow)
         if (remaining > 0 && tryExpandPanel(panelsAfter, remaining, maxShrinkBeforeWithCollapse)) {
           // Continue loop to recalculate clamped with expanded panel
           continue
         }
-        clampedGrow = Math.min(clampedGrow, -expandedSpace, -collapsedSpace)
       }
       {
-        clampedShrink = Math.max(delta, -(maxShrinkBeforeNoCollapse + collapsedSpace))
+        clampedShrink = Math.max(minDelta, -(maxShrinkBeforeNoCollapse + collapsedSpace))
         // Try to collapse collapsible panels in panelsBefore if space is still needed
-        const remaining = Math.abs(delta - clampedShrink)
+        const remaining = Math.abs(minDelta - clampedShrink)
         if (remaining > 0 && tryCollapsePanel(panelsBefore, remaining, maxGrowAfterWithExpand)) {
           // Continue loop to recalculate clamped with new space
           continue
         }
-        clampedShrink = Math.min(clampedShrink, -expandedSpace, -collapsedSpace)
       }
       clamped = Math.max(clampedGrow, clampedShrink)
 
