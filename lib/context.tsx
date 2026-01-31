@@ -436,13 +436,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
           const panels = Array.from(group.panels.values())
-          const isAnyMaximized = panels.some((p) => p.isMaximized)
-
-          // Do touch if any panel has maximized,
-          // as there are states saved in prevCollapsed & prevSize
-          if (!isAnyMaximized) {
-            savePanelState(panels)
-          }
+          savePanelState(panels)
         }
 
         console.debug("[Resizable] MouseDown", {
