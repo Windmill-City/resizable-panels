@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
-import { adjustPanelByDelta, savePanelState, useResizableContext } from "./context"
+import { adjustPanelByDelta, useResizableContext } from "./context"
 import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
 export const GroupContext = createContext<GroupValue | null>(null)
@@ -66,8 +66,8 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
         const panels = Array.from(ref.panels.values())
         const index = panels.indexOf(panel)
 
-        // Save current state for all panels before maximizing
-        savePanelState(panels)
+        // Save current state before maximizing
+        ref.prevMaximize = panels.map((p) => [p.isCollapsed, p.size])
 
         // Simulate dragging left handle (collapse left panels)
         if (index > 0) {
@@ -95,9 +95,23 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
           }
         }
 
-        return true
+        return panel.isMaximized
       } else {
+        // Restore all panels to previous state
+        const prevState = ref.prevMaximize
+        if (!prevState) return true
 
+        const panels = Array.from(ref.panels.values())
+        panels.forEach((p, i) => {
+          if (i < prevState.length) {
+            const [wasCollapsed, prevSize] = prevState[i]
+            p.isCollapsed = wasCollapsed
+            p.size = prevSize
+          }
+        })
+
+        ref.prevMaximize = undefined
+        return true
       }
     },
   }).current
