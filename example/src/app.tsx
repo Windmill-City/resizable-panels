@@ -8,7 +8,7 @@ function App() {
     <div className="flex-1 flex flex-col min-w-fit">
       {/* Menu */}
       <MenuBar>Menu</MenuBar>
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-40">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
         <ResizableContext>
