@@ -112,19 +112,12 @@ function growSequentially(panels: PanelValue[], amount: number): void {
     if (remaining <= 0) break
     if (panel.isCollapsed) continue
 
-    if (panel.maxSize !== undefined) {
-      // Apply maxSize constraint
-      if (panel.size < panel.maxSize) {
-        const available = panel.maxSize - panel.size
-        const give = Math.min(available, remaining)
-        panel.size += give
-        remaining -= give
-      }
-    } else {
-      // No maxSize limit, give all remaining space to this panel
-      panel.size += remaining
-      remaining = 0
-      break
+    // Apply maxSize constraint
+    if (panel.size < panel.maxSize) {
+      const available = panel.maxSize - panel.size
+      const give = Math.min(available, remaining)
+      panel.size += give
+      remaining -= give
     }
   }
 
@@ -271,13 +264,9 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         // Save prevTotalSize for diff check, diff should be 0 after resizing
         const prevTotalSize = [...panelsBefore, ...panelsAfter].reduce((sum, panel) => sum + panel.size, 0)
 
-        const maxGrowBeforeWithExpand = panelsBefore.some((p) => p.maxSize === undefined)
-          ? undefined
-          : panelsBefore.reduce((sum, p) => sum + (p.maxSize! - p.size), 0)
+        const maxGrowBeforeWithExpand = panelsBefore.reduce((sum, p) => sum + (p.maxSize - p.size), 0)
 
-        const maxGrowAfterWithExpand = panelsAfter.some((p) => p.maxSize === undefined)
-          ? undefined
-          : panelsAfter.reduce((sum, p) => sum + (p.maxSize! - p.size), 0)
+        const maxGrowAfterWithExpand = panelsAfter.reduce((sum, p) => sum + (p.maxSize - p.size), 0)
 
         const maxShrinkBeforeWithCollapse = panelsBefore.reduce(
           (sum, p) => sum + (p.collapsible ? p.size : p.size - p.minSize),
@@ -304,13 +293,9 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         let collapsedSpace = 0
 
         // Try to collapse a collapsible panel from the given panels if remaining space is needed
-        const tryCollapsePanel = (panels: PanelValue[], remaining: number, maxGrowWithExpand?: number): boolean => {
+        const tryCollapsePanel = (panels: PanelValue[], remaining: number, maxGrowWithExpand: number): boolean => {
           const nextPanel = panels.find((p) => p.collapsible && !p.isCollapsed)
-          if (
-            nextPanel &&
-            remaining > nextPanel.minSize / 2 &&
-            (!maxGrowWithExpand || nextPanel.size <= maxGrowWithExpand)
-          ) {
+          if (nextPanel && remaining > nextPanel.minSize / 2 && nextPanel.size <= maxGrowWithExpand) {
             collapsedSpace += nextPanel.size
             nextPanel.isCollapsed = true
             nextPanel.size = 0
@@ -334,23 +319,12 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         }
 
         while (true) {
-          const maxGrowBeforeNoExpand = panelsBefore.every((panel) => panel.isCollapsed)
-            ? 0
-            : panelsBefore.some((p) => !p.isCollapsed && p.maxSize === undefined)
-              ? undefined
-              : panelsBefore.reduce(
-                  (sum, p) => sum + (p.isCollapsed || p.maxSize === undefined ? 0 : p.maxSize - p.size),
-                  0,
-                )
+          const maxGrowBeforeNoExpand = panelsBefore.reduce(
+            (sum, p) => sum + (p.isCollapsed ? 0 : p.maxSize - p.size),
+            0,
+          )
 
-          const maxGrowAfterNoExpand = panelsAfter.every((panel) => panel.isCollapsed)
-            ? 0
-            : panelsAfter.some((p) => !p.isCollapsed && p.maxSize === undefined)
-              ? undefined
-              : panelsAfter.reduce(
-                  (sum, p) => sum + (p.isCollapsed || p.maxSize === undefined ? 0 : p.maxSize - p.size),
-                  0,
-                )
+          const maxGrowAfterNoExpand = panelsAfter.reduce((sum, p) => sum + (p.isCollapsed ? 0 : p.maxSize - p.size), 0)
 
           const maxShrinkBeforeNoCollapse = panelsBefore.reduce(
             (sum, p) => sum + (p.isCollapsed ? 0 : p.size - p.minSize),
@@ -373,7 +347,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
           if (delta > 0) {
             let clampedGrow, clampedShrink
             {
-              clampedGrow = Math.min(delta, maxGrowBeforeNoExpand ?? Math.abs(delta) + expandedSpace)
+              clampedGrow = Math.min(delta, maxGrowBeforeNoExpand + expandedSpace)
               // Try to expand collapsed panels in panelsBefore if they need to grow
               const remaining = Math.abs(delta - clampedGrow)
               if (remaining > 0 && tryExpandPanel(panelsBefore, remaining, maxShrinkAfterWithCollapse)) {
@@ -406,7 +380,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
           if (delta < 0) {
             let clampedGrow, clampedShrink
             {
-              clampedGrow = Math.max(delta, -(maxGrowAfterNoExpand ?? Math.abs(delta) + expandedSpace))
+              clampedGrow = Math.max(delta, -(maxGrowAfterNoExpand + expandedSpace))
               // Try to expand collapsed panels in panelsAfter if they need to grow
               const remaining = Math.abs(delta - clampedGrow)
               if (remaining > 0 && tryExpandPanel(panelsAfter, remaining, maxShrinkBeforeWithCollapse)) {
@@ -524,21 +498,19 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
       if (totalSize <= 0) continue
 
       // Maximum size required in total
-      const totalMaxSize = panels.some((p) => p.maxSize === undefined)
-        ? undefined
-        : panels.reduce((sum, p) => sum + p.maxSize!, 0)
-      if (totalMaxSize && totalMaxSize < totalSize) continue
+      const totalMaxSize = panels.reduce((sum, p) => sum + p.maxSize, 0)
+      if (totalMaxSize < totalSize) continue
 
       // Check if any panel violates the maxSize constraint
-      const violates = panels.filter((p) => p.maxSize && p.size > p.maxSize)
+      const violates = panels.filter((p) => p.size > p.maxSize)
       if (!violates.length) continue
 
       // Exceeded size that need to distribute
-      const exceeds = violates.reduce((sum, p) => sum + p.size - p.maxSize!, 0)
+      const exceeds = violates.reduce((sum, p) => sum + p.size - p.maxSize, 0)
 
       // Reset violates to their maxSize
       for (const panel of violates) {
-        panel.size = panel.maxSize!
+        panel.size = panel.maxSize
       }
 
       // Distribute exceeds
@@ -554,7 +526,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
     for (const group of ref.groups.values()) {
       for (const panel of group.panels.values()) {
         if (!panel.isCollapsed) continue
-        panel.prevSize = Math.max(panel.minSize, Math.min(panel.prevSize, panel.maxSize ?? Infinity))
+        panel.prevSize = Math.max(panel.minSize, Math.min(panel.prevSize, panel.maxSize))
       }
     }
   }, [])

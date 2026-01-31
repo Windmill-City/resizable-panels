@@ -41,6 +41,7 @@ function App() {
             <ResizablePanel
               className="border-l  data-[maximized=true]:border-none data-[collapsed=true]:border-none"
               collapsible
+              maxSize={600}
             >
               right
             </ResizablePanel>

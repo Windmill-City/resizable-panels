@@ -12,7 +12,7 @@ export function ResizablePanel({
   expand = false,
   defaultSize = 300,
   minSize = 200,
-  maxSize = undefined,
+  maxSize = Infinity,
   collapsible = false,
   okMaximize = false,
 }: ResizablePanelProps) {
@@ -24,8 +24,8 @@ export function ResizablePanel({
   const containerEl = useRef<HTMLDivElement>(null)
 
   console.assert(defaultSize >= minSize, `[ResizablePanel] defaultSize < minSize: ${id}`)
-  console.assert(maxSize === undefined || defaultSize <= maxSize, `[ResizablePanel] defaultSize > maxSize: ${id}`)
-  console.assert(maxSize === undefined || minSize <= maxSize, `[ResizablePanel] minSize > maxSize: ${id}`)
+  console.assert(defaultSize <= maxSize, `[ResizablePanel] defaultSize > maxSize: ${id}`)
+  console.assert(minSize <= maxSize, `[ResizablePanel] minSize > maxSize: ${id}`)
 
   const ref = useRef<PanelValue>({
     id,
