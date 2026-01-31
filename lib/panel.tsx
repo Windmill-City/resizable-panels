@@ -60,14 +60,15 @@ export function ResizablePanel({
   useLayoutEffect(() => {
     const el = containerEl.current!;
 
-    // Initialize size from actual DOM dimensions
-    const rect = el.getBoundingClientRect();
-    ref.size = isCol ? rect.width : rect.height;
+    // Initialize size from actual DOM dimensions (border-box)
+    ref.size = isCol ? el.offsetWidth : el.offsetHeight;
 
-    // Observe size changes and update ref.size
+    // Observe size changes and update ref.size (border-box)
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const newSize = isCol ? entry.contentRect.width : entry.contentRect.height;
+        const newSize = isCol
+          ? entry.borderBoxSize[0].inlineSize
+          : entry.borderBoxSize[0].blockSize;
         if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
           ref.size = newSize;
         }
