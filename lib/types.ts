@@ -58,6 +58,15 @@ export interface PanelValue {
   setDirty: () => void
 }
 
+export interface HandleValue {
+  // Unique Identifier
+  id: string
+  // Index of the handle (0 = between panel 0 and 1)
+  index: number
+  // Is Mouse Hovered
+  isHovered: boolean
+}
+
 export interface GroupValue {
   // Unique Identifier
   id: string
@@ -65,6 +74,8 @@ export interface GroupValue {
   direction: Direction
   // Panels in the Group
   panels: Map<string, PanelValue>
+  // Handles in the Group
+  handles: HandleValue[]
   // Ref of the ResizableGroup Element
   containerEl: RefObject<HTMLElement>
   // Is Dragging Panels?
@@ -73,6 +84,10 @@ export interface GroupValue {
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
   unregisterPanel: (id: string) => void
+  // Register Handle
+  registerHandle: (handle: HandleValue) => void
+  // Unregister Handle
+  unregisterHandle: (id: string) => void
   // Set Collapse State, returns true if successful
   setCollapse: (id: string, collapse: boolean) => boolean
   // Set Maximize Panel, returns true if successful
@@ -126,4 +141,11 @@ export interface ResizablePanelProps {
   collapsed?: boolean
   // Allow Maximize?
   okMaximize?: boolean
+}
+
+export interface ResizableHandleProps {
+  // CSS Class Name
+  className?: string
+  // Custom content like drag icons
+  children?: ReactNode
 }

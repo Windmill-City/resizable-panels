@@ -16,7 +16,7 @@ function App() {
           <ResizableGroup>
             {/* Left Sidebar */}
             <ResizablePanel
-              className="border-r data-[maximized=true]:border-none data-[collapsed=true]:border-none"
+              className="border-r data-[maximized=true]:border-none data-collapsed:border-none"
               collapsible
               collapsed
             >
@@ -30,7 +30,7 @@ function App() {
                 </ResizablePanel>
                 {/* Bottom Panel */}
                 <ResizablePanel
-                  className="border-t data-[maximized=true]:border-none data-[collapsed=true]:border-none"
+                  className="border-t data-maximized:border-none data-collapsed:border-none"
                   minSize={80}
                   collapsible
                   okMaximize
@@ -42,7 +42,7 @@ function App() {
             </ResizablePanel>
             {/* Right Sidebar */}
             <ResizablePanel
-              className="border-l  data-[maximized=true]:border-none data-[collapsed=true]:border-none"
+              className="border-l  data-maximized:border-none data-collapsed:border-none"
               collapsible
               collapsed
             >

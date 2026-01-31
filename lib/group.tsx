@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
 import { adjustPanelByDelta, useResizableContext } from "./context"
-import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
+import type { GroupValue, HandleValue, PanelValue, ResizableGroupProps } from "./types"
 
 /**
  * Restore multiple panels state
@@ -39,6 +39,7 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
     id,
     direction,
     panels: new Map<string, PanelValue>(),
+    handles: [],
     containerEl,
     isDragging: false,
     registerPanel: (panel: PanelValue) => {
@@ -48,6 +49,14 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
       console.debug("[ResizableGroup] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
+    },
+    registerHandle: (handle: HandleValue) => {
+      ref.handles = [...ref.handles, handle]
+      console.debug("[ResizableGroup] Register handle:", handle.id, "index:", handle.index)
+    },
+    unregisterHandle: (handleId: string) => {
+      ref.handles = ref.handles.filter((h) => h.id != handleId)
+      console.debug("[ResizableGroup] Unregister handle:", handleId)
     },
     setCollapse: (panelId: string, collapse: boolean): boolean => {
       console.assert(!context.isDragging, "Try to setCollapse while Dragging:", {

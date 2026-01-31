@@ -69,8 +69,8 @@ export function ResizablePanel({
       ref={containerEl}
       data-resizable-panel
       data-panel-id={id}
-      data-collapsed={ref.isCollapsed}
-      data-maximized={ref.isMaximized}
+      data-collapsed={ref.isCollapsed || undefined}
+      data-maximized={ref.isMaximized || undefined}
       style={{
         flex: ref.expand && !ref.isCollapsed ? `1 1 0%` : `0 1 ${ref.size}px`,
         display: "flex",
