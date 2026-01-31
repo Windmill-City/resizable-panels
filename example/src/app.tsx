@@ -8,7 +8,7 @@ function App() {
     <div className="flex-1 flex flex-col min-w-fit">
       {/* Menu */}
       <MenuBar>Menu</MenuBar>
-      // min-h-40[160px] here to force bottom panel shrink
+      {/* min-h-40[160px] here to force bottom panel shrink */}
       <div className="flex-1 flex min-h-40">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
