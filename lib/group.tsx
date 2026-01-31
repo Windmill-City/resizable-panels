@@ -4,6 +4,21 @@ import { createContext, useContext, useId, useLayoutEffect, useRef } from "react
 import { adjustPanelByDelta, useResizableContext } from "./context"
 import type { GroupValue, PanelValue, ResizableGroupProps } from "./types"
 
+/**
+ * Restore multiple panels state
+ * @param panels - Panels array to restore
+ * @param prevState - Previous state array [isCollapsed, size][]
+ */
+function restorePanelsState(panels: PanelValue[], prevState: [boolean, number][]): void {
+  panels.forEach((p, i) => {
+    if (i < prevState.length) {
+      const [wasCollapsed, prevSize] = prevState[i]
+      p.isCollapsed = wasCollapsed
+      p.size = wasCollapsed ? 0 : Math.max(p.minSize, Math.min(prevSize, p.maxSize))
+    }
+  })
+}
+
 export const GroupContext = createContext<GroupValue | null>(null)
 
 export function useGroupContext() {
@@ -65,11 +80,7 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
 
       // Check if the operation succeeded, rollback if failed
       if (panel.isCollapsed !== collapse) {
-        panels.forEach((p, i) => {
-          const [wasCollapsed, prevSize] = prevState[i]
-          p.isCollapsed = wasCollapsed
-          p.size = prevSize
-        })
+        restorePanelsState(panels, prevState)
         return false
       }
 
@@ -120,12 +131,10 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
 
         // If maximize failed, restore to previous state
         if (!panel.isMaximized) {
-          panels.forEach((p, i) => {
-            const [wasCollapsed, prevSize] = ref.prevMaximize![i]
-            p.isCollapsed = wasCollapsed
-            p.size = prevSize
-          })
-          ref.prevMaximize = undefined
+          if (ref.prevMaximize) {
+            restorePanelsState(panels, ref.prevMaximize)
+            ref.prevMaximize = undefined
+          }
           return false
         }
 
@@ -133,18 +142,11 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
       } else {
         // Restore all panels to previous state
         const prevState = ref.prevMaximize
-        if (!prevState) return true
-
-        const panels = Array.from(ref.panels.values())
-        panels.forEach((p, i) => {
-          if (i < prevState.length) {
-            const [wasCollapsed, prevSize] = prevState[i]
-            p.isCollapsed = wasCollapsed
-            p.size = prevSize
-          }
-        })
-
-        ref.prevMaximize = undefined
+        if (prevState) {
+          const panels = Array.from(ref.panels.values())
+          restorePanelsState(panels, prevState)
+          ref.prevMaximize = undefined
+        }
         return true
       }
     },
