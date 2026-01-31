@@ -299,7 +299,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
             collapsedSpace += nextPanel.size
             nextPanel.isCollapsed = true
             nextPanel.size = 0
-            console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel })
+            console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel, remaining, maxGrowWithExpand })
             return true
           }
           return false
@@ -312,7 +312,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
             expandedSpace += nextPanel.minSize
             nextPanel.isCollapsed = false
             nextPanel.size = nextPanel.minSize
-            console.debug("[Resizable] Expanded Panel:", { panel: nextPanel })
+            console.debug("[Resizable] Expanded Panel:", { panel: nextPanel, remaining, maxGrowBeforeWithExpand })
             return true
           }
           return false
