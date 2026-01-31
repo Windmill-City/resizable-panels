@@ -71,10 +71,10 @@ export interface GroupValue {
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
   unregisterPanel: (id: string) => void
-  // Set Collapse State
-  setCollapse: (id: string, collapse: boolean) => void
-  // Set Maximize Panel
-  setMaximize: (id?: string) => void
+  // Set Collapse State, returns true if successful
+  setCollapse: (id: string, collapse: boolean) => boolean
+  // Set Maximize Panel, returns true if successful
+  setMaximize: (id?: string) => boolean
   // Maximized Panel
   maximizedPanel?: PanelValue
 }

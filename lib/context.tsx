@@ -101,7 +101,7 @@ function findEdgeIndexAtPoint(
  * @param panels - Array of panels to distribute space among
  * @param amount - Amount of space to distribute (in pixels)
  */
-function growSequentially(panels: PanelValue[], amount: number): void {
+export function growSequentially(panels: PanelValue[], amount: number): void {
   console.assert(amount >= 0, `[Resizable] Invalid Grow Space: ${amount}`)
   if (amount <= 0) return
 
@@ -135,7 +135,7 @@ function growSequentially(panels: PanelValue[], amount: number): void {
  * @param panels - Array of panels to collect space from
  * @param amount - Amount of space to collect (in pixels)
  */
-function shrinkSequentially(panels: PanelValue[], amount: number): void {
+export function shrinkSequentially(panels: PanelValue[], amount: number): void {
   console.assert(amount >= 0, `[Resizable] Invalid Shrink Space: ${amount}`)
   if (amount <= 0) return
 
@@ -187,7 +187,7 @@ function shrinkSequentially(panels: PanelValue[], amount: number): void {
  * @param delta - The resize delta in pixels (positive = panelsBefore grows, negative = panelsBefore shrinks)
  * @param group - The group containing these panels, used for updating maximized state
  */
-function adjestPanelByDelta(
+export function adjustPanelByDelta(
   panelsBefore: PanelValue[],
   panelsAfter: PanelValue[],
   delta: number,
@@ -472,7 +472,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
           panel.size = panel.isCollapsed ? 0 : panel.prevSize
         }
 
-        adjestPanelByDelta(panelsBefore, panelsAfter, delta, group)
+        adjustPanelByDelta(panelsBefore, panelsAfter, delta, group)
       }
     }
 
