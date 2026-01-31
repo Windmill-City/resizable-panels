@@ -1,6 +1,7 @@
 "use client"
 
 import { useId, useLayoutEffect, useReducer, useRef } from "react"
+import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
 import type { PanelValue, ResizablePanelProps } from "./types"
 
@@ -15,6 +16,7 @@ export function ResizablePanel({
   collapsible = false,
   okMaximize = false,
 }: ResizablePanelProps) {
+  const context = useResizableContext()
   const group = useGroupContext()
   const [, setDirty] = useReducer(() => ({}), {})
 
@@ -49,25 +51,25 @@ export function ResizablePanel({
     return () => group.unregisterPanel(id)
   }, [])
 
-  if (expand)
-    useLayoutEffect(() => {
-      const el = containerEl.current!
+  useLayoutEffect(() => {
+    const el = containerEl.current!
 
-      // Initialize size from actual DOM dimensions (content-box)
-      ref.size = isCol ? el.clientWidth : el.clientHeight
+    // Initialize size from actual DOM dimensions (content-box)
+    ref.size = isCol ? el.clientWidth : el.clientHeight
 
-      // Observe size changes and update ref.size (content-box)
-      const observer = new ResizeObserver((entries) => {
+    // Observe size changes and update ref.size (content-box)
+    const observer = new ResizeObserver((entries) => {
+      if (!context.isDragging)
         for (const entry of entries) {
-          const newSize = isCol ? entry.contentBoxSize[0].inlineSize : entry.contentBoxSize[0].blockSize
+          const newSize = isCol ? entry.contentRect.width : entry.contentRect.height
           if (newSize > 0 && Math.abs(ref.size - newSize) > 1) {
             ref.size = newSize
           }
         }
-      })
-      observer.observe(el)
-      return () => observer.disconnect()
-    }, [])
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div
@@ -77,7 +79,7 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed}
       data-maximized={ref.isMaximized}
       style={{
-        flex: ref.expand && !ref.isCollapsed ? `1 1 0%` : `0 0 ${ref.size}px`,
+        flex: ref.expand && !ref.isCollapsed ? `1 1 0%` : `0 1 ${ref.size}px`,
         display: "flex",
         overflow: "hidden",
         [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? 0 : ref.minSize,
