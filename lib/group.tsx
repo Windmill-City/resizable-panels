@@ -34,11 +34,19 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
       console.debug("[ResizableGroup] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
     },
     setCollapse: (panelId: string, collapse: boolean): boolean => {
+      console.assert(!context.isDragging, "Try to setCollapse while Dragging:", {
+        context,
+        group: ref,
+        panelId,
+        collapse,
+      })
+      if (context.isDragging) return false
+
       const panel = ref.panels.get(panelId)
       if (!panel) {
         throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
       }
-      if (context.isDragging || !panel.collapsible || panel.isCollapsed === collapse) return false
+      if (!panel.collapsible || panel.isCollapsed === collapse) return false
 
       const panels = Array.from(ref.panels.values())
       const index = panels.indexOf(panel)
@@ -68,12 +76,15 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
       return true
     },
     setMaximize: (panelId?: string): boolean => {
+      console.assert(!context.isDragging, "Try to setMaximize while Dragging:", { context, group: ref, panelId })
+      if (context.isDragging) return false
+
       if (panelId) {
         const panel = ref.panels.get(panelId)
         if (!panel) {
           throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
         }
-        if (context.isDragging || !panel.okMaximize || panel.isMaximized) return false
+        if (!panel.okMaximize || panel.isMaximized) return false
 
         const panels = Array.from(ref.panels.values())
         const index = panels.indexOf(panel)
