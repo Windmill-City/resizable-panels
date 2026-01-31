@@ -306,6 +306,7 @@ export function adjustPanelByDelta(
 
       console.debug("[Resizable] Clamped:", {
         delta,
+        minDelta,
         clamped,
         clampedGrow,
         clampedShrink,
@@ -315,7 +316,7 @@ export function adjustPanelByDelta(
     // delta < 0 means edge moved left/top (panelsBefore shrinks, panelsAfter grows)
     if (delta < 0) {
       let minDelta = Math.min(delta, -expandedSpace, -collapsedSpace)
-      
+
       let clampedGrow, clampedShrink
       {
         clampedGrow = Math.max(minDelta, -(maxGrowAfterNoExpand + expandedSpace))
@@ -339,6 +340,7 @@ export function adjustPanelByDelta(
 
       console.debug("[Resizable] Clamped:", {
         delta,
+        minDelta,
         clamped,
         clampedGrow,
         clampedShrink,
