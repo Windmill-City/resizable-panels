@@ -3,8 +3,10 @@ export {
   findEdgeIndexAtPoint,
   growSequentially,
   HANDLE_SIZE,
+  maximizePanel,
   ResizableContext,
   ResizableContextType,
+  restorePanels,
   shrinkSequentially,
   useResizableContext,
   WINDOW_EDGE_MARGIN

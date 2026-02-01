@@ -1,72 +1,78 @@
-import { ResizableContext, ResizableGroup, ResizablePanel, useGroupContext } from "@local/resizable-panels"
+import { ResizableContext, ResizableGroup, ResizablePanel, useGroupContext, restorePanels, maximizePanel } from "@local/resizable-panels"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import ResizeHandle from "./ui/resize-handle"
 import StatusBar from "./ui/status-bar"
 
-const LeftResizeHandle = () => {
+/**
+ * Hook for panel control logic
+ * @param panelIndex - Index of the target panel to control
+ * @returns Click and double-click handlers
+ */
+function usePanelControl(panelIndex: number) {
   const group = useGroupContext()
 
   const handleClick = () => {
-    const leftPanel = group.panels.get("left")!
-    if (!group.prevMaximize) {
-      group.setCollapse("left", !leftPanel.isCollapsed)
-    } else {
-      group.setMaximize(undefined)
+    const panels = Array.from(group.panels.values())
+    const targetPanel = panels[panelIndex]
+
+    // Click to restore when maximized
+    if (targetPanel.isMaximized) {
+      restorePanels(panels, group)
+      return
     }
+
+    // Click to expand when collapsed
+    if (targetPanel.isCollapsed) {
+      const isBefore = panelIndex < panels.length / 2
+      const delta = isBefore ? targetPanel.minSize : -targetPanel.minSize
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+      return
+    }
+
+    // Click to collapse when expanded and not maximized
+    const isBefore = panelIndex < panels.length / 2
+    const delta = isBefore ? -targetPanel.size : targetPanel.size
+    group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
   }
 
   const handleDoubleClick = () => {
-    const leftPanel = group.panels.get("left")!
-    if (!group.prevMaximize && !leftPanel.isCollapsed) {
-      group.setMaximize("left")
+    const panels = Array.from(group.panels.values())
+    const targetPanel = panels[panelIndex]
+
+    // Double-click to restore when maximized
+    if (targetPanel.isMaximized) {
+      restorePanels(panels, group)
+      return
     }
+
+    // Double-click to expand when collapsed
+    if (targetPanel.isCollapsed) {
+      const isBefore = panelIndex < panels.length / 2
+      const delta = isBefore ? targetPanel.minSize : -targetPanel.minSize
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+      return
+    }
+
+    // Double-click to maximize when expanded
+    maximizePanel(targetPanel, panels, group)
   }
 
+  return { handleClick, handleDoubleClick }
+}
+
+const LeftResizeHandle = () => {
+  const { handleClick, handleDoubleClick } = usePanelControl(0)
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 const RightResizeHandle = () => {
-  const group = useGroupContext()
-
-  const handleClick = () => {
-    const rightPanel = group.panels.get("right")!
-    if (!group.prevMaximize) {
-      group.setCollapse("right", !rightPanel.isCollapsed, true)
-    } else {
-      group.setMaximize(undefined)
-    }
-  }
-
-  const handleDoubleClick = () => {
-    const rightPanel = group.panels.get("right")!
-    if (!group.prevMaximize && !rightPanel.isCollapsed) {
-      group.setMaximize("right")
-    }
-  }
-
+  const { handleClick, handleDoubleClick } = usePanelControl(2)
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 const BottomResizeHandle = () => {
-  const group = useGroupContext()
-
-  const handleClick = () => {
-    const bottomPanel = group.panels.get("bottom")!
-    if (!group.prevMaximize) {
-      group.setCollapse("bottom", !bottomPanel.isCollapsed, true)
-    } else {
-      group.setMaximize(undefined)
-    }
-  }
-
-  const handleDoubleClick = () => {
-    const bottomPanel = group.panels.get("bottom")!
-    if (!group.prevMaximize && !bottomPanel.isCollapsed) {
-      group.setMaximize("bottom")
-    }
-  }
-
+  const { handleClick, handleDoubleClick } = usePanelControl(1)
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 

@@ -367,6 +367,43 @@ export function adjustPanelByDelta(
   }
 }
 
+/**
+ * Restore all panels to their previous state before maximization
+ *
+ * @param panels - Array of panels in the group
+ * @param group - The group containing these panels
+ */
+export function restorePanels(panels: PanelValue[], group: GroupValue): void {
+  if (!group.prevMaximize) return
+  for (let i = 0; i < panels.length; i++) {
+    panels[i].isCollapsed = group.prevMaximize[i][0]
+    panels[i].size = group.prevMaximize[i][1]
+    panels[i].isMaximized = false
+  }
+  group.prevMaximize = undefined
+  for (const panel of panels) panel.setDirty()
+}
+
+/**
+ * Maximize a specific panel by collapsing all others
+ *
+ * @param targetPanel - The panel to maximize
+ * @param panels - Array of all panels in the group
+ * @param group - The group containing these panels
+ */
+export function maximizePanel(targetPanel: PanelValue, panels: PanelValue[], group: GroupValue): void {
+  group.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
+  for (const panel of panels) {
+    if (panel !== targetPanel) {
+      panel.isCollapsed = true
+      panel.size = 0
+    }
+  }
+  targetPanel.isMaximized = true
+  targetPanel.isCollapsed = false
+  for (const panel of panels) panel.setDirty()
+}
+
 export function ResizableContext({
   id: idProp,
   children,
