@@ -9,13 +9,16 @@ const LeftResizeHandle = () => {
 
   const handleClick = () => {
     const leftPanel = group.panels.get("left")!
-    group.setCollapse("left", !leftPanel.isCollapsed)
+    if (!group.prevMaximize) {
+      group.setCollapse("left", !leftPanel.isCollapsed)
+    } else {
+      group.setMaximize(undefined)
+    }
   }
 
   const handleDoubleClick = () => {
-    if (group.prevMaximize) {
-      group.setMaximize(undefined)
-    } else {
+    const leftPanel = group.panels.get("left")!
+    if (!group.prevMaximize && !leftPanel.isCollapsed) {
       group.setMaximize("left")
     }
   }
@@ -28,13 +31,16 @@ const RightResizeHandle = () => {
 
   const handleClick = () => {
     const rightPanel = group.panels.get("right")!
-    group.setCollapse("right", !rightPanel.isCollapsed, true)
+    if (!group.prevMaximize) {
+      group.setCollapse("right", !rightPanel.isCollapsed, true)
+    } else {
+      group.setMaximize(undefined)
+    }
   }
 
   const handleDoubleClick = () => {
-    if (group.prevMaximize) {
-      group.setMaximize(undefined)
-    } else {
+    const rightPanel = group.panels.get("right")!
+    if (!group.prevMaximize && !rightPanel.isCollapsed) {
       group.setMaximize("right")
     }
   }
@@ -47,13 +53,16 @@ const BottomResizeHandle = () => {
 
   const handleClick = () => {
     const bottomPanel = group.panels.get("bottom")!
-    group.setCollapse("bottom", !bottomPanel.isCollapsed, true)
+    if (!group.prevMaximize) {
+      group.setCollapse("bottom", !bottomPanel.isCollapsed, true)
+    } else {
+      group.setMaximize(undefined)
+    }
   }
 
   const handleDoubleClick = () => {
-    if (group.prevMaximize) {
-      group.setMaximize(undefined)
-    } else {
+    const bottomPanel = group.panels.get("bottom")!
+    if (!group.prevMaximize && !bottomPanel.isCollapsed) {
       group.setMaximize("bottom")
     }
   }
