@@ -391,10 +391,12 @@ export function restorePanels(group: GroupValue): void {
  * Maximize a specific panel by collapsing all others
  *
  * @param targetPanel - The panel to maximize
- * @param panels - Array of all panels in the group
  * @param group - The group containing these panels
  */
-export function maximizePanel(targetPanel: PanelValue, panels: PanelValue[], group: GroupValue): void {
+export function maximizePanel(targetPanel: PanelValue, group: GroupValue): void {
+  if (!targetPanel.okMaximize) return
+
+  const panels = Array.from(group.panels.values())
   group.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
   for (const panel of panels) {
     if (panel !== targetPanel) {

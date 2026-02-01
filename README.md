@@ -201,7 +201,7 @@ import { maximizePanel } from '@local/resizable-panels';
 
 const panels = Array.from(group.panels.values());
 const targetPanel = panels[0];
-maximizePanel(targetPanel, panels, group);
+maximizePanel(targetPanel, group);
 ```
 
 ## Advanced Examples
@@ -316,7 +316,7 @@ function PanelControls() {
       <button onClick={() => group.dragPanel(100, 0)}>
         Expand Left
       </button>
-      <button onClick={() => maximizePanel(leftPanel, panels, group)}>
+      <button onClick={() => maximizePanel(leftPanel, group)}>
         Maximize Left
       </button>
       <button onClick={() => restorePanels(panels, group)}>
