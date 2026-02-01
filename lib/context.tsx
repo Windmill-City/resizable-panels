@@ -470,12 +470,13 @@ export function ResizableContext({
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
+      ref.startPos = { x: e.clientX, y: e.clientY }
+
       const edges = findEdgeIndexAtPoint(ref.groups, {
         x: e.clientX,
         y: e.clientY,
       })
       if (edges.size) {
-        ref.startPos = { x: e.clientX, y: e.clientY }
         ref.dragIndex = edges
         ref.isDragging = true
 
