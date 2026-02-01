@@ -116,11 +116,172 @@ Drag handle between panels, used to display visual dividers between panels.
 interface ResizableHandleProps {
   className?: string;             // CSS class name
   children?: ReactNode;           // Custom content, such as icons
+  onClick?: () => void;           // Click callback
   onDoubleClick?: () => void;     // Double-click callback
 }
 ```
 
+## Hooks
+
+### useGroupContext
+
+Access the group context within a `ResizableGroup` to programmatically control panels:
+
+```tsx
+import { useGroupContext } from '@local/resizable-panels';
+
+function CustomHandle() {
+  const group = useGroupContext();
+  
+  // Access panels and group properties
+  const panels = Array.from(group.panels.values());
+  
+  return <div>Custom Handle</div>;
+}
+```
+
+### GroupValue Interface
+
+```tsx
+interface GroupValue {
+  id: string;                     // Unique identifier
+  direction: 'row' | 'col';       // Resize direction
+  ratio: boolean;                 // Ratio mode flag
+  panels: Map<string, PanelValue>;
+  handles: HandleValue[];
+  containerEl: RefObject<HTMLElement>;
+  isDragging: boolean;
+  registerPanel: (panel: PanelValue) => void;
+  unregisterPanel: (id: string) => void;
+  registerHandle: (handle: HandleValue) => void;
+  unregisterHandle: (id: string) => void;
+  dragPanel: (delta: number, index: number) => void;  // Programmatically resize panels
+  prevMaximize?: [boolean, number][];                 // State before maximize
+}
+```
+
+## Utility Functions
+
+### dragPanel
+
+Programmatically resize panels at a specific handle index. Called on `GroupValue`.
+
+```tsx
+const group = useGroupContext();
+
+// Expand left panel by 200px (handle index 0)
+group.dragPanel(200, 0);
+
+// Collapse right panel (handle index 1)
+group.dragPanel(-panel.size, 1);
+```
+
+**Parameters:**
+
+- `delta`: Pixels to move (positive = panels before handle grow, negative = shrink)
+- `index`: Handle index (0 = between panel 0 and 1)
+
+### restorePanels
+
+Restore all panels to their state before maximization.
+
+```tsx
+import { restorePanels } from '@local/resizable-panels';
+
+const panels = Array.from(group.panels.values());
+restorePanels(panels, group);
+```
+
+### maximizePanel
+
+Maximize a specific panel by collapsing all others.
+
+```tsx
+import { maximizePanel } from '@local/resizable-panels';
+
+const panels = Array.from(group.panels.values());
+const targetPanel = panels[0];
+maximizePanel(targetPanel, panels, group);
+```
+
 ## Advanced Examples
+
+### Click to Expand/Collapse, Double-click to Maximize
+
+```tsx
+import { 
+  ResizableContext, 
+  ResizableGroup, 
+  ResizablePanel, 
+  ResizableHandle,
+  useGroupContext,
+  restorePanels,
+  maximizePanel 
+} from '@local/resizable-panels';
+
+function SmartHandle({ panelIndex }: { panelIndex: number }) {
+  const group = useGroupContext();
+
+  const handleClick = () => {
+    const panels = Array.from(group.panels.values());
+    const panel = panels[panelIndex];
+
+    if (panel.isMaximized) {
+      restorePanels(panels, group);
+      return;
+    }
+
+    if (panel.isCollapsed) {
+      const isBefore = panelIndex < panels.length / 2;
+      const delta = isBefore ? panel.minSize : -panel.minSize;
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1);
+      return;
+    }
+
+    // Collapse
+    const isBefore = panelIndex < panels.length / 2;
+    const delta = isBefore ? -panel.size : panel.size;
+    group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1);
+  };
+
+  const handleDoubleClick = () => {
+    const panels = Array.from(group.panels.values());
+    const panel = panels[panelIndex];
+
+    if (panel.isMaximized) {
+      restorePanels(panels, group);
+      return;
+    }
+
+    if (panel.isCollapsed) {
+      const isBefore = panelIndex < panels.length / 2;
+      const delta = isBefore ? panel.minSize : -panel.minSize;
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1);
+      return;
+    }
+
+    maximizePanel(panel, panels, group);
+  };
+
+  return (
+    <ResizableHandle 
+      onClick={handleClick} 
+      onDoubleClick={handleDoubleClick} 
+    />
+  );
+}
+
+// Usage
+<ResizableGroup>
+  <ResizablePanel id="left" collapsible collapsed>
+    Sidebar
+  </ResizablePanel>
+  <SmartHandle panelIndex={0} />
+  <ResizablePanel expand>
+    Main Content
+  </ResizablePanel>
+</ResizableGroup>
+```
 
 ### Ratio Mode
 
@@ -215,6 +376,32 @@ Listen to layout changes when resizing ends:
 >
   {/* ... */}
 </ResizableContext>
+```
+
+### Programmatic Panel Control
+
+Use `useGroupContext` and utility functions to create custom panel controls:
+
+```tsx
+function PanelControls() {
+  const group = useGroupContext();
+  const panels = Array.from(group.panels.values());
+  const leftPanel = panels[0];
+
+  return (
+    <div>
+      <button onClick={() => group.dragPanel(100, 0)}>
+        Expand Left
+      </button>
+      <button onClick={() => maximizePanel(leftPanel, panels, group)}>
+        Maximize Left
+      </button>
+      <button onClick={() => restorePanels(panels, group)}>
+        Restore All
+      </button>
+    </div>
+  );
+}
 ```
 
 ## License

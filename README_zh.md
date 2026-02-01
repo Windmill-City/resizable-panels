@@ -116,11 +116,172 @@ interface ResizablePanelProps {
 interface ResizableHandleProps {
   className?: string;             // CSS 类名
   children?: ReactNode;           // 自定义内容，如图标
+  onClick?: () => void;           // 单击回调
   onDoubleClick?: () => void;     // 双击回调
 }
 ```
 
+## Hooks
+
+### useGroupContext
+
+在 `ResizableGroup` 内部访问组上下文以编程方式控制面板：
+
+```tsx
+import { useGroupContext } from '@local/resizable-panels';
+
+function CustomHandle() {
+  const group = useGroupContext();
+  
+  // 访问面板和组属性
+  const panels = Array.from(group.panels.values());
+  
+  return <div>自定义手柄</div>;
+}
+```
+
+### GroupValue 接口
+
+```tsx
+interface GroupValue {
+  id: string;                     // 唯一标识符
+  direction: 'row' | 'col';       // 调整方向
+  ratio: boolean;                 // 比例模式标志
+  panels: Map<string, PanelValue>;
+  handles: HandleValue[];
+  containerEl: RefObject<HTMLElement>;
+  isDragging: boolean;
+  registerPanel: (panel: PanelValue) => void;
+  unregisterPanel: (id: string) => void;
+  registerHandle: (handle: HandleValue) => void;
+  unregisterHandle: (id: string) => void;
+  dragPanel: (delta: number, index: number) => void;  // 编程方式调整面板
+  prevMaximize?: [boolean, number][];                 // 最大化前的状态
+}
+```
+
+## 工具函数
+
+### dragPanel
+
+在特定 handle 索引处编程方式调整面板大小。通过 `GroupValue` 调用。
+
+```tsx
+const group = useGroupContext();
+
+// 将左侧面板展开 200px（handle 索引 0）
+group.dragPanel(200, 0);
+
+// 折叠右侧面板（handle 索引 1）
+group.dragPanel(-panel.size, 1);
+```
+
+**参数：**
+
+- `delta`：移动的像素值（正数 = handle 前的面板增长，负数 = 收缩）
+- `index`：Handle 索引（0 = 面板 0 和 1 之间）
+
+### restorePanels
+
+将所有面板恢复到最大化前的状态。
+
+```tsx
+import { restorePanels } from '@local/resizable-panels';
+
+const panels = Array.from(group.panels.values());
+restorePanels(panels, group);
+```
+
+### maximizePanel
+
+通过折叠其他所有面板来最大化指定面板。
+
+```tsx
+import { maximizePanel } from '@local/resizable-panels';
+
+const panels = Array.from(group.panels.values());
+const targetPanel = panels[0];
+maximizePanel(targetPanel, panels, group);
+```
+
 ## 高级示例
+
+### 单击展开/折叠，双击最大化
+
+```tsx
+import { 
+  ResizableContext, 
+  ResizableGroup, 
+  ResizablePanel, 
+  ResizableHandle,
+  useGroupContext,
+  restorePanels,
+  maximizePanel 
+} from '@local/resizable-panels';
+
+function SmartHandle({ panelIndex }: { panelIndex: number }) {
+  const group = useGroupContext();
+
+  const handleClick = () => {
+    const panels = Array.from(group.panels.values());
+    const panel = panels[panelIndex];
+
+    if (panel.isMaximized) {
+      restorePanels(panels, group);
+      return;
+    }
+
+    if (panel.isCollapsed) {
+      const isBefore = panelIndex < panels.length / 2;
+      const delta = isBefore ? panel.minSize : -panel.minSize;
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1);
+      return;
+    }
+
+    // 折叠
+    const isBefore = panelIndex < panels.length / 2;
+    const delta = isBefore ? -panel.size : panel.size;
+    group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1);
+  };
+
+  const handleDoubleClick = () => {
+    const panels = Array.from(group.panels.values());
+    const panel = panels[panelIndex];
+
+    if (panel.isMaximized) {
+      restorePanels(panels, group);
+      return;
+    }
+
+    if (panel.isCollapsed) {
+      const isBefore = panelIndex < panels.length / 2;
+      const delta = isBefore ? panel.minSize : -panel.minSize;
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1);
+      return;
+    }
+
+    maximizePanel(panel, panels, group);
+  };
+
+  return (
+    <ResizableHandle 
+      onClick={handleClick} 
+      onDoubleClick={handleDoubleClick} 
+    />
+  );
+}
+
+// 使用
+<ResizableGroup>
+  <ResizablePanel id="left" collapsible collapsed>
+    侧边栏
+  </ResizablePanel>
+  <SmartHandle panelIndex={0} />
+  <ResizablePanel expand>
+    主内容区
+  </ResizablePanel>
+</ResizableGroup>
+```
 
 ### 比例模式
 
@@ -215,6 +376,32 @@ interface ResizableHandleProps {
 >
   {/* ... */}
 </ResizableContext>
+```
+
+### 编程方式控制面板
+
+使用 `useGroupContext` 和工具函数创建自定义面板控制：
+
+```tsx
+function PanelControls() {
+  const group = useGroupContext();
+  const panels = Array.from(group.panels.values());
+  const leftPanel = panels[0];
+
+  return (
+    <div>
+      <button onClick={() => group.dragPanel(100, 0)}>
+        展开左侧
+      </button>
+      <button onClick={() => maximizePanel(leftPanel, panels, group)}>
+        最大化左侧
+      </button>
+      <button onClick={() => restorePanels(panels, group)}>
+        恢复所有
+      </button>
+    </div>
+  );
+}
 ```
 
 ## 许可证
