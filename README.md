@@ -37,7 +37,7 @@ import { ResizableContext, ResizableGroup, ResizablePanel } from '@local/resizab
 
 function App() {
   return (
-    <ResizableContext style={{ height: '100vh' }}>
+    <ResizableContext className="h-screen">
       <ResizableGroup direction="col">
         <ResizablePanel defaultSize={300} minSize={200}>
           <div style={{ background: '#f0f0f0', height: '100%' }}>
@@ -144,7 +144,7 @@ In ratio mode, resizing still works, and the sizes are distributed proportionall
 Create complex layouts by nesting groups:
 
 ```tsx
-<ResizableContext style={{ height: '100vh' }}>
+<ResizableContext className="h-screen">
   <ResizableGroup direction="col">
     {/* Left sidebar */}
     <ResizablePanel defaultSize={250} minSize={150} collapsible>

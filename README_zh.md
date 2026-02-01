@@ -37,7 +37,7 @@ import { ResizableContext, ResizableGroup, ResizablePanel } from '@local/resizab
 
 function App() {
   return (
-    <ResizableContext style={{ height: '100vh' }}>
+    <ResizableContext className="h-screen">
       <ResizableGroup direction="col">
         <ResizablePanel defaultSize={300} minSize={200}>
           <div style={{ background: '#f0f0f0', height: '100%' }}>
@@ -144,7 +144,7 @@ interface ResizableHandleProps {
 通过嵌套分组创建复杂布局：
 
 ```tsx
-<ResizableContext style={{ height: '100vh' }}>
+<ResizableContext className="h-screen">
   <ResizableGroup direction="col">
     {/* 左侧边栏 */}
     <ResizablePanel defaultSize={250} minSize={150} collapsible>
