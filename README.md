@@ -223,9 +223,7 @@ Maximize a specific panel by collapsing all others.
 
 ```tsx
 const group = useGroupContext();
-const panels = Array.from(group.panels.values());
-const targetPanel = panels[0];
-group.maximizePanel(targetPanel);
+group.maximizePanel(targetId);
 ```
 
 ### Layout Persistence Functions
@@ -394,7 +392,7 @@ function PanelControls() {
       <button onClick={() => group.dragPanel(100, 0)}>
         Expand Left
       </button>
-      <button onClick={() => group.maximizePanel(leftPanel)}>
+      <button onClick={() => group.maximizePanel(leftPanel.id)}>
         Maximize Left
       </button>
       <button onClick={() => group.restorePanels()}>

@@ -211,9 +211,7 @@ group.restorePanels();
 
 ```tsx
 const group = useGroupContext();
-const panels = Array.from(group.panels.values());
-const targetPanel = panels[0];
-group.maximizePanel(targetPanel);
+group.maximizePanel(targetId);
 ```
 
 ### 布局持久化函数
@@ -382,7 +380,7 @@ function PanelControls() {
       <button onClick={() => group.dragPanel(100, 0)}>
         展开左侧
       </button>
-      <button onClick={() => group.maximizePanel(leftPanel)}>
+      <button onClick={() => group.maximizePanel(leftPanel.id)}>
         最大化左侧
       </button>
       <button onClick={() => group.restorePanels()}>

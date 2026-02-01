@@ -70,7 +70,7 @@ function usePanelControl(panelIndex: number) {
     }
 
     // Double-click to maximize when expanded
-    group.maximizePanel(target)
+    group.maximizePanel(target.id)
   }
 
   return { handleClick, handleDoubleClick }
@@ -126,7 +126,7 @@ function toggleMaximize(panel: PanelValue, group: GroupValue) {
   if (group.prevMaximize) {
     group.restorePanels()
   } else {
-    group.maximizePanel(panel)
+    group.maximizePanel(panel.id)
   }
 }
 

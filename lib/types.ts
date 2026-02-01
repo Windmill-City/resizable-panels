@@ -69,7 +69,7 @@ export interface GroupValue {
   // Restore all panels to their previous state before maximization
   restorePanels: () => void
   // Maximize a specific panel by collapsing all others
-  maximizePanel: (target: PanelValue) => void
+  maximizePanel: (targetId: string) => void
 }
 
 export interface SavedGroupLayout {

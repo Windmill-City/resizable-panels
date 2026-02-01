@@ -76,12 +76,22 @@ export function ResizableGroup({
         context.onLayoutChanged(context)
       }
     },
-    maximizePanel: (target: PanelValue) => {
-      if (!target.okMaximize) return
+    maximizePanel: (targetId: string) => {
+      const target = ref.panels.get(targetId)
+      if (!target) {
+        console.error(`[ResizableGroup] maximizePanel: Panel with id "${targetId}" not found`)
+        return
+      }
+      if (!target.okMaximize) {
+        console.error(`[ResizableGroup] maximizePanel: Panel "${targetId}" cannot be maximized (okMaximize is false)`)
+        return
+      }
+
       const panels = Array.from(ref.panels.values())
       ref.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
+
       for (const panel of panels) {
-        if (panel.id !== target.id) {
+        if (panel.id !== targetId) {
           panel.isCollapsed = true
           panel.size = 0
         } else {
@@ -89,13 +99,17 @@ export function ResizableGroup({
           panel.isCollapsed = false
         }
       }
+
       for (const panel of panels) panel.setDirty()
+
       console.debug("[Resizable] MaximizePanel:", {
+        targetId,
         targetPanel: target,
         panels,
         group: ref,
         prevMaximize: ref.prevMaximize,
       })
+
       // Trigger onLayoutChanged callback
       if (context.onLayoutChanged) {
         context.onLayoutChanged(context)
