@@ -6,15 +6,9 @@ A headless React component library designed for building IDE-like layouts (simil
 
 ## Features
 
-- 🎨 **Headless Design** - Complete control over styling, no CSS enforced
-- 📐 **Flexible Layouts** - Support both horizontal (`col`) and vertical (`row`) resizing
-- 🗂️ **Nested Groups** - Support for complex nested layouts
-- 📏 **Smart Constraints** - min/max size constraints with intelligent space distribution
-- 🔄 **Collapsible Panels** - Panels can be collapsed and expanded
-- 🔍 **Maximize Panels** - Support for maximizing panels
-- 🌱 **Expand Mode** - Panels can grow/shrink when container size changes
-- ⚡ **Performance** - Efficient resize handling with minimal re-renders
-- 🔷 **TypeScript** - Full type safety support
+- **Sizing** - Support both pixel (px) and ratio-based sizing modes
+- **Constraints** - Support min/max pixel constraints
+- **Collapsible/Maximize** - Panels support collapse/expand and maximize operations
 
 ## Installation
 
@@ -107,7 +101,22 @@ interface ResizablePanelProps {
   maxSize?: number;               // Maximum size in pixels (default: Infinity)
   defaultSize?: number;           // Default size in pixels (default: 300)
   collapsible?: boolean;          // Allow collapse (default: false)
+  collapsed?: boolean;            // Initial collapsed state (default: false)
   okMaximize?: boolean;           // Allow maximize (default: false)
+}
+```
+
+### ResizableHandle
+
+Drag handle between panels, used to display visual dividers between panels.
+
+**Note: The handle index is bound according to declaration order, not DOM position.**
+
+```tsx
+interface ResizableHandleProps {
+  className?: string;             // CSS class name
+  children?: ReactNode;           // Custom content, such as icons
+  onDoubleClick?: () => void;     // Double-click callback
 }
 ```
 
@@ -178,6 +187,21 @@ Panels with `expand={true}` will grow to fill available space:
 </ResizableGroup>
 ```
 
+### Default Collapsed
+
+Set `collapsed={true}` to make the panel initially collapsed (requires `collapsible`):
+
+```tsx
+<ResizableGroup direction="col">
+  <ResizablePanel defaultSize={250} minSize={200} collapsible collapsed>
+    Collapsed by default sidebar
+  </ResizablePanel>
+  <ResizablePanel>
+    Main Content
+  </ResizablePanel>
+</ResizableGroup>
+```
+
 ### Layout Change Callback
 
 Listen to layout changes when resizing ends:
@@ -191,100 +215,6 @@ Listen to layout changes when resizing ends:
 >
   {/* ... */}
 </ResizableContext>
-```
-
-## How It Works
-
-### Resizing
-
-1. Move your mouse over the edge between two panels
-2. The cursor changes to indicate a resize handle
-3. Click and drag to resize
-4. Release to finish
-
-### Collapsing
-
-When `collapsible={true}`:
-
-- Drag a panel edge past half of the `minSize`
-- The panel will collapse to 0 size
-- Drag the edge back to expand the panel
-
-### Space Distribution
-
-When resizing:
-
-- Space is taken from panels closest to the resize handle first
-- Panels respect their `minSize` and `maxSize` constraints
-- Collapsed panels don't participate in space distribution
-- Expand panels grow to fill remaining space
-
-## Styling
-
-Since this is a headless library, you have complete control over styling:
-
-```tsx
-<ResizableContext className="my-layout">
-  <ResizableGroup direction="col" className="my-group">
-    <ResizablePanel 
-      className="my-panel sidebar"
-      defaultSize={250}
-      minSize={150}
-      collapsible
-    >
-      <div className="panel-content">Content</div>
-    </ResizablePanel>
-    <ResizablePanel className="my-panel main" expand>
-      <div className="panel-content">Main Content</div>
-    </ResizablePanel>
-  </ResizableGroup>
-</ResizableContext>
-```
-
-### Data Attributes
-
-Panels expose data attributes for styling:
-
-```css
-[data-resizable-panel] {
-  /* All panels */
-}
-
-[data-resizable-panel][data-collapsed="true"] {
-  /* Collapsed panels */
-}
-
-[data-resizable-panel][data-maximized="true"] {
-  /* Maximized panels */
-}
-
-[data-resizable-group] {
-  /* Groups */
-}
-
-[data-resizable-group][data-direction="col"] {
-  /* Horizontal groups */
-}
-
-[data-resizable-group][data-direction="row"] {
-  /* Vertical groups */
-}
-```
-
-## TypeScript
-
-Full TypeScript support with exported types:
-
-```tsx
-import type { 
-  ResizableContextProps, 
-  ResizableGroupProps, 
-  ResizablePanelProps,
-  ContextValue,
-  GroupValue,
-  PanelValue,
-  Direction
-} from '@local/resizable-panels';
 ```
 
 ## License

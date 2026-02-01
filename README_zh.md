@@ -6,15 +6,9 @@
 
 ## 特性
 
-- 🎨 **Headless 设计** - 完全控制样式，不强制任何 CSS
-- 📐 **灵活布局** - 支持水平（`col`）和垂直（`row`）方向调整大小
-- 🗂️ **嵌套分组** - 支持复杂的嵌套布局
-- 📏 **智能约束** - 最小/最大尺寸约束，智能空间分配
-- 🔄 **可折叠面板** - 面板可以被折叠和展开
-- 🔍 **可最大化面板** - 支持最大化面板
-- 🌱 **扩展模式** - 容器大小变化时面板可以自动增长/收缩
-- ⚡ **高性能** - 高效的调整大小处理，最小化重渲染
-- 🔷 **TypeScript** - 完整的类型安全支持
+- **尺寸** - 支持像素（px）和比例（ratio）两种尺寸模式
+- **约束** - 支持最大/最小像素约束
+- **可折叠/最大化** - 面板支持折叠展开和最大化操作
 
 ## 安装
 
@@ -107,7 +101,22 @@ interface ResizablePanelProps {
   maxSize?: number;               // 最大尺寸（像素）（默认：Infinity）
   defaultSize?: number;           // 默认尺寸（像素）（默认：300）
   collapsible?: boolean;          // 允许折叠（默认：false）
+  collapsed?: boolean;            // 默认折叠状态（默认：false）
   okMaximize?: boolean;           // 允许最大化（默认：false）
+}
+```
+
+### ResizableHandle
+
+面板之间的拖拽手柄，用于在面板间显示视觉分隔线
+
+**注意：Handle 的索引（index）按照声明顺序绑定，而非 DOM 位置。**
+
+```tsx
+interface ResizableHandleProps {
+  className?: string;             // CSS 类名
+  children?: ReactNode;           // 自定义内容，如图标
+  onDoubleClick?: () => void;     // 双击回调
 }
 ```
 
@@ -178,6 +187,21 @@ interface ResizablePanelProps {
 </ResizableGroup>
 ```
 
+### 默认折叠
+
+设置 `collapsed={true}` 使面板初始处于折叠状态（需同时设置 `collapsible`）：
+
+```tsx
+<ResizableGroup direction="col">
+  <ResizablePanel defaultSize={250} minSize={200} collapsible collapsed>
+    默认折叠的侧边栏
+  </ResizablePanel>
+  <ResizablePanel>
+    主内容区
+  </ResizablePanel>
+</ResizableGroup>
+```
+
 ### 布局变化回调
 
 监听调整大小结束时的布局变化：
@@ -191,100 +215,6 @@ interface ResizablePanelProps {
 >
   {/* ... */}
 </ResizableContext>
-```
-
-## 工作原理
-
-### 调整大小
-
-1. 将鼠标移动到两个面板之间的边缘
-2. 光标会变化以指示调整大小手柄
-3. 点击并拖动以调整大小
-4. 释放以完成
-
-### 折叠
-
-当设置 `collapsible={true}` 时：
-
-- 将面板边缘拖动超过 `minSize` 的一半
-- 面板将折叠为 0 大小
-- 将边缘拖回以展开面板
-
-### 空间分配
-
-调整大小时：
-
-- 空间首先从最接近调整手柄的面板获取
-- 面板遵守 `minSize` 和 `maxSize` 约束
-- 折叠的面板不参与空间分配
-- 扩展面板增长以填充剩余空间
-
-## 样式
-
-由于这是一个 Headless 库，你拥有完全的样式控制权：
-
-```tsx
-<ResizableContext className="my-layout">
-  <ResizableGroup direction="col" className="my-group">
-    <ResizablePanel 
-      className="my-panel sidebar"
-      defaultSize={250}
-      minSize={150}
-      collapsible
-    >
-      <div className="panel-content">内容</div>
-    </ResizablePanel>
-    <ResizablePanel className="my-panel main" expand>
-      <div className="panel-content">主要内容</div>
-    </ResizablePanel>
-  </ResizableGroup>
-</ResizableContext>
-```
-
-### 数据属性
-
-面板暴露数据属性用于样式设置：
-
-```css
-[data-resizable-panel] {
-  /* 所有面板 */
-}
-
-[data-resizable-panel][data-collapsed="true"] {
-  /* 已折叠面板 */
-}
-
-[data-resizable-panel][data-maximized="true"] {
-  /* 已最大化面板 */
-}
-
-[data-resizable-group] {
-  /* 分组 */
-}
-
-[data-resizable-group][data-direction="col"] {
-  /* 水平分组 */
-}
-
-[data-resizable-group][data-direction="row"] {
-  /* 垂直分组 */
-}
-```
-
-## TypeScript
-
-完整的 TypeScript 支持，导出类型：
-
-```tsx
-import type { 
-  ResizableContextProps, 
-  ResizableGroupProps, 
-  ResizablePanelProps,
-  ContextValue,
-  GroupValue,
-  PanelValue,
-  Direction
-} from '@local/resizable-panels';
 ```
 
 ## 许可证
