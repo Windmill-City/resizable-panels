@@ -8,9 +8,30 @@ const LeftResizeHandle = () => {
   const group = useGroupContext()
 
   const handleDoubleClick = () => {
-    const leftPanel = group.panels.get("left")
-    if (!leftPanel) return
+    const leftPanel = group.panels.get("left")!
     group.setCollapse("left", !leftPanel.isCollapsed)
+  }
+
+  return <ResizeHandle onDoubleClick={handleDoubleClick} />
+}
+
+const RightResizeHandle = () => {
+  const group = useGroupContext()
+
+  const handleDoubleClick = () => {
+    const rightPanel = group.panels.get("right")!
+    group.setCollapse("right", !rightPanel.isCollapsed, true)
+  }
+
+  return <ResizeHandle onDoubleClick={handleDoubleClick} />
+}
+
+const BottomResizeHandle = () => {
+  const group = useGroupContext()
+
+  const handleDoubleClick = () => {
+    const bottomPanel = group.panels.get("bottom")!
+    group.setCollapse("bottom", !bottomPanel.isCollapsed, true)
   }
 
   return <ResizeHandle onDoubleClick={handleDoubleClick} />
@@ -38,7 +59,7 @@ function App() {
                 <ResizablePanel id="editor" minSize={80} collapsible expand>
                   editor
                 </ResizablePanel>
-                <ResizeHandle />
+                <BottomResizeHandle />
                 {/* Bottom Panel */}
                 <ResizablePanel
                   id="bottom"
@@ -52,7 +73,7 @@ function App() {
                 </ResizablePanel>
               </ResizableGroup>
             </ResizablePanel>
-            <ResizeHandle />
+            <RightResizeHandle />
             {/* Right Sidebar */}
             <ResizablePanel id="right" collapsible collapsed>
               right

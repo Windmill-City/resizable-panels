@@ -63,12 +63,13 @@ export function ResizableGroup({
       ref.handles = ref.handles.filter((h) => h.id != handleId)
       console.debug("[ResizableGroup] Unregister handle:", handleId)
     },
-    setCollapse: (panelId: string, collapse: boolean): boolean => {
+    setCollapse: (panelId: string, collapse: boolean, reverse = false): boolean => {
       console.assert(!context.isDragging, "Try to setCollapse while Dragging:", {
         context,
         group: ref,
         panelId,
         collapse,
+        reverse,
       })
       if (context.isDragging) return false
 
@@ -81,8 +82,18 @@ export function ResizableGroup({
       const panels = Array.from(ref.panels.values())
       const index = panels.indexOf(panel)
 
-      const panelsBefore = panels.slice(0, index + 1).reverse()
-      const panelsAfter = panels.slice(index + 1)
+      let panelsBefore: PanelValue[]
+      let panelsAfter: PanelValue[]
+
+      if (reverse) {
+        // Reverse: expand/collapse from the other side
+        panelsBefore = panels.slice(index).reverse()
+        panelsAfter = panels.slice(0, index)
+      } else {
+        // Normal: expand/collapse from this side
+        panelsBefore = panels.slice(0, index + 1).reverse()
+        panelsAfter = panels.slice(index + 1)
+      }
 
       if (collapse) {
         adjustPanelByDelta(panelsBefore, panelsAfter, -panel.size, ref)

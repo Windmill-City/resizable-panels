@@ -93,7 +93,8 @@ export interface GroupValue {
   // Unregister Handle
   unregisterHandle: (id: string) => void
   // Set Collapse State, returns true if successful
-  setCollapse: (id: string, collapse: boolean) => boolean
+  // reverse: if true, expand/collapse from the other side
+  setCollapse: (id: string, collapse: boolean, reverse?: boolean) => boolean
   // Set Maximize Panel, returns true if successful
   setMaximize: (id?: string) => boolean
   // Set Panel to Default Size, returns true if successful

@@ -30,6 +30,8 @@ export const WINDOW_EDGE_MARGIN = 8
  *
  * @param groups - Map of group IDs to GroupValue objects
  * @param point - The point coordinates {x, y} to check (viewport coordinates)
+ * @param ignoreWindowEdge - Whether to ignore window edge margin check
+ *                           (used for double-click to allow edge detection near window borders)
  * @returns A Map where keys are directions ("row" | "col") and
  *          values are tuples of [GroupValue, edgeIndex]. Edge index i represents
  *          the boundary between panel[i] and panel[i+1].
@@ -37,19 +39,22 @@ export const WINDOW_EDGE_MARGIN = 8
 export function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
   point: { x: number; y: number },
+  ignoreWindowEdge = false,
 ): Map<Direction, [GroupValue, number]> {
   const result = new Map<Direction, [GroupValue, number]>()
 
   // Skip if point is too close to window edges (to avoid conflict with window resize)
-  const windowWidth = window.innerWidth
-  const windowHeight = window.innerHeight
-  if (
-    point.x < WINDOW_EDGE_MARGIN ||
-    point.x > windowWidth - WINDOW_EDGE_MARGIN ||
-    point.y < WINDOW_EDGE_MARGIN ||
-    point.y > windowHeight - WINDOW_EDGE_MARGIN
-  ) {
-    return result
+  if (!ignoreWindowEdge) {
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    if (
+      point.x < WINDOW_EDGE_MARGIN ||
+      point.x > windowWidth - WINDOW_EDGE_MARGIN ||
+      point.y < WINDOW_EDGE_MARGIN ||
+      point.y > windowHeight - WINDOW_EDGE_MARGIN
+    ) {
+      return result
+    }
   }
 
   for (const group of groups.values()) {
@@ -515,7 +520,7 @@ export function ResizableContext({
       const edges = findEdgeIndexAtPoint(ref.groups, {
         x: e.clientX,
         y: e.clientY,
-      })
+      }, true)
 
       for (const [group, index] of edges.values()) {
         const handle = group.handles.at(index)
