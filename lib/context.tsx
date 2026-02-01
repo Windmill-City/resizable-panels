@@ -511,9 +511,24 @@ export function ResizableContext({
       }
     }
 
+    const handleDoubleClick = (e: MouseEvent) => {
+      const edges = findEdgeIndexAtPoint(ref.groups, {
+        x: e.clientX,
+        y: e.clientY,
+      })
+
+      for (const [group, index] of edges.values()) {
+        const handle = group.handles.at(index)
+        if (handle && handle.onDoubleClick) {
+          handle.onDoubleClick()
+        }
+      }
+    }
+
     document.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
+    document.addEventListener("dblclick", handleDoubleClick)
 
     console.debug("[Resizable] useEffect ContextValue:", ref)
 
@@ -521,6 +536,7 @@ export function ResizableContext({
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
+      document.removeEventListener("dblclick", handleDoubleClick)
     }
   }, [])
 

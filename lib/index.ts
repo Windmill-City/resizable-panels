@@ -1,5 +1,5 @@
 export { ResizableContext, useResizableContext } from "./context"
-export { ResizableGroup } from "./group"
+export { ResizableGroup, useGroupContext } from "./group"
 export { ResizableHandle } from "./handle"
 export { ResizablePanel } from "./panel"
 

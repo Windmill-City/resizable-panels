@@ -1,8 +1,20 @@
-import { ResizableContext, ResizableGroup, ResizablePanel } from "@local/resizable-panels"
+import { ResizableContext, ResizableGroup, ResizablePanel, useGroupContext } from "@local/resizable-panels"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import ResizeHandle from "./ui/resize-handle"
 import StatusBar from "./ui/status-bar"
+
+const LeftResizeHandle = () => {
+  const group = useGroupContext()
+
+  const handleDoubleClick = () => {
+    const leftPanel = group.panels.get("left")
+    if (!leftPanel) return
+    group.setCollapse("left", !leftPanel.isCollapsed)
+  }
+
+  return <ResizeHandle onDoubleClick={handleDoubleClick} />
+}
 
 function App() {
   return (
@@ -19,7 +31,7 @@ function App() {
             <ResizablePanel id="left" collapsible collapsed>
               left
             </ResizablePanel>
-            <ResizeHandle />
+            <LeftResizeHandle />
             <ResizablePanel expand>
               <ResizableGroup direction="row">
                 {/* Editor */}

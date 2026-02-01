@@ -4,7 +4,7 @@ import { useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { HandleValue, ResizableHandleProps } from "./types"
 
-export function ResizableHandle({ className = undefined, children }: ResizableHandleProps) {
+export function ResizableHandle({ className = undefined, children, onDoubleClick }: ResizableHandleProps) {
   const group = useGroupContext()
 
   const id = useId()
@@ -15,7 +15,13 @@ export function ResizableHandle({ className = undefined, children }: ResizableHa
     index: group.handles.length,
     isHover: false,
     setDirty,
+    onDoubleClick,
   }).current
+
+  // Update callback when it changes
+  useLayoutEffect(() => {
+    ref.onDoubleClick = onDoubleClick
+  }, [onDoubleClick])
 
   useLayoutEffect(() => {
     group.registerHandle(ref)

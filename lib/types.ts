@@ -67,6 +67,8 @@ export interface HandleValue {
   isHover: boolean
   // Trigger Re-render
   setDirty: () => void
+  // Double click callback
+  onDoubleClick?: () => void
 }
 
 export interface GroupValue {
@@ -150,4 +152,6 @@ export interface ResizableHandleProps {
   className?: string
   // Custom content like drag icons
   children?: ReactNode
+  // Double click callback
+  onDoubleClick?: () => void
 }
