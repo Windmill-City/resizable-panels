@@ -9,6 +9,7 @@ import {
   restorePanels,
   useGroupContext,
   usePanelContext,
+  useResizableContext,
 } from "@local/resizable-panels"
 import { useState } from "react"
 import ActivityBar from "./ui/activity-bar"
@@ -24,6 +25,7 @@ import StatusBar from "./ui/status-bar"
  */
 function usePanelControl(panelIndex: number) {
   const group = useGroupContext()
+  const context = useResizableContext()
 
   const handleClick = () => {
     console.debug("[App] handleClick")
@@ -33,7 +35,7 @@ function usePanelControl(panelIndex: number) {
 
     // Click to restore when maximized
     if (group.prevMaximize) {
-      restorePanels(group)
+      restorePanels(group, context)
       return
     }
 
@@ -59,7 +61,7 @@ function usePanelControl(panelIndex: number) {
 
     // Double-click to restore when maximized
     if (group.prevMaximize) {
-      restorePanels(group)
+      restorePanels(group, context)
       return
     }
 
@@ -72,7 +74,7 @@ function usePanelControl(panelIndex: number) {
     }
 
     // Double-click to maximize when expanded
-    maximizePanel(targetPanel, group)
+    maximizePanel(targetPanel, group, context)
   }
 
   return { handleClick, handleDoubleClick }
@@ -96,7 +98,7 @@ const BottomResizeHandle = () => {
 /**
  * Toggle panel collapsed state
  */
-function togglePanel(panel: PanelValue, group: GroupValue) {
+function togglePanel(panel: PanelValue, group: GroupValue, context: ContextValue) {
   const panels = Array.from(group.panels.values())
   const panelIndex = panels.findIndex((p) => p.id === panel.id)
 
@@ -104,7 +106,7 @@ function togglePanel(panel: PanelValue, group: GroupValue) {
 
   // Restore if maximized
   if (group.prevMaximize) {
-    restorePanels(group)
+    restorePanels(group, context)
   }
 
   // Expand if collapsed
@@ -124,11 +126,11 @@ function togglePanel(panel: PanelValue, group: GroupValue) {
 /**
  * Maximize or restore panel
  */
-function toggleMaximize(panel: PanelValue, group: GroupValue) {
+function toggleMaximize(panel: PanelValue, group: GroupValue, context: ContextValue) {
   if (group.prevMaximize) {
-    restorePanels(group)
+    restorePanels(group, context)
   } else {
-    maximizePanel(panel, group)
+    maximizePanel(panel, group, context)
   }
 }
 
@@ -138,6 +140,7 @@ function toggleMaximize(panel: PanelValue, group: GroupValue) {
 const LeftPanel = () => {
   const group = useGroupContext()
   const panel = usePanelContext()
+  const context = useResizableContext()
 
   return (
     <div className="flex-1 flex flex-col">
@@ -147,13 +150,13 @@ const LeftPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group)
+          togglePanel(panel, group, context)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group)
+          toggleMaximize(panel, group, context)
         }}
         onRestore={() => {
-          restorePanels(group)
+          restorePanels(group, context)
         }}
       />
       <div className="flex-1 p-4 overflow-auto">
@@ -174,6 +177,7 @@ const LeftPanel = () => {
 const RightPanel = () => {
   const group = useGroupContext()
   const panel = usePanelContext()
+  const context = useResizableContext()
 
   return (
     <div className="flex-1 flex flex-col">
@@ -183,13 +187,13 @@ const RightPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group)
+          togglePanel(panel, group, context)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group)
+          toggleMaximize(panel, group, context)
         }}
         onRestore={() => {
-          restorePanels(group)
+          restorePanels(group, context)
         }}
       />
       <div className="flex-1 p-4 overflow-auto">
@@ -208,6 +212,7 @@ const RightPanel = () => {
 const BottomPanel = () => {
   const group = useGroupContext()
   const panel = usePanelContext()
+  const context = useResizableContext()
 
   return (
     <div className="flex-1 flex flex-col">
@@ -217,13 +222,13 @@ const BottomPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group)
+          togglePanel(panel, group, context)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group)
+          toggleMaximize(panel, group, context)
         }}
         onRestore={() => {
-          restorePanels(group)
+          restorePanels(group, context)
         }}
       />
       <div className="flex-1 p-2 overflow-auto  font-mono text-xs">
@@ -301,13 +306,99 @@ const EditorPanel = () => {
   )
 }
 
+// Storage key for saving layout (v2 includes isMaximized, isCollapsed, openSize)
+const LAYOUT_STORAGE_KEY = "resizable-panels-layout-v2"
+
+interface SavedPanelLayout {
+  size: number
+  openSize: number
+  isCollapsed: boolean
+  isMaximized: boolean
+}
+
+interface SavedGroupLayout {
+  panels: SavedPanelLayout[]
+  prevMaximize?: [boolean, number][]
+}
+
+/**
+ * Save layout to localStorage
+ */
+function saveLayout(ctx: ContextValue) {
+  const layout: Record<string, SavedGroupLayout> = {}
+  for (const [groupId, group] of ctx.groups) {
+    layout[groupId] = {
+      panels: Array.from(group.panels.values()).map((p) => ({
+        size: p.size,
+        openSize: p.openSize,
+        isCollapsed: p.isCollapsed,
+        isMaximized: p.isMaximized,
+      })),
+      prevMaximize: group.prevMaximize,
+    }
+  }
+  localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout))
+  console.debug("[App] Layout saved:", layout)
+}
+
+/**
+ * Load layout from localStorage
+ */
+function loadLayout(): Record<string, SavedGroupLayout> | null {
+  try {
+    const saved = localStorage.getItem(LAYOUT_STORAGE_KEY)
+    if (saved) {
+      return JSON.parse(saved)
+    }
+  } catch (e) {
+    console.error("[App] Failed to load layout:", e)
+  }
+  return null
+}
+
 function App() {
   // Track panel visibility states
   const [leftVisible, setLeftVisible] = useState(false)
   const [rightVisible, setRightVisible] = useState(false)
   const [bottomVisible, setBottomVisible] = useState(false)
 
-  // Handle layout changes to update visibility states
+  // Handle layout mount - load saved layout
+  const handleLayoutMount = (ctx: ContextValue) => {
+    const savedLayout = loadLayout()
+    if (!savedLayout) return
+
+    // Apply saved layout
+    for (const [groupId, groupData] of Object.entries(savedLayout)) {
+      const group = ctx.groups.get(groupId)
+      if (!group) continue
+
+      const panels = Array.from(group.panels.values())
+      const { panels: savedPanels, prevMaximize } = groupData
+
+      // Apply panel states
+      for (let i = 0; i < panels.length && i < savedPanels.length; i++) {
+        const panel = panels[i]
+        const saved = savedPanels[i]
+        panel.size = saved.size
+        panel.openSize = saved.openSize
+        panel.isCollapsed = saved.isCollapsed
+        panel.isMaximized = saved.isMaximized
+      }
+
+      // Restore prevMaximize state if exists
+      if (prevMaximize && prevMaximize.length === panels.length) {
+        group.prevMaximize = prevMaximize
+      }
+
+      // Trigger re-render for all panels
+      for (const panel of panels) {
+        panel.setDirty()
+      }
+    }
+    console.debug("[App] Layout loaded:", savedLayout)
+  }
+
+  // Handle layout changes to update visibility states and save
   const handleLayoutChanged = (ctx: ContextValue) => {
     for (const group of ctx.groups.values()) {
       const leftPanel = group.panels.get("left")
@@ -318,10 +409,16 @@ function App() {
       if (rightPanel) setRightVisible(!rightPanel.isCollapsed)
       if (bottomPanel) setBottomVisible(!bottomPanel.isCollapsed)
     }
+    // Save layout to localStorage
+    saveLayout(ctx)
   }
 
   return (
-    <ResizableContext className="flex-1 flex flex-col min-w-fit" onLayoutChanged={handleLayoutChanged}>
+    <ResizableContext
+      className="flex-1 flex flex-col min-w-fit"
+      onLayoutMount={handleLayoutMount}
+      onLayoutChanged={handleLayoutChanged}
+    >
       {/* Menu Bar with panel toggle buttons */}
       <MenuBar leftVisible={leftVisible} rightVisible={rightVisible} bottomVisible={bottomVisible}>
         <span className="font-semibold text-sm m-2">Resizable Panels Demo</span>

@@ -55,6 +55,10 @@ export function ResizableGroup({
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
       adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
+      // Trigger onLayoutChanged callback
+      if (context.onLayoutChanged) {
+        context.onLayoutChanged(context)
+      }
     },
   }).current
 

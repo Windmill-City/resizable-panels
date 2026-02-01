@@ -1,5 +1,5 @@
 import { restorePanels, useResizableContext } from "@local/resizable-panels"
-import { PanelBottom, PanelLeft, PanelRight } from "lucide-react"
+import { PanelBottom, PanelLeft, PanelRight, RotateCcw } from "lucide-react"
 
 interface MenuBarProps {
   children?: React.ReactNode
@@ -87,6 +87,17 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
           title={rightVisible ? "Hide right panel" : "Show right panel"}
         >
           <PanelRight className="w-4 h-4" />
+        </button>
+        <div className="w-px h-4 bg-border mx-1" />
+        <button
+          onClick={() => {
+            localStorage.removeItem("resizable-panels-layout")
+            window.location.reload()
+          }}
+          className="p-1.5 rounded transition-colors hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+          title="Reset layout"
+        >
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
     </div>

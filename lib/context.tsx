@@ -374,8 +374,9 @@ export function adjustPanelByDelta(
  * Restore all panels to their previous state before maximization
  *
  * @param group - The group containing the panels to restore
+ * @param context - Optional context to trigger onLayoutChanged callback
  */
-export function restorePanels(group: GroupValue): void {
+export function restorePanels(group: GroupValue, context?: ContextValue): void {
   if (!group.prevMaximize) return
   const panels = Array.from(group.panels.values())
   console.debug("[Resizable] RestorePanels:", { panels, group, prevMaximize: group.prevMaximize })
@@ -386,6 +387,10 @@ export function restorePanels(group: GroupValue): void {
   }
   group.prevMaximize = undefined
   for (const panel of panels) panel.setDirty()
+  // Trigger onLayoutChanged callback
+  if (context?.onLayoutChanged) {
+    context.onLayoutChanged(context)
+  }
 }
 
 /**
@@ -393,8 +398,9 @@ export function restorePanels(group: GroupValue): void {
  *
  * @param targetPanel - The panel to maximize
  * @param group - The group containing these panels
+ * @param context - Optional context to trigger onLayoutChanged callback
  */
-export function maximizePanel(targetPanel: PanelValue, group: GroupValue): void {
+export function maximizePanel(targetPanel: PanelValue, group: GroupValue, context?: ContextValue): void {
   if (!targetPanel.okMaximize) return
 
   const panels = Array.from(group.panels.values())
@@ -409,12 +415,17 @@ export function maximizePanel(targetPanel: PanelValue, group: GroupValue): void 
   targetPanel.isCollapsed = false
   for (const panel of panels) panel.setDirty()
   console.debug("[Resizable] MaximizePanel:", { targetPanel, panels, group, prevMaximize: group.prevMaximize })
+  // Trigger onLayoutChanged callback
+  if (context?.onLayoutChanged) {
+    context.onLayoutChanged(context)
+  }
 }
 
 export function ResizableContext({
   id: idProp,
   children,
   className = undefined,
+  onLayoutMount,
   onLayoutChanged,
 }: ResizableContextProps) {
   const id = idProp ?? useId()
@@ -430,6 +441,7 @@ export function ResizableContext({
       ref.groups.delete(groupId)
       console.debug("[ResizableContext] Unregister group:", groupId, "Groups:", Array.from(ref.groups.keys()))
     },
+    onLayoutMount,
     onLayoutChanged,
     isDragging: false,
     prevPos: { x: 0, y: 0 },
