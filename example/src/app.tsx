@@ -5,9 +5,14 @@ import {
   ResizablePanel,
   restorePanels,
   useGroupContext,
+  usePanelContext,
+  useResizableContext,
+  type ContextValue,
 } from "@local/resizable-panels"
+import { useState } from "react"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
+import PanelHeader from "./ui/panel-header"
 import ResizeHandle from "./ui/resize-handle"
 import StatusBar from "./ui/status-bar"
 
@@ -27,7 +32,7 @@ function usePanelControl(panelIndex: number) {
 
     // Click to restore when maximized
     if (group.prevMaximize) {
-      restorePanels(panels, group)
+      restorePanels(group)
       return
     }
 
@@ -53,7 +58,7 @@ function usePanelControl(panelIndex: number) {
 
     // Double-click to restore when maximized
     if (group.prevMaximize) {
-      restorePanels(panels, group)
+      restorePanels(group)
       return
     }
 
@@ -87,53 +92,302 @@ const BottomResizeHandle = () => {
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
-function App() {
+/**
+ * Toggle panel collapsed state
+ */
+function togglePanel(panelId: string, context: ContextValue) {
+  for (const group of context.groups.values()) {
+    const panels = Array.from(group.panels.values())
+    const panelIndex = panels.findIndex((p) => p.id === panelId)
+
+    if (panelIndex >= 0) {
+      const panel = panels[panelIndex]
+
+      // Restore if maximized
+      if (group.prevMaximize) {
+        restorePanels(group)
+      }
+
+      // Expand if collapsed
+      if (panel.isCollapsed) {
+        const isBefore = panelIndex < panels.length / 2
+        const delta = isBefore ? panel.prevSize : -panel.prevSize
+        group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+        return
+      }
+
+      // Collapse if expanded
+      const isBefore = panelIndex < panels.length / 2
+      const delta = isBefore ? -panel.size : panel.size
+      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+      return
+    }
+  }
+}
+
+/**
+ * Maximize or restore panel
+ */
+function toggleMaximize(panelId: string, context: ContextValue) {
+  for (const group of context.groups.values()) {
+    const panels = Array.from(group.panels.values())
+    const panel = panels.find((p) => p.id === panelId)
+
+    if (panel) {
+      if (group.prevMaximize) {
+        restorePanels(group)
+      } else {
+        maximizePanel(panel, panels, group)
+      }
+      return
+    }
+  }
+}
+
+/**
+ * Left panel with header
+ */
+const LeftPanel = () => {
+  const context = useResizableContext()
+  const group = useGroupContext()
+  const panel = usePanelContext()
+
   return (
-    <div className="flex-1 flex flex-col min-w-fit">
-      {/* Menu */}
-      <MenuBar>Menu</MenuBar>
-      {/* min-h-40[160px] here to force bottom panel shrink */}
+    <div className="flex-1 flex flex-col">
+      <PanelHeader
+        title="Explorer"
+        isCollapsed={panel.isCollapsed}
+        isMaximized={panel.isMaximized}
+        canMaximize={panel.okMaximize}
+        onClose={() => {
+          togglePanel("left", context)
+        }}
+        onMaximize={() => {
+          toggleMaximize("left", context)
+        }}
+        onRestore={() => {
+          restorePanels(group)
+        }}
+      />
+      <div className="flex-1 p-4 overflow-auto">
+        <div className="text-sm text-muted-foreground">
+          <div className="mb-2">📁 src</div>
+          <div className="pl-4 mb-1">📄 app.tsx</div>
+          <div className="pl-4 mb-1">📄 main.tsx</div>
+          <div className="pl-4 mb-1">📄 index.css</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Right panel with header
+ */
+const RightPanel = () => {
+  const context = useResizableContext()
+  const group = useGroupContext()
+  const panel = usePanelContext()
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <PanelHeader
+        title="Outline"
+        isCollapsed={panel.isCollapsed}
+        isMaximized={panel.isMaximized}
+        canMaximize={panel.okMaximize}
+        onClose={() => {
+          togglePanel("right", context)
+        }}
+        onMaximize={() => {
+          toggleMaximize("right", context)
+        }}
+        onRestore={() => {
+          restorePanels(group)
+        }}
+      />
+      <div className="flex-1 p-4 overflow-auto">
+        <div className="text-sm text-muted-foreground">
+          <div className="mb-2">Outline view</div>
+          <div className="pl-2">No symbols found</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Bottom panel with header
+ */
+const BottomPanel = () => {
+  const context = useResizableContext()
+  const group = useGroupContext()
+  const panel = usePanelContext()
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <PanelHeader
+        title="Terminal"
+        isCollapsed={panel.isCollapsed}
+        isMaximized={panel.isMaximized}
+        canMaximize={panel.okMaximize}
+        onClose={() => {
+          togglePanel("bottom", context)
+        }}
+        onMaximize={() => {
+          toggleMaximize("bottom", context)
+        }}
+        onRestore={() => {
+          restorePanels(group)
+        }}
+      />
+      <div className="flex-1 p-2 overflow-auto  font-mono text-xs">
+        <div className="text-green-600">$ npm run dev</div>
+        <div className="text-gray-500 mt-1">VITE v5.0.0 ready in 320 ms</div>
+        <div className="text-blue-500 mt-1">➜ Local: http://localhost:5173/</div>
+        <div className="text-gray-600 mt-1">➜ Network: use --host to expose</div>
+        <div className="text-green-500 mt-2">$ _</div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Editor panel with header
+ */
+const EditorPanel = () => {
+  return (
+    <div className="flex-1 flex flex-col">
+      {/* Editor tabs */}
+      <div className="h-8 flex items-center">
+        <div className="px-3 h-full flex items-center bg-background border-r border-border text-sm">
+          <span className="text-yellow-500 mr-1.5">JS</span>
+          app.tsx
+        </div>
+        <div className="px-3 h-full flex items-center text-muted-foreground text-sm hover:bg-accent/30 cursor-pointer">
+          <span className="text-blue-500 mr-1.5">TS</span>
+          main.tsx
+        </div>
+      </div>
+
+      {/* Editor content */}
+      <div className="flex-1 p-4 overflow-auto font-mono text-sm">
+        <div className="text-muted-foreground">
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">1</span>
+            <span>
+              <span className="text-purple-500">import</span> React <span className="text-purple-500">from</span>{" "}
+              <span className="text-green-500">&apos;react&apos;</span>
+            </span>
+          </div>
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">2</span>
+            <span></span>
+          </div>
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">3</span>
+            <span>
+              <span className="text-purple-500">function</span> <span className="text-blue-500">App</span>() {"{"}
+            </span>
+          </div>
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">4</span>
+            <span className="pl-4">
+              <span className="text-purple-500">return</span> &lt;div&gt;Hello World&lt;/div&gt;
+            </span>
+          </div>
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">5</span>
+            <span>{"}"}</span>
+          </div>
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">6</span>
+            <span></span>
+          </div>
+          <div className="flex">
+            <span className="w-8 text-right pr-4 select-none text-gray-500">7</span>
+            <span>
+              <span className="text-purple-500">export</span> <span className="text-purple-500">default</span> App
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  // Track panel visibility states
+  const [leftVisible, setLeftVisible] = useState(false)
+  const [rightVisible, setRightVisible] = useState(false)
+  const [bottomVisible, setBottomVisible] = useState(false)
+
+  // Handle layout changes to update visibility states
+  const handleLayoutChanged = (ctx: ContextValue) => {
+    for (const group of ctx.groups.values()) {
+      const leftPanel = group.panels.get("left")
+      const rightPanel = group.panels.get("right")
+      const bottomPanel = group.panels.get("bottom")
+
+      if (leftPanel) setLeftVisible(!leftPanel.isCollapsed)
+      if (rightPanel) setRightVisible(!rightPanel.isCollapsed)
+      if (bottomPanel) setBottomVisible(!bottomPanel.isCollapsed)
+    }
+  }
+
+  return (
+    <ResizableContext className="flex-1 flex flex-col min-w-fit" onLayoutChanged={handleLayoutChanged}>
+      {/* Menu Bar with panel toggle buttons */}
+      <MenuBar leftVisible={leftVisible} rightVisible={rightVisible} bottomVisible={bottomVisible}>
+        <span className="font-semibold text-sm m-2">Resizable Panels Demo</span>
+      </MenuBar>
+
+      {/* Main content area */}
       <div className="flex-1 flex min-h-40">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
-        <ResizableContext>
-          <ResizableGroup>
-            {/* Left Sidebar */}
-            <ResizablePanel id="left" collapsible collapsed>
-              left
-            </ResizablePanel>
-            <LeftResizeHandle />
-            <ResizablePanel expand>
-              <ResizableGroup direction="row">
-                {/* Editor */}
-                <ResizablePanel id="editor" minSize={80} collapsible expand>
-                  editor
-                </ResizablePanel>
-                <BottomResizeHandle />
-                {/* Bottom Panel */}
-                <ResizablePanel
-                  id="bottom"
-                  className="border-t data-maximized:border-none data-collapsed:border-none"
-                  minSize={80}
-                  collapsible
-                  okMaximize
-                  collapsed
-                >
-                  bottom
-                </ResizablePanel>
-              </ResizableGroup>
-            </ResizablePanel>
-            <RightResizeHandle />
-            {/* Right Sidebar */}
-            <ResizablePanel id="right" collapsible okMaximize collapsed>
-              right
-            </ResizablePanel>
-          </ResizableGroup>
-        </ResizableContext>
+
+        <ResizableGroup>
+          {/* Left Sidebar */}
+          <ResizablePanel id="left" collapsible collapsed>
+            <LeftPanel />
+          </ResizablePanel>
+          <LeftResizeHandle />
+
+          <ResizablePanel expand>
+            <ResizableGroup direction="row">
+              {/* Editor */}
+              <ResizablePanel id="editor" minSize={80} collapsible expand>
+                <EditorPanel />
+              </ResizablePanel>
+              <BottomResizeHandle />
+
+              {/* Bottom Panel */}
+              <ResizablePanel
+                id="bottom"
+                className="border-t data-maximized:border-none data-collapsed:border-none"
+                minSize={80}
+                collapsible
+                okMaximize
+                collapsed
+              >
+                <BottomPanel />
+              </ResizablePanel>
+            </ResizableGroup>
+          </ResizablePanel>
+
+          <RightResizeHandle />
+
+          {/* Right Sidebar */}
+          <ResizablePanel id="right" collapsible okMaximize collapsed>
+            <RightPanel />
+          </ResizablePanel>
+        </ResizableGroup>
       </div>
+
       {/* Status Bar */}
       <StatusBar>Status</StatusBar>
-    </div>
+    </ResizableContext>
   )
 }
 

@@ -372,11 +372,11 @@ export function adjustPanelByDelta(
 /**
  * Restore all panels to their previous state before maximization
  *
- * @param panels - Array of panels in the group
- * @param group - The group containing these panels
+ * @param group - The group containing the panels to restore
  */
-export function restorePanels(panels: PanelValue[], group: GroupValue): void {
+export function restorePanels(group: GroupValue): void {
   if (!group.prevMaximize) return
+  const panels = Array.from(group.panels.values())
   console.debug("[Resizable] RestorePanels:", { panels, group, prevMaximize: group.prevMaximize })
   for (let i = 0; i < panels.length; i++) {
     panels[i].isCollapsed = group.prevMaximize[i][0]

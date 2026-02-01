@@ -13,7 +13,7 @@ export {
 } from "./context"
 export { GroupContext, ResizableGroup, useGroupContext } from "./group"
 export { ResizableHandle } from "./handle"
-export { ResizablePanel } from "./panel"
+export { PanelContext, ResizablePanel, usePanelContext } from "./panel"
 
 export type {
   ContextValue,

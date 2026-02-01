@@ -1,8 +1,18 @@
 "use client"
 
-import { useId, useLayoutEffect, useReducer, useRef } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { PanelValue, ResizablePanelProps } from "./types"
+
+export const PanelContext = createContext<PanelValue | null>(null)
+
+export function usePanelContext() {
+  const context = useContext(PanelContext)
+  if (!context) {
+    throw new Error("usePanelContext must be used within ResizablePanel")
+  }
+  return context
+}
 
 export function ResizablePanel({
   id: idProp,
@@ -76,21 +86,23 @@ export function ResizablePanel({
   }
 
   return (
-    <div
-      ref={containerEl}
-      data-resizable-panel={id}
-      data-collapsed={ref.isCollapsed || undefined}
-      data-maximized={ref.isMaximized || undefined}
-      style={{
-        flex: flexValue,
-        display: "flex",
-        overflow: "hidden",
-        [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? undefined : ref.minSize,
-        [isCol ? "maxWidth" : "maxHeight"]: ref.maxSize === Infinity ? undefined : ref.maxSize,
-      }}
-      className={className}
-    >
-      {children}
-    </div>
+    <PanelContext.Provider value={ref}>
+      <div
+        ref={containerEl}
+        data-resizable-panel={id}
+        data-collapsed={ref.isCollapsed || undefined}
+        data-maximized={ref.isMaximized || undefined}
+        style={{
+          flex: flexValue,
+          display: "flex",
+          overflow: "hidden",
+          [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? undefined : ref.minSize,
+          [isCol ? "maxWidth" : "maxHeight"]: ref.maxSize === Infinity ? undefined : ref.maxSize,
+        }}
+        className={className}
+      >
+        {children}
+      </div>
+    </PanelContext.Provider>
   )
 }
