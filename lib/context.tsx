@@ -341,7 +341,7 @@ export function adjustPanelByDelta(
   // Check and shrink excess size if total exceeds container
   const currTotalSize = panels.reduce((sum, panel) => sum + panel.size, 0)
   let diff = currTotalSize - prevTotalSize
-  if (diff != 0) console.warn(`[Resizable] Group size changed while resizing: ${diff}`)
+  console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
   console.debug("[Resizable] MouseMove:", {
     delta,
