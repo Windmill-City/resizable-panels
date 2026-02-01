@@ -16,7 +16,7 @@ function App() {
           <ResizableGroup>
             {/* Left Sidebar */}
             <ResizablePanel
-              className="border-r data-[maximized=true]:border-none data-collapsed:border-none"
+              className="border-r data-maximized:border-none data-collapsed:border-none"
               collapsible
               collapsed
             >
