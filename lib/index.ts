@@ -3,10 +3,8 @@ export {
   findEdgeIndexAtPoint,
   growSequentially,
   HANDLE_SIZE,
-  maximizePanel,
   ResizableContext,
   ResizableContextType,
-  restorePanels,
   shrinkSequentially,
   useResizableContext,
   WINDOW_EDGE_MARGIN
@@ -24,6 +22,8 @@ export type {
   ResizableContextProps,
   ResizableGroupProps,
   ResizableHandleProps,
-  ResizablePanelProps
+  ResizablePanelProps,
+  SavedGroupLayout,
+  SavedPanelLayout
 } from "./types"
 

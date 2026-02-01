@@ -1,4 +1,4 @@
-import { restorePanels, useResizableContext } from "@local/resizable-panels"
+import { useResizableContext } from "@local/resizable-panels"
 import { PanelBottom, PanelLeft, PanelRight, RotateCcw } from "lucide-react"
 
 interface MenuBarProps {
@@ -16,7 +16,7 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
     for (const group of context.groups.values()) {
       // Restore if maximized
       if (group.prevMaximize) {
-        restorePanels(group)
+        group.restorePanels()
         hasRestored = true
       }
     }

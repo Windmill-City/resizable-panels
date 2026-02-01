@@ -370,57 +370,6 @@ export function adjustPanelByDelta(
   }
 }
 
-/**
- * Restore all panels to their previous state before maximization
- *
- * @param group - The group containing the panels to restore
- * @param context - Optional context to trigger onLayoutChanged callback
- */
-export function restorePanels(group: GroupValue, context?: ContextValue): void {
-  if (!group.prevMaximize) return
-  const panels = Array.from(group.panels.values())
-  console.debug("[Resizable] RestorePanels:", { panels, group, prevMaximize: group.prevMaximize })
-  for (let i = 0; i < panels.length; i++) {
-    panels[i].isCollapsed = group.prevMaximize[i][0]
-    panels[i].size = group.prevMaximize[i][1]
-    panels[i].isMaximized = false
-  }
-  group.prevMaximize = undefined
-  for (const panel of panels) panel.setDirty()
-  // Trigger onLayoutChanged callback
-  if (context?.onLayoutChanged) {
-    context.onLayoutChanged(context)
-  }
-}
-
-/**
- * Maximize a specific panel by collapsing all others
- *
- * @param targetPanel - The panel to maximize
- * @param group - The group containing these panels
- * @param context - Optional context to trigger onLayoutChanged callback
- */
-export function maximizePanel(targetPanel: PanelValue, group: GroupValue, context?: ContextValue): void {
-  if (!targetPanel.okMaximize) return
-
-  const panels = Array.from(group.panels.values())
-  group.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
-  for (const panel of panels) {
-    if (panel.id !== targetPanel.id) {
-      panel.isCollapsed = true
-      panel.size = 0
-    }
-  }
-  targetPanel.isMaximized = true
-  targetPanel.isCollapsed = false
-  for (const panel of panels) panel.setDirty()
-  console.debug("[Resizable] MaximizePanel:", { targetPanel, panels, group, prevMaximize: group.prevMaximize })
-  // Trigger onLayoutChanged callback
-  if (context?.onLayoutChanged) {
-    context.onLayoutChanged(context)
-  }
-}
-
 export function ResizableContext({
   id: idProp,
   children,

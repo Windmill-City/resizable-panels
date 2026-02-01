@@ -60,6 +60,46 @@ export function ResizableGroup({
         context.onLayoutChanged(context)
       }
     },
+    restorePanels: () => {
+      if (!ref.prevMaximize) return
+      const panels = Array.from(ref.panels.values())
+      console.debug("[Resizable] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
+      for (let i = 0; i < panels.length; i++) {
+        panels[i].isCollapsed = ref.prevMaximize[i][0]
+        panels[i].size = ref.prevMaximize[i][1]
+        panels[i].isMaximized = false
+      }
+      ref.prevMaximize = undefined
+      for (const panel of panels) panel.setDirty()
+      // Trigger onLayoutChanged callback
+      if (context.onLayoutChanged) {
+        context.onLayoutChanged(context)
+      }
+    },
+    maximizePanel: (target: PanelValue) => {
+      if (!target.okMaximize) return
+      const panels = Array.from(ref.panels.values())
+      ref.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
+      for (const panel of panels) {
+        if (panel.id !== target.id) {
+          panel.isCollapsed = true
+          panel.size = 0
+        }
+      }
+      target.isMaximized = true
+      target.isCollapsed = false
+      for (const panel of panels) panel.setDirty()
+      console.debug("[Resizable] MaximizePanel:", {
+        targetPanel: target,
+        panels,
+        group: ref,
+        prevMaximize: ref.prevMaximize,
+      })
+      // Trigger onLayoutChanged callback
+      if (context.onLayoutChanged) {
+        context.onLayoutChanged(context)
+      }
+    },
   }).current
 
   useLayoutEffect(() => {

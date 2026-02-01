@@ -33,6 +33,48 @@ export interface ContextValue {
   updateHoverState: (point: { x: number; y: number }) => void
 }
 
+export interface GroupValue {
+  // Unique Identifier
+  id: string
+  // Direction of the Resizable Group
+  direction: Direction
+  // Use ratio mode for flex layout?
+  ratio: boolean
+  // Panels in the Group
+  panels: Map<string, PanelValue>
+  // Handles in the Group
+  handles: HandleValue[]
+  // Ref of the ResizableGroup Element
+  containerEl: RefObject<HTMLElement>
+  // State before Drag - [isCollapsed, size]
+  prevDrag?: [boolean, number][]
+  // State before Maximize - [isCollapsed, size]
+  prevMaximize?: [boolean, number][]
+  // Register Panel
+  registerPanel: (panel: PanelValue) => void
+  // Unregister Panel
+  unregisterPanel: (id: string) => void
+  // Register Handle
+  registerHandle: (handle: HandleValue) => void
+  // Unregister Handle
+  unregisterHandle: (id: string) => void
+  // Drag panel by delta at given handle index
+  dragPanel: (delta: number, index: number) => void
+  // Restore all panels to their previous state before maximization
+  restorePanels: () => void
+  // Maximize a specific panel by collapsing all others
+  maximizePanel: (target: PanelValue) => void
+}
+
+export interface SavedGroupLayout {
+  // Unique Identifier
+  id: string
+  // Panels in the group
+  panels: SavedPanelLayout[]
+  // State before maximize - [isCollapsed, size]
+  prevMaximize?: [boolean, number][]
+}
+
 export interface PanelValue {
   // Unique Identifier
   id: string
@@ -60,6 +102,19 @@ export interface PanelValue {
   setDirty: () => void
 }
 
+export interface SavedPanelLayout {
+  // Unique Identifier
+  id: string
+  // Active Size (px)
+  size: number
+  // Size before Collapse (px)
+  openSize: number
+  // Is panel collapsed
+  isCollapsed: boolean
+  // Is panel maximized
+  isMaximized: boolean
+}
+
 export interface HandleValue {
   // Unique Identifier
   id: string
@@ -73,35 +128,6 @@ export interface HandleValue {
   onClick?: () => void
   // Double click callback
   onDoubleClick?: () => void
-}
-
-export interface GroupValue {
-  // Unique Identifier
-  id: string
-  // Direction of the Resizable Group
-  direction: Direction
-  // Use ratio mode for flex layout?
-  ratio: boolean
-  // Panels in the Group
-  panels: Map<string, PanelValue>
-  // Handles in the Group
-  handles: HandleValue[]
-  // Ref of the ResizableGroup Element
-  containerEl: RefObject<HTMLElement>
-  // Register Panel
-  registerPanel: (panel: PanelValue) => void
-  // Unregister Panel
-  unregisterPanel: (id: string) => void
-  // Register Handle
-  registerHandle: (handle: HandleValue) => void
-  // Unregister Handle
-  unregisterHandle: (id: string) => void
-  // Drag panel by delta at given handle index
-  dragPanel: (delta: number, index: number) => void
-  // State before Maximize - [isCollapsed, size]
-  prevMaximize?: [boolean, number][]
-  // State before Drag - [isCollapsed, size]
-  prevDrag?: [boolean, number][]
 }
 
 export interface ResizableContextProps {
