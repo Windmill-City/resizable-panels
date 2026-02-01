@@ -36,8 +36,8 @@ export interface PanelValue {
   id: string
   // Active Size (px)
   size: number
-  // Size before Collapse/Resize/Maximize (px)
-  prevSize: number
+  // Size before Collapse (px)
+  openSize: number
   // Grow/Shirk when Group Size Change?
   expand?: boolean
   // Minimum Size (px)
@@ -48,8 +48,6 @@ export interface PanelValue {
   collapsible: boolean
   // Is Collapsed?
   isCollapsed: boolean
-  // Is Collapsed before Resize?
-  prevCollapsed: boolean
   // Allow Maximize?
   okMaximize: boolean
   // Is Maximized?
@@ -88,8 +86,6 @@ export interface GroupValue {
   handles: HandleValue[]
   // Ref of the ResizableGroup Element
   containerEl: RefObject<HTMLElement>
-  // Is Dragging Panels?
-  isDragging: boolean
   // Register Panel
   registerPanel: (panel: PanelValue) => void
   // Unregister Panel
@@ -102,6 +98,8 @@ export interface GroupValue {
   dragPanel: (delta: number, index: number) => void
   // State before Maximize - [isCollapsed, size]
   prevMaximize?: [boolean, number][]
+  // State before Drag - [isCollapsed, size]
+  prevDrag?: [boolean, number][]
 }
 
 export interface ResizableContextProps {

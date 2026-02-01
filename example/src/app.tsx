@@ -40,7 +40,7 @@ function usePanelControl(panelIndex: number) {
     // Click to expand when collapsed
     if (targetPanel.isCollapsed) {
       const isBefore = panelIndex < panels.length / 2
-      const delta = isBefore ? targetPanel.prevSize : -targetPanel.prevSize
+      const delta = isBefore ? targetPanel.openSize : -targetPanel.openSize
       group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
       return
     }
@@ -66,7 +66,7 @@ function usePanelControl(panelIndex: number) {
     // Double-click to expand when collapsed
     if (targetPanel.isCollapsed) {
       const isBefore = panelIndex < panels.length / 2
-      const delta = isBefore ? targetPanel.prevSize : -targetPanel.prevSize
+      const delta = isBefore ? targetPanel.openSize : -targetPanel.openSize
       group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
       return
     }
@@ -110,7 +110,7 @@ function togglePanel(panel: PanelValue, group: GroupValue) {
   // Expand if collapsed
   if (panel.isCollapsed) {
     const isBefore = panelIndex < panels.length / 2
-    const delta = isBefore ? panel.prevSize : -panel.prevSize
+    const delta = isBefore ? panel.openSize : -panel.openSize
     group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
     return
   }

@@ -32,7 +32,7 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
         // Expand if collapsed
         if (panel.isCollapsed) {
           const isBefore = panelIndex < panels.length / 2
-          const delta = isBefore ? panel.prevSize : -panel.prevSize
+          const delta = isBefore ? panel.openSize : -panel.openSize
           group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
           return
         }

@@ -42,10 +42,9 @@ export function ResizablePanel({
     minSize,
     maxSize,
     expand,
-    prevSize: defaultSize,
+    openSize: defaultSize,
     collapsible,
     isCollapsed: collapsed,
-    prevCollapsed: false,
     okMaximize,
     isMaximized: false,
     containerEl,
@@ -64,11 +63,11 @@ export function ResizablePanel({
 
     // Initialize size from actual DOM dimensions (content-box)
     ref.size = isCol ? el.clientWidth : el.clientHeight
-    if (!ref.isCollapsed) ref.prevSize = ref.size
+    if (!ref.isCollapsed) ref.openSize = ref.size
 
     // Observe size changes and update ref.size (content-box)
     const observer = new ResizeObserver((_) => {
-      if (!group.isDragging) ref.size = isCol ? el.clientWidth : el.clientHeight
+      if (!group.prevDrag) ref.size = isCol ? el.clientWidth : el.clientHeight
     })
     observer.observe(el)
     return () => observer.disconnect()

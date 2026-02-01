@@ -215,6 +215,7 @@ export function adjustPanelByDelta(
     if (nextPanel && remaining > nextPanel.minSize / 2) {
       collapsedSpace += nextPanel.size
       nextPanel.isCollapsed = true
+      nextPanel.openSize = nextPanel.size
       nextPanel.size = 0
       console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel, remaining })
       return true
@@ -335,7 +336,7 @@ export function adjustPanelByDelta(
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
     if (panel.okMaximize) {
-      group.prevMaximize = panels.map((p) => [p.prevCollapsed, p.prevSize])
+      group.prevMaximize = group.prevDrag!
       panel.isMaximized = true
     }
   } else if (nonCollapsed.length > 1) {
@@ -488,14 +489,7 @@ export function ResizableContext({
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
-          for (const panel of group.panels.values()) {
-            panel.prevCollapsed = panel.isCollapsed
-            // prevSize saves panel size before collapse, do not overwrite it
-            if (!panel.isCollapsed) {
-              panel.prevSize = panel.size
-            }
-          }
-          group.isDragging = true
+          group.prevDrag = Array.from(group.panels.values()).map((p) => [p.isCollapsed, p.size])
         }
 
         console.debug("[Resizable] MouseDown", {
@@ -527,9 +521,9 @@ export function ResizableContext({
         const delta = group.direction === "row" ? deltaY : deltaX
 
         // Restore initial states
-        for (const panel of [...panelsBefore, ...panelsAfter]) {
-          panel.isCollapsed = panel.prevCollapsed
-          panel.size = panel.isCollapsed ? 0 : panel.prevSize
+        for (let i = 0; i < panels.length; i++) {
+          panels[i].isCollapsed = group.prevDrag![i][0]
+          panels[i].size = group.prevDrag![i][1]
         }
 
         adjustPanelByDelta(panelsBefore, panelsAfter, delta, group)
@@ -548,7 +542,7 @@ export function ResizableContext({
           const isCol = group.direction === "col"
           panel.size = isCol ? el.clientWidth : el.clientHeight
         }
-        group.isDragging = false
+        group.prevDrag = undefined
       }
 
       // Reset drag state after constraint check
