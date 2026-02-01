@@ -81,9 +81,6 @@ export function ResizableGroup({
       const panels = Array.from(ref.panels.values())
       const index = panels.indexOf(panel)
 
-      // Save current state before operation
-      const prevState = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
-
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
 
@@ -91,12 +88,6 @@ export function ResizableGroup({
         adjustPanelByDelta(panelsBefore, panelsAfter, -panel.size, ref)
       } else {
         adjustPanelByDelta(panelsBefore, panelsAfter, panel.prevSize, ref)
-      }
-
-      // Check if the operation succeeded, rollback if failed
-      if (panel.isCollapsed !== collapse) {
-        restorePanelsState(panels, prevState)
-        return false
       }
 
       return true
@@ -144,15 +135,6 @@ export function ResizableGroup({
           }
         }
 
-        // If maximize failed, restore to previous state
-        if (!panel.isMaximized) {
-          if (ref.prevMaximize) {
-            restorePanelsState(panels, ref.prevMaximize)
-            ref.prevMaximize = undefined
-          }
-          return false
-        }
-
         return true
       } else {
         // Restore all panels to previous state
@@ -192,7 +174,7 @@ export function ResizableGroup({
       // Adjust panels by delta
       adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
 
-      return panel.size == panel.defaultSize
+      return true
     },
   }).current
 
