@@ -16,6 +16,7 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
       // Restore if maximized
       if (group.prevMaximize) {
         restorePanels(group)
+        return
       }
     }
 
