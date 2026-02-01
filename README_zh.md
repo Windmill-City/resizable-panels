@@ -9,6 +9,7 @@
 - **尺寸** - 支持像素（px）和比例（ratio）两种尺寸模式
 - **约束** - 支持最大/最小像素约束
 - **可折叠/最大化** - 面板支持折叠展开和最大化操作
+- **布局持久化** - 保存和恢复布局状态
 
 ## 安装
 
@@ -63,11 +64,11 @@ function App() {
 
 ```tsx
 interface ResizableContextProps {
-  id?: string;                    // 唯一标识符
-  children?: ReactNode;           // 子元素
-  className?: string;             // CSS 类名
-  onLayoutChanged?: (context: ContextValue) => void;  // 布局变化回调
-  onLayoutMount?: (context: ContextValue) => void;    // 布局挂载回调 - 用于加载保存的数据
+  id?: string;                                          // 唯一标识符
+  children?: ReactNode;                                 // 子元素
+  className?: string;                                   // CSS 类名
+  onLayoutChanged?: (context: ContextValue) => void;    // 布局变化回调
+  onLayoutMount?: (context: ContextValue) => void;      // 布局挂载回调 - 用于加载保存的数据
 }
 ```
 
@@ -77,14 +78,14 @@ interface ResizableContextProps {
 
 ```tsx
 interface ResizableGroupProps {
-  id?: string;                    // 唯一标识符
-  children?: ReactNode;           // 子元素（ResizablePanels）
-  className?: string;             // CSS 类名
-  direction?: 'row' | 'col';      // 调整大小方向（默认：'col'）
-                                  // 'col' = 面板水平排列（左右布局），拖拽手柄水平调整大小
-                                  // 'row' = 面板垂直排列（上下布局），拖拽手柄垂直调整大小
-  ratio?: boolean;                // 使用比例模式的弹性布局（默认：false）
-                                  // 为 true 时，面板尺寸作为 flex-grow 比例使用
+  id?: string;                                          // 唯一标识符
+  children?: ReactNode;                                 // 子元素（ResizablePanels）
+  className?: string;                                   // CSS 类名
+  direction?: 'row' | 'col';                            // 调整大小方向（默认：'col'）
+                                                        // 'col' = 面板水平排列（左右布局），拖拽手柄水平调整大小
+                                                        // 'row' = 面板垂直排列（上下布局），拖拽手柄垂直调整大小
+  ratio?: boolean;                                      // 使用比例模式的弹性布局（默认：false）
+                                                        // 为 true 时，面板尺寸作为 flex-grow 比例使用
 }
 ```
 
@@ -148,33 +149,11 @@ function GlobalControls() {
 ```tsx
 import { useGroupContext } from '@local/resizable-panels';
 
-function CustomHandle() {
+function CustomComponent() {
   const group = useGroupContext();
   
   // 访问面板和组属性
   const panels = Array.from(group.panels.values());
-  
-  return <div>自定义手柄</div>;
-}
-```
-
-### GroupValue 接口
-
-```tsx
-interface GroupValue {
-  id: string;                     // 唯一标识符
-  direction: 'row' | 'col';       // 调整方向
-  ratio: boolean;                 // 比例模式标志
-  panels: Map<string, PanelValue>;
-  handles: HandleValue[];
-  containerEl: RefObject<HTMLElement>;
-  registerPanel: (panel: PanelValue) => void;
-  unregisterPanel: (id: string) => void;
-  registerHandle: (handle: HandleValue) => void;
-  unregisterHandle: (id: string) => void;
-  dragPanel: (delta: number, index: number) => void;  // 编程方式调整面板
-  prevMaximize?: [boolean, number][];                 // 最大化前的状态
-  prevDrag?: [boolean, number][];                     // 拖拽前的状态
 }
 ```
 
@@ -189,7 +168,7 @@ function PanelContent() {
   const panel = usePanelContext();
   
   // 访问面板属性
-  const { size, minSize, maxSize, isCollapsed } = panel;
+  const { size, minSize, maxSize, isCollapsed, isMaximized } = panel;
   
   return <div>面板大小: {size}px</div>;
 }
@@ -208,6 +187,7 @@ const group = useGroupContext();
 group.dragPanel(200, 0);
 
 // 折叠右侧面板（handle 索引 1）
+const panel = Array.from(group.panels.values())[1];
 group.dragPanel(-panel.size, 1);
 ```
 
@@ -221,9 +201,8 @@ group.dragPanel(-panel.size, 1);
 将所有面板恢复到最大化前的状态。
 
 ```tsx
-import { restorePanels } from '@local/resizable-panels';
-
-restorePanels(group);
+const group = useGroupContext();
+group.restorePanels();
 ```
 
 ### maximizePanel
@@ -231,11 +210,44 @@ restorePanels(group);
 通过折叠其他所有面板来最大化指定面板。
 
 ```tsx
-import { maximizePanel } from '@local/resizable-panels';
-
+const group = useGroupContext();
 const panels = Array.from(group.panels.values());
 const targetPanel = panels[0];
-maximizePanel(targetPanel, group);
+group.maximizePanel(targetPanel);
+```
+
+### 布局持久化函数
+
+#### saveLayout
+
+将所有分组的当前布局保存为 JSON 字符串。
+
+```tsx
+const context = useResizableContext();
+const savedLayout = context.saveLayout();
+localStorage.setItem('myLayout', savedLayout);
+```
+
+#### loadLayout
+
+从 JSON 字符串加载并验证布局。
+
+```tsx
+const context = useResizableContext();
+const json = localStorage.getItem('myLayout');
+const layout = context.loadLayout(json);
+if (layout) {
+  // 布局有效
+}
+```
+
+#### applyLayout
+
+将加载的布局应用到所有分组。
+
+```tsx
+const context = useResizableContext();
+context.applyLayout(context.loadLayout(json));
 ```
 
 ## 高级示例
@@ -329,16 +341,8 @@ maximizePanel(targetPanel, group);
   onLayoutChanged={(context) => {
     console.log('布局变化:', context);
     // 保存布局到 localStorage
-    const layout: Record<string, { size: number; isCollapsed: boolean }> = {};
-    for (const group of context.groups.values()) {
-      for (const panel of group.panels.values()) {
-        layout[panel.id] = {
-          size: panel.size,
-          isCollapsed: panel.isCollapsed,
-        };
-      }
-    }
-    localStorage.setItem('layout', JSON.stringify(layout));
+    const saved = context.saveLayout();
+    localStorage.setItem('layout', saved);
   }}
 >
   {/* ... */}
@@ -353,21 +357,10 @@ maximizePanel(targetPanel, group);
 <ResizableContext 
   onLayoutMount={(context) => {
     console.log('布局挂载:', context);
-    // 从 localStorage 加载布局并应用到面板
+    // 从 localStorage 加载布局并应用
     const savedLayout = localStorage.getItem('layout');
-    if (savedLayout) {
-      const layout = JSON.parse(savedLayout);
-      // 将保存的尺寸应用到面板
-      for (const group of context.groups.values()) {
-        for (const panel of group.panels.values()) {
-          if (layout[panel.id]) {
-            panel.size = layout[panel.id].size;
-            panel.isCollapsed = layout[panel.id].isCollapsed;
-            panel.setDirty();
-          }
-        }
-      }
-    }
+    const layout = context.loadLayout(savedLayout);
+    context.applyLayout(layout);
   }}
 >
   {/* ... */}
@@ -389,10 +382,10 @@ function PanelControls() {
       <button onClick={() => group.dragPanel(100, 0)}>
         展开左侧
       </button>
-      <button onClick={() => maximizePanel(leftPanel, group)}>
+      <button onClick={() => group.maximizePanel(leftPanel)}>
         最大化左侧
       </button>
-      <button onClick={() => restorePanels(panels, group)}>
+      <button onClick={() => group.restorePanels()}>
         恢复所有
       </button>
     </div>

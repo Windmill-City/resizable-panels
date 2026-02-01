@@ -9,6 +9,7 @@ A headless React component library designed for building IDE-like layouts (simil
 - **Sizing** - Support both pixel (px) and ratio-based sizing modes
 - **Constraints** - Support min/max pixel constraints
 - **Collapsible/Maximize** - Panels support collapse/expand and maximize operations
+- **Layout Persistence** - Save and restore layout state
 
 ## Installation
 
@@ -63,11 +64,11 @@ The root container that manages all resizable groups and handles global mouse ev
 
 ```tsx
 interface ResizableContextProps {
-  id?: string;                    // Unique identifier
-  children?: ReactNode;           // Child elements
-  className?: string;             // CSS class name
-  onLayoutChanged?: (context: ContextValue) => void;  // Layout change callback
-  onLayoutMount?: (context: ContextValue) => void;    // Layout mount callback - for loading saved data
+  id?: string;                                          // Unique identifier
+  children?: ReactNode;                                 // Child elements
+  className?: string;                                   // CSS class name
+  onLayoutChanged?: (context: ContextValue) => void;    // Layout change callback
+  onLayoutMount?: (context: ContextValue) => void;      // Layout mount callback - for loading saved data
 }
 ```
 
@@ -77,14 +78,14 @@ A container for grouping panels in the same direction.
 
 ```tsx
 interface ResizableGroupProps {
-  id?: string;                    // Unique identifier
-  children?: ReactNode;           // Child elements (ResizablePanels)
-  className?: string;             // CSS class name
-  direction?: 'row' | 'col';      // Resize direction (default: 'col')
-                                  // 'col' = panels arranged horizontally (left-right), drag handle resizes horizontally
-                                  // 'row' = panels arranged vertically (top-bottom), drag handle resizes vertically
-  ratio?: boolean;                // Use ratio-based flex layout (default: false)
-                                  // When true, panel sizes are used as flex-grow ratio
+  id?: string;                  // Unique identifier
+  children?: ReactNode;         // Child elements (ResizablePanels)
+  className?: string;           // CSS class name
+  direction?: 'row' | 'col';    // Resize direction (default: 'col')
+                                // 'col' = panels arranged horizontally (left-right), drag handle resizes horizontally
+                                // 'row' = panels arranged vertically (top-bottom), drag handle resizes vertically
+  ratio?: boolean;              // Use ratio-based flex layout (default: false)
+                                // When true, panel sizes are used as flex-grow ratio
 }
 ```
 
@@ -137,6 +138,18 @@ function GlobalControls() {
   // Access all groups
   const groups = Array.from(context.groups.values());
   
+  // Save layout to localStorage
+  const handleSave = () => {
+    const saved = context.saveLayout();
+    localStorage.setItem('layout', saved);
+  };
+  
+  // Load layout from localStorage
+  const handleLoad = () => {
+    const json = localStorage.getItem('layout');
+    context.applyLayout(context.loadLayout(json));
+  };
+  
   return <div>Global Controls</div>;
 }
 ```
@@ -148,33 +161,11 @@ Access the group context within a `ResizableGroup` to programmatically control p
 ```tsx
 import { useGroupContext } from '@local/resizable-panels';
 
-function CustomHandle() {
+function CustomComponent() {
   const group = useGroupContext();
   
   // Access panels and group properties
   const panels = Array.from(group.panels.values());
-  
-  return <div>Custom Handle</div>;
-}
-```
-
-### GroupValue Interface
-
-```tsx
-interface GroupValue {
-  id: string;                     // Unique identifier
-  direction: 'row' | 'col';       // Resize direction
-  ratio: boolean;                 // Ratio mode flag
-  panels: Map<string, PanelValue>;
-  handles: HandleValue[];
-  containerEl: RefObject<HTMLElement>;
-  registerPanel: (panel: PanelValue) => void;
-  unregisterPanel: (id: string) => void;
-  registerHandle: (handle: HandleValue) => void;
-  unregisterHandle: (id: string) => void;
-  dragPanel: (delta: number, index: number) => void;  // Programmatically resize panels
-  prevMaximize?: [boolean, number][];                 // State before maximize
-  prevDrag?: [boolean, number][];                     // State before drag
 }
 ```
 
@@ -189,7 +180,7 @@ function PanelContent() {
   const panel = usePanelContext();
   
   // Access panel properties
-  const { size, minSize, maxSize, isCollapsed } = panel;
+  const { size, minSize, maxSize, isCollapsed, isMaximized } = panel;
   
   return <div>Panel Size: {size}px</div>;
 }
@@ -208,6 +199,7 @@ const group = useGroupContext();
 group.dragPanel(200, 0);
 
 // Collapse right panel (handle index 1)
+const panel = Array.from(group.panels.values())[1];
 group.dragPanel(-panel.size, 1);
 ```
 
@@ -221,9 +213,8 @@ group.dragPanel(-panel.size, 1);
 Restore all panels to their state before maximization.
 
 ```tsx
-import { restorePanels } from '@local/resizable-panels';
-
-restorePanels(group);
+const group = useGroupContext();
+group.restorePanels();
 ```
 
 ### maximizePanel
@@ -231,11 +222,44 @@ restorePanels(group);
 Maximize a specific panel by collapsing all others.
 
 ```tsx
-import { maximizePanel } from '@local/resizable-panels';
-
+const group = useGroupContext();
 const panels = Array.from(group.panels.values());
 const targetPanel = panels[0];
-maximizePanel(targetPanel, group);
+group.maximizePanel(targetPanel);
+```
+
+### Layout Persistence Functions
+
+#### saveLayout
+
+Save the current layout of all groups to a JSON string.
+
+```tsx
+const context = useResizableContext();
+const savedLayout = context.saveLayout();
+localStorage.setItem('myLayout', savedLayout);
+```
+
+#### loadLayout
+
+Load and validate a layout from a JSON string.
+
+```tsx
+const context = useResizableContext();
+const json = localStorage.getItem('myLayout');
+const layout = context.loadLayout(json);
+if (layout) {
+  // Layout is valid
+}
+```
+
+#### applyLayout
+
+Apply a loaded layout to all groups.
+
+```tsx
+const context = useResizableContext();
+context.applyLayout(context.loadLayout(json));
 ```
 
 ## Advanced Examples
@@ -329,16 +353,8 @@ Listen to layout changes when resizing ends:
   onLayoutChanged={(context) => {
     console.log('Layout changed:', context);
     // Save layout to localStorage
-    const layout: Record<string, { size: number; isCollapsed: boolean }> = {};
-    for (const group of context.groups.values()) {
-      for (const panel of group.panels.values()) {
-        layout[panel.id] = {
-          size: panel.size,
-          isCollapsed: panel.isCollapsed,
-        };
-      }
-    }
-    localStorage.setItem('layout', JSON.stringify(layout));
+    const saved = context.saveLayout();
+    localStorage.setItem('layout', saved);
   }}
 >
   {/* ... */}
@@ -353,21 +369,10 @@ Called when the context is mounted, useful for restoring previously saved layout
 <ResizableContext 
   onLayoutMount={(context) => {
     console.log('Layout mounted:', context);
-    // Load layout from localStorage and apply to panels
+    // Load layout from localStorage and apply
     const savedLayout = localStorage.getItem('layout');
-    if (savedLayout) {
-      const layout = JSON.parse(savedLayout);
-      // Apply saved sizes to panels
-      for (const group of context.groups.values()) {
-        for (const panel of group.panels.values()) {
-          if (layout[panel.id]) {
-            panel.size = layout[panel.id].size;
-            panel.isCollapsed = layout[panel.id].isCollapsed;
-            panel.setDirty();
-          }
-        }
-      }
-    }
+    const layout = context.loadLayout(savedLayout);
+    context.applyLayout(layout);
   }}
 >
   {/* ... */}
@@ -389,10 +394,10 @@ function PanelControls() {
       <button onClick={() => group.dragPanel(100, 0)}>
         Expand Left
       </button>
-      <button onClick={() => maximizePanel(leftPanel, group)}>
+      <button onClick={() => group.maximizePanel(leftPanel)}>
         Maximize Left
       </button>
-      <button onClick={() => restorePanels(panels, group)}>
+      <button onClick={() => group.restorePanels()}>
         Restore All
       </button>
     </div>
