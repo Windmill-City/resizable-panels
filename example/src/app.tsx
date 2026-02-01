@@ -1,14 +1,14 @@
 import {
+  ContextValue,
+  GroupValue,
   maximizePanel,
+  PanelValue,
   ResizableContext,
   ResizableGroup,
   ResizablePanel,
   restorePanels,
   useGroupContext,
   usePanelContext,
-  useResizableContext,
-  type GroupValue,
-  type PanelValue,
 } from "@local/resizable-panels"
 import { useState } from "react"
 import ActivityBar from "./ui/activity-bar"
