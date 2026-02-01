@@ -399,7 +399,7 @@ export function maximizePanel(targetPanel: PanelValue, group: GroupValue): void 
   const panels = Array.from(group.panels.values())
   group.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
   for (const panel of panels) {
-    if (panel !== targetPanel) {
+    if (panel.id !== targetPanel.id) {
       panel.isCollapsed = true
       panel.size = 0
     }
