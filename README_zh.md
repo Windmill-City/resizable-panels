@@ -88,6 +88,8 @@ interface ResizableGroupProps {
   direction?: 'row' | 'col';      // 调整大小方向（默认：'col'）
                                   // 'col' = 水平调整手柄
                                   // 'row' = 垂直调整手柄
+  ratio?: boolean;                // 使用比例模式的弹性布局（默认：false）
+                                  // 为 true 时，面板尺寸作为 flex-grow 比例使用
 }
 ```
 
@@ -110,6 +112,23 @@ interface ResizablePanelProps {
 ```
 
 ## 高级示例
+
+### 比例模式
+
+使用 `ratio` 模式实现基于比例的空间分配。面板尺寸将作为 flex-grow 比例而非固定像素：
+
+```tsx
+<ResizableGroup direction="col" ratio>
+  <ResizablePanel defaultSize={1}>  {/* 占用 1/4 空间 */}
+    侧边栏
+  </ResizablePanel>
+  <ResizablePanel defaultSize={3}>  {/* 占用 3/4 空间 */}
+    主内容区
+  </ResizablePanel>
+</ResizableGroup>
+```
+
+在比例模式下，拖拽调整大小仍然可用，空间会按比例分配。
 
 ### 嵌套布局
 

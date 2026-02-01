@@ -88,6 +88,8 @@ interface ResizableGroupProps {
   direction?: 'row' | 'col';      // Resize direction (default: 'col')
                                   // 'col' = horizontal resize handles
                                   // 'row' = vertical resize handles
+  ratio?: boolean;                // Use ratio-based flex layout (default: false)
+                                  // When true, panel sizes are used as flex-grow ratio
 }
 ```
 
@@ -110,6 +112,23 @@ interface ResizablePanelProps {
 ```
 
 ## Advanced Examples
+
+### Ratio Mode
+
+Use `ratio` mode for ratio-based space distribution. Panel sizes are treated as flex-grow ratios rather than fixed pixels:
+
+```tsx
+<ResizableGroup direction="col" ratio>
+  <ResizablePanel defaultSize={1}>  {/* Takes 1/4 of space */}
+    Sidebar
+  </ResizablePanel>
+  <ResizablePanel defaultSize={3}>  {/* Takes 3/4 of space */}
+    Main Content
+  </ResizablePanel>
+</ResizableGroup>
+```
+
+In ratio mode, resizing still works, and the sizes are distributed proportionally.
 
 ### Nested Layouts
 
