@@ -63,6 +63,17 @@ export function ResizablePanel({
     return () => observer.disconnect()
   }, [])
 
+  let flexValue: string
+  if (group.ratio) {
+    flexValue = `${ref.size} ${ref.size} 0%`
+  } else if (ref.isCollapsed) {
+    flexValue = `0 1 ${ref.size}px`
+  } else if (ref.expand) {
+    flexValue = `999 1 0%`
+  } else {
+    flexValue = `1 1 ${ref.size}px`
+  }
+
   return (
     <div
       ref={containerEl}
@@ -70,7 +81,7 @@ export function ResizablePanel({
       data-collapsed={ref.isCollapsed || undefined}
       data-maximized={ref.isMaximized || undefined}
       style={{
-        flex: ref.isCollapsed ? `0 1 ${ref.size}px` : ref.expand ? `999 1 0%` : `1 1 ${ref.size}px`,
+        flex: flexValue,
         display: "flex",
         overflow: "hidden",
         [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? undefined : ref.minSize,

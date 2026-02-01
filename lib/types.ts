@@ -74,6 +74,8 @@ export interface GroupValue {
   id: string
   // Direction of the Resizable Group
   direction: Direction
+  // Use ratio mode for flex layout?
+  ratio: boolean
   // Panels in the Group
   panels: Map<string, PanelValue>
   // Handles in the Group
@@ -119,6 +121,9 @@ export interface ResizableGroupProps {
   className?: string
   // Direction of the Group
   direction?: Direction
+  // Use ratio mode for flex layout?
+  // When true, panel flex becomes: `${size} ${size} 0%`
+  ratio?: boolean
 }
 
 export interface ResizablePanelProps {

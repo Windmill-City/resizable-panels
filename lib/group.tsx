@@ -34,6 +34,7 @@ export function ResizableGroup({
   children,
   className = undefined,
   direction = "col",
+  ratio = false,
 }: ResizableGroupProps) {
   const context = useResizableContext()
 
@@ -43,6 +44,7 @@ export function ResizableGroup({
   const ref = useRef<GroupValue>({
     id,
     direction,
+    ratio,
     panels: new Map<string, PanelValue>(),
     handles: [],
     containerEl,
