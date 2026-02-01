@@ -67,6 +67,7 @@ interface ResizableContextProps {
   children?: ReactNode;           // Child elements
   className?: string;             // CSS class name
   onLayoutChanged?: (context: ContextValue) => void;  // Layout change callback
+  onLayoutMount?: (context: ContextValue) => void;    // Layout mount callback - for loading saved data
 }
 ```
 
@@ -327,7 +328,46 @@ Listen to layout changes when resizing ends:
 <ResizableContext 
   onLayoutChanged={(context) => {
     console.log('Layout changed:', context);
-    // Save layout to localStorage, etc.
+    // Save layout to localStorage
+    const layout: Record<string, { size: number; isCollapsed: boolean }> = {};
+    for (const group of context.groups.values()) {
+      for (const panel of group.panels.values()) {
+        layout[panel.id] = {
+          size: panel.size,
+          isCollapsed: panel.isCollapsed,
+        };
+      }
+    }
+    localStorage.setItem('layout', JSON.stringify(layout));
+  }}
+>
+  {/* ... */}
+</ResizableContext>
+```
+
+### Layout Mount Callback
+
+Called when the context is mounted, useful for restoring previously saved layout data:
+
+```tsx
+<ResizableContext 
+  onLayoutMount={(context) => {
+    console.log('Layout mounted:', context);
+    // Load layout from localStorage and apply to panels
+    const savedLayout = localStorage.getItem('layout');
+    if (savedLayout) {
+      const layout = JSON.parse(savedLayout);
+      // Apply saved sizes to panels
+      for (const group of context.groups.values()) {
+        for (const panel of group.panels.values()) {
+          if (layout[panel.id]) {
+            panel.size = layout[panel.id].size;
+            panel.isCollapsed = layout[panel.id].isCollapsed;
+            panel.setDirty();
+          }
+        }
+      }
+    }
   }}
 >
   {/* ... */}

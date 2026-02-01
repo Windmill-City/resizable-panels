@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useRef } from "react"
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
 import type { ContextValue, Direction, GroupValue, PanelValue, ResizableContextProps } from "./types"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
@@ -627,6 +627,12 @@ export function ResizableContext({
       document.removeEventListener("mouseup", handleMouseUp)
       document.removeEventListener("click", handleClick)
       document.removeEventListener("dblclick", handleDoubleClick)
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (ref.onLayoutMount) {
+      ref.onLayoutMount(ref)
     }
   }, [])
 

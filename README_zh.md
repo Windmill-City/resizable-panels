@@ -67,6 +67,7 @@ interface ResizableContextProps {
   children?: ReactNode;           // 子元素
   className?: string;             // CSS 类名
   onLayoutChanged?: (context: ContextValue) => void;  // 布局变化回调
+  onLayoutMount?: (context: ContextValue) => void;    // 布局挂载回调 - 用于加载保存的数据
 }
 ```
 
@@ -327,7 +328,46 @@ maximizePanel(targetPanel, group);
 <ResizableContext 
   onLayoutChanged={(context) => {
     console.log('布局变化:', context);
-    // 保存布局到 localStorage 等
+    // 保存布局到 localStorage
+    const layout: Record<string, { size: number; isCollapsed: boolean }> = {};
+    for (const group of context.groups.values()) {
+      for (const panel of group.panels.values()) {
+        layout[panel.id] = {
+          size: panel.size,
+          isCollapsed: panel.isCollapsed,
+        };
+      }
+    }
+    localStorage.setItem('layout', JSON.stringify(layout));
+  }}
+>
+  {/* ... */}
+</ResizableContext>
+```
+
+### 布局挂载回调
+
+在 Context 挂载时调用，可用于恢复之前保存的布局数据：
+
+```tsx
+<ResizableContext 
+  onLayoutMount={(context) => {
+    console.log('布局挂载:', context);
+    // 从 localStorage 加载布局并应用到面板
+    const savedLayout = localStorage.getItem('layout');
+    if (savedLayout) {
+      const layout = JSON.parse(savedLayout);
+      // 将保存的尺寸应用到面板
+      for (const group of context.groups.values()) {
+        for (const panel of group.panels.values()) {
+          if (layout[panel.id]) {
+            panel.size = layout[panel.id].size;
+            panel.isCollapsed = layout[panel.id].isCollapsed;
+            panel.setDirty();
+          }
+        }
+      }
+    }
   }}
 >
   {/* ... */}

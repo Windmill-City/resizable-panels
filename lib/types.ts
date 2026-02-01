@@ -11,7 +11,9 @@ export interface ContextValue {
   registerGroup: (group: GroupValue) => void
   // Unregister Group
   unregisterGroup: (id: string) => void
-  // Layout Changed
+  // Layout Mount - Load saved data
+  onLayoutMount?: (context: ContextValue) => void
+  // Layout Changed - Save changed layout
   onLayoutChanged?: (context: ContextValue) => void
   // Is Dragging Panels?
   isDragging: boolean
@@ -109,7 +111,9 @@ export interface ResizableContextProps {
   children?: ReactNode
   // CSS Class Name
   className?: string
-  // Layout Changed
+  // Layout Mount - Load saved data
+  onLayoutMount?: (context: ContextValue) => void
+  // Layout Changed - Save changed layout
   onLayoutChanged?: (context: ContextValue) => void
 }
 
