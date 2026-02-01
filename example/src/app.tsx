@@ -172,7 +172,6 @@ const LeftPanel = () => {
  * Right panel with header
  */
 const RightPanel = () => {
-  const context = useResizableContext()
   const group = useGroupContext()
   const panel = usePanelContext()
 
@@ -207,7 +206,6 @@ const RightPanel = () => {
  * Bottom panel with header
  */
 const BottomPanel = () => {
-  const context = useResizableContext()
   const group = useGroupContext()
   const panel = usePanelContext()
 
