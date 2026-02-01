@@ -7,7 +7,7 @@ import type { PanelValue, ResizablePanelProps } from "./types"
 export function ResizablePanel({
   id: idProp,
   children,
-  className = "",
+  className = undefined,
   expand = false,
   defaultSize = 300,
   minSize = 200,
@@ -67,8 +67,7 @@ export function ResizablePanel({
   return (
     <div
       ref={containerEl}
-      data-resizable-panel
-      data-panel-id={id}
+      data-resizable-panel={id}
       data-collapsed={ref.isCollapsed || undefined}
       data-maximized={ref.isMaximized || undefined}
       style={{

@@ -29,7 +29,7 @@ export function useGroupContext() {
   return context
 }
 
-export function ResizableGroup({ id: idProp, children, className = "", direction = "col" }: ResizableGroupProps) {
+export function ResizableGroup({ id: idProp, children, className = undefined, direction = "col" }: ResizableGroupProps) {
   const context = useResizableContext()
 
   const id = idProp ?? useId()
@@ -202,8 +202,7 @@ export function ResizableGroup({ id: idProp, children, className = "", direction
     <GroupContext.Provider value={ref}>
       <div
         ref={containerEl}
-        data-resizable-group
-        data-group-id={id}
+        data-resizable-group={id}
         data-direction={direction}
         style={{
           flex: 1,

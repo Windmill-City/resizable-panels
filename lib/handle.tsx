@@ -4,7 +4,7 @@ import { useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { HandleValue, ResizableHandleProps } from "./types"
 
-export function ResizableHandle({ className = "", children }: ResizableHandleProps) {
+export function ResizableHandle({ className = undefined, children }: ResizableHandleProps) {
   const group = useGroupContext()
 
   const id = useId()
@@ -24,7 +24,7 @@ export function ResizableHandle({ className = "", children }: ResizableHandlePro
 
   return (
     <div
-      data-resizable-handle
+      data-resizable-handle={id}
       data-direction={group.direction}
       data-handle-index={ref.index}
       data-hover={ref.isHover || undefined}

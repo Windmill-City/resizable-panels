@@ -381,7 +381,7 @@ export function adjustPanelByDelta(
   }
 }
 
-export function ResizableContext({ id: idProp, children, className = "", onLayoutChanged }: ResizableContextProps) {
+export function ResizableContext({ id: idProp, children, className = undefined, onLayoutChanged }: ResizableContextProps) {
   const id = idProp ?? useId()
 
   const ref = useRef<ContextValue>({
@@ -541,8 +541,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
   return (
     <ResizableContextType.Provider value={ref}>
       <div
-        data-resizable-context
-        data-context-id={id}
+        data-resizable-context={id}
         style={{
           flex: 1,
           display: "flex",
