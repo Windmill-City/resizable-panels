@@ -12,13 +12,15 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
   const context = useResizableContext()
 
   const togglePanel = (panelId: string) => {
+    let hasRestored = false
     for (const group of context.groups.values()) {
       // Restore if maximized
       if (group.prevMaximize) {
         restorePanels(group)
-        return
+        hasRestored = true
       }
     }
+    if (hasRestored) return
 
     for (const group of context.groups.values()) {
       const panels = Array.from(group.panels.values())
