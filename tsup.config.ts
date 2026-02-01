@@ -10,5 +10,5 @@ export default defineConfig({
   external: ["react", "react-dom"],
   target: "es2024",
   silent: true,
-  pure: ["console.debug", "console.assert"],
+  pure: ["console.debug", "console.assert", "console.error"],
 })
