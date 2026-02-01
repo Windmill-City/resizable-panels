@@ -54,7 +54,7 @@ export function ResizablePanel({
 
     // Initialize size from actual DOM dimensions (content-box)
     ref.size = isCol ? el.clientWidth : el.clientHeight
-    ref.prevSize = Math.max(ref.prevSize, ref.size)
+    if (!ref.isCollapsed) ref.prevSize = ref.size
 
     // Observe size changes and update ref.size (content-box)
     const observer = new ResizeObserver((_) => {
