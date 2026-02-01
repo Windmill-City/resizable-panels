@@ -348,7 +348,7 @@ export function adjustPanelByDelta(
   let diff = currTotalSize - prevTotalSize
   console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
-  console.debug("[Resizable] Adjust:", {
+  console.debug("[Resizable] Adjusted:", {
     delta,
     clamped,
     amount,
@@ -375,6 +375,7 @@ export function adjustPanelByDelta(
  */
 export function restorePanels(panels: PanelValue[], group: GroupValue): void {
   if (!group.prevMaximize) return
+  console.debug("[Resizable] RestorePanels:", { panels, group, prevMaximize: group.prevMaximize })
   for (let i = 0; i < panels.length; i++) {
     panels[i].isCollapsed = group.prevMaximize[i][0]
     panels[i].size = group.prevMaximize[i][1]
@@ -402,6 +403,7 @@ export function maximizePanel(targetPanel: PanelValue, panels: PanelValue[], gro
   targetPanel.isMaximized = true
   targetPanel.isCollapsed = false
   for (const panel of panels) panel.setDirty()
+  console.debug("[Resizable] MaximizePanel:", { targetPanel, panels, group, prevMaximize: group.prevMaximize })
 }
 
 export function ResizableContext({

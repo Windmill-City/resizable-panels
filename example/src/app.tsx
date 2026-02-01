@@ -20,11 +20,13 @@ function usePanelControl(panelIndex: number) {
   const group = useGroupContext()
 
   const handleClick = () => {
+    console.debug("[App] handleClick")
+
     const panels = Array.from(group.panels.values())
     const targetPanel = panels[panelIndex]
 
     // Click to restore when maximized
-    if (targetPanel.isMaximized) {
+    if (group.prevMaximize) {
       restorePanels(panels, group)
       return
     }
@@ -44,11 +46,13 @@ function usePanelControl(panelIndex: number) {
   }
 
   const handleDoubleClick = () => {
+    console.debug("[App] handleDoubleClick")
+
     const panels = Array.from(group.panels.values())
     const targetPanel = panels[panelIndex]
 
     // Double-click to restore when maximized
-    if (targetPanel.isMaximized) {
+    if (group.prevMaximize) {
       restorePanels(panels, group)
       return
     }
