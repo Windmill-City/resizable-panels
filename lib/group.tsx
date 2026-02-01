@@ -33,7 +33,6 @@ export function ResizableGroup({
     panels: new Map<string, PanelValue>(),
     handles: [],
     containerEl,
-    isDragging: false,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
       console.debug("[ResizableGroup] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
