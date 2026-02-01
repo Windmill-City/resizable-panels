@@ -348,7 +348,7 @@ export function adjustPanelByDelta(
   let diff = currTotalSize - prevTotalSize
   console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
-  console.debug("[Resizable] MouseMove:", {
+  console.debug("[Resizable] Adjust:", {
     delta,
     clamped,
     amount,
