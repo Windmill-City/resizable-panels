@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsup"
 
 export default defineConfig({
   entry: ["lib/index.ts"],
@@ -10,5 +10,5 @@ export default defineConfig({
   external: ["react", "react-dom"],
   target: "es2024",
   silent: true,
-  pure: ["console.debug"],
-});
+  pure: ["console.debug", "console.assert"],
+})
