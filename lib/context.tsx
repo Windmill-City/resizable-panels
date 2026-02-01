@@ -388,6 +388,7 @@ export function ResizableContext({
     },
     onLayoutChanged,
     isDragging: false,
+    prevPos: { x: 0, y: 0 },
     startPos: { x: 0, y: 0 },
     dragIndex: new Map(),
     hoverIndex: new Map(),
@@ -462,6 +463,8 @@ export function ResizableContext({
     }
 
     const handleMouseMove = (e: MouseEvent) => {
+      ref.prevPos = { x: e.clientX, y: e.clientY }
+
       if (!ref.isDragging) {
         ref.updateHoverState({ x: e.clientX, y: e.clientY })
         return

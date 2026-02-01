@@ -88,6 +88,10 @@ export function ResizableGroup({
         adjustPanelByDelta(panelsBefore, panelsAfter, panel.prevSize, ref)
       }
 
+      requestAnimationFrame(() => {
+        context.updateHoverState(context.prevPos)
+      })
+
       return true
     },
     setMaximize: (panelId?: string): boolean => {
@@ -133,6 +137,10 @@ export function ResizableGroup({
           }
         }
 
+        requestAnimationFrame(() => {
+          context.updateHoverState(context.prevPos)
+        })
+
         return true
       } else {
         // Restore all panels to previous state
@@ -150,6 +158,11 @@ export function ResizableGroup({
           })
           ref.prevMaximize = undefined
         }
+
+        requestAnimationFrame(() => {
+          context.updateHoverState(context.prevPos)
+        })
+
         return true
       }
     },
