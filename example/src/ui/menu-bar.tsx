@@ -13,16 +13,18 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
 
   const togglePanel = (panelId: string) => {
     for (const group of context.groups.values()) {
+      // Restore if maximized
+      if (group.prevMaximize) {
+        restorePanels(group)
+      }
+    }
+
+    for (const group of context.groups.values()) {
       const panels = Array.from(group.panels.values())
       const panelIndex = panels.findIndex((p) => p.id === panelId)
 
       if (panelIndex >= 0) {
         const panel = panels[panelIndex]
-
-        // Restore if maximized
-        if (group.prevMaximize) {
-          restorePanels(group)
-        }
 
         // Expand if collapsed
         if (panel.isCollapsed) {
