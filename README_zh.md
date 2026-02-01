@@ -80,8 +80,8 @@ interface ResizableGroupProps {
   children?: ReactNode;           // 子元素（ResizablePanels）
   className?: string;             // CSS 类名
   direction?: 'row' | 'col';      // 调整大小方向（默认：'col'）
-                                  // 'col' = 水平调整手柄
-                                  // 'row' = 垂直调整手柄
+                                  // 'col' = 面板水平排列（左右布局），拖拽手柄水平调整大小
+                                  // 'row' = 面板垂直排列（上下布局），拖拽手柄垂直调整大小
   ratio?: boolean;                // 使用比例模式的弹性布局（默认：false）
                                   // 为 true 时，面板尺寸作为 flex-grow 比例使用
 }
@@ -123,6 +123,23 @@ interface ResizableHandleProps {
 
 ## Hooks
 
+### useResizableContext
+
+在 `ResizableContext` 外部访问根上下文值：
+
+```tsx
+import { useResizableContext } from '@local/resizable-panels';
+
+function GlobalControls() {
+  const context = useResizableContext();
+  
+  // 访问所有分组
+  const groups = Array.from(context.groups.values());
+  
+  return <div>全局控制</div>;
+}
+```
+
 ### useGroupContext
 
 在 `ResizableGroup` 内部访问组上下文以编程方式控制面板：
@@ -150,13 +167,30 @@ interface GroupValue {
   panels: Map<string, PanelValue>;
   handles: HandleValue[];
   containerEl: RefObject<HTMLElement>;
-  isDragging: boolean;
   registerPanel: (panel: PanelValue) => void;
   unregisterPanel: (id: string) => void;
   registerHandle: (handle: HandleValue) => void;
   unregisterHandle: (id: string) => void;
   dragPanel: (delta: number, index: number) => void;  // 编程方式调整面板
   prevMaximize?: [boolean, number][];                 // 最大化前的状态
+  prevDrag?: [boolean, number][];                     // 拖拽前的状态
+}
+```
+
+### usePanelContext
+
+在 `ResizablePanel` 内部访问面板上下文：
+
+```tsx
+import { usePanelContext } from '@local/resizable-panels';
+
+function PanelContent() {
+  const panel = usePanelContext();
+  
+  // 访问面板属性
+  const { size, minSize, maxSize, isCollapsed } = panel;
+  
+  return <div>面板大小: {size}px</div>;
 }
 ```
 
@@ -188,8 +222,7 @@ group.dragPanel(-panel.size, 1);
 ```tsx
 import { restorePanels } from '@local/resizable-panels';
 
-const panels = Array.from(group.panels.values());
-restorePanels(panels, group);
+restorePanels(group);
 ```
 
 ### maximizePanel

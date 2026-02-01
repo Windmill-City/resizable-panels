@@ -80,8 +80,8 @@ interface ResizableGroupProps {
   children?: ReactNode;           // Child elements (ResizablePanels)
   className?: string;             // CSS class name
   direction?: 'row' | 'col';      // Resize direction (default: 'col')
-                                  // 'col' = horizontal resize handles
-                                  // 'row' = vertical resize handles
+                                  // 'col' = panels arranged horizontally (left-right), drag handle resizes horizontally
+                                  // 'row' = panels arranged vertically (top-bottom), drag handle resizes vertically
   ratio?: boolean;                // Use ratio-based flex layout (default: false)
                                   // When true, panel sizes are used as flex-grow ratio
 }
@@ -123,6 +123,23 @@ interface ResizableHandleProps {
 
 ## Hooks
 
+### useResizableContext
+
+Access the root context value outside of `ResizableContext`:
+
+```tsx
+import { useResizableContext } from '@local/resizable-panels';
+
+function GlobalControls() {
+  const context = useResizableContext();
+  
+  // Access all groups
+  const groups = Array.from(context.groups.values());
+  
+  return <div>Global Controls</div>;
+}
+```
+
 ### useGroupContext
 
 Access the group context within a `ResizableGroup` to programmatically control panels:
@@ -150,13 +167,30 @@ interface GroupValue {
   panels: Map<string, PanelValue>;
   handles: HandleValue[];
   containerEl: RefObject<HTMLElement>;
-  isDragging: boolean;
   registerPanel: (panel: PanelValue) => void;
   unregisterPanel: (id: string) => void;
   registerHandle: (handle: HandleValue) => void;
   unregisterHandle: (id: string) => void;
   dragPanel: (delta: number, index: number) => void;  // Programmatically resize panels
   prevMaximize?: [boolean, number][];                 // State before maximize
+  prevDrag?: [boolean, number][];                     // State before drag
+}
+```
+
+### usePanelContext
+
+Access the panel context within a `ResizablePanel`:
+
+```tsx
+import { usePanelContext } from '@local/resizable-panels';
+
+function PanelContent() {
+  const panel = usePanelContext();
+  
+  // Access panel properties
+  const { size, minSize, maxSize, isCollapsed } = panel;
+  
+  return <div>Panel Size: {size}px</div>;
 }
 ```
 
@@ -188,8 +222,7 @@ Restore all panels to their state before maximization.
 ```tsx
 import { restorePanels } from '@local/resizable-panels';
 
-const panels = Array.from(group.panels.values());
-restorePanels(panels, group);
+restorePanels(group);
 ```
 
 ### maximizePanel
