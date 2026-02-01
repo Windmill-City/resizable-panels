@@ -461,7 +461,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         for (const [group, index] of ref.hoverIndex.values()) {
           const handle = group.handles.at(index)
           if (handle) {
-            handle.isHovered = false
+            handle.isHover = false
             handle.setDirty()
           }
         }
@@ -469,7 +469,7 @@ export function ResizableContext({ id: idProp, children, className = "", onLayou
         for (const [group, index] of ref.hoverIndex.values()) {
           const handle = group.handles.at(index)
           if (handle) {
-            handle.isHovered = true
+            handle.isHover = true
             handle.setDirty()
           }
         }

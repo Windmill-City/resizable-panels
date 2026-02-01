@@ -64,7 +64,7 @@ export interface HandleValue {
   // Index of the handle (0 = between panel 0 and 1)
   index: number
   // Is Mouse Hovered
-  isHovered: boolean
+  isHover: boolean
   // Trigger Re-render
   setDirty: () => void
 }

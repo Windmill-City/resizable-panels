@@ -13,7 +13,7 @@ export function ResizableHandle({ className = "", children }: ResizableHandlePro
   const ref = useRef<HandleValue>({
     id,
     index: group.handles.length,
-    isHovered: false,
+    isHover: false,
     setDirty,
   }).current
 
@@ -27,7 +27,7 @@ export function ResizableHandle({ className = "", children }: ResizableHandlePro
       data-resizable-handle
       data-direction={group.direction}
       data-handle-index={ref.index}
-      data-hovered={ref.isHovered || undefined}
+      data-hover={ref.isHover || undefined}
       className={className}
     >
       {children}

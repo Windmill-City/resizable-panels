@@ -43,5 +43,9 @@
   ],
   "license": "MIT",
   "private": true,
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.28.2",
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.4.0"
+  }
 }
