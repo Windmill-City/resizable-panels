@@ -98,10 +98,10 @@ export interface GroupValue {
   registerHandle: (handle: HandleValue) => void
   // Unregister Handle
   unregisterHandle: (id: string) => void
-  // State before Maximize - [isCollapsed, size]
-  prevMaximize?: [boolean, number][]
   // Drag panel by delta at given handle index
   dragPanel: (delta: number, index: number) => void
+  // State before Maximize - [isCollapsed, size]
+  prevMaximize?: [boolean, number][]
 }
 
 export interface ResizableContextProps {
