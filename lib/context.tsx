@@ -458,18 +458,18 @@ export function ResizableContext({
       try {
         const parsed = JSON.parse(json)
         if (typeof parsed !== "object" || parsed === null) {
-          console.debug("[ResizableContext] Invalid layout format: not an object")
+          console.error("[ResizableContext] Invalid layout format: not an object")
           return null
         }
         for (const [groupId, groupData] of Object.entries(parsed)) {
           if (!isValidSavedGroupLayout(groupData)) {
-            console.debug(`[ResizableContext] Invalid layout format for group: ${groupId}`)
+            console.error(`[ResizableContext] Invalid layout format for group: ${groupId}`)
             return null
           }
         }
         return parsed as Record<string, SavedGroupLayout>
       } catch (e) {
-        console.debug("[ResizableContext] Failed to load layout:", e)
+        console.error("[ResizableContext] Failed to load layout:", e)
         return null
       }
     },
