@@ -1,7 +1,40 @@
 "use client"
 
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
-import type { ContextValue, Direction, GroupValue, PanelValue, ResizableContextProps } from "./types"
+import type { ContextValue, Direction, GroupValue, PanelValue, ResizableContextProps, SavedGroupLayout, SavedPanelLayout } from "./types"
+
+/**
+ * Validate if the loaded data matches SavedPanelLayout format
+ */
+function isValidSavedPanelLayout(data: unknown): data is SavedPanelLayout {
+  if (typeof data !== "object" || data === null) return false
+  const p = data as Record<string, unknown>
+  return (
+    typeof p.id === "string" &&
+    typeof p.size === "number" &&
+    typeof p.openSize === "number" &&
+    typeof p.isCollapsed === "boolean" &&
+    typeof p.isMaximized === "boolean" &&
+    (p.prevMaximize === undefined ||
+      (Array.isArray(p.prevMaximize) &&
+        p.prevMaximize.length === 2 &&
+        typeof p.prevMaximize[0] === "boolean" &&
+        typeof p.prevMaximize[1] === "number"))
+  )
+}
+
+/**
+ * Validate if the loaded data matches SavedGroupLayout format
+ */
+function isValidSavedGroupLayout(data: unknown): data is SavedGroupLayout {
+  if (typeof data !== "object" || data === null) return false
+  const g = data as Record<string, unknown>
+  if (typeof g.panels !== "object" || g.panels === null) return false
+  for (const panel of Object.values(g.panels)) {
+    if (!isValidSavedPanelLayout(panel)) return false
+  }
+  return true
+}
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
 
@@ -392,6 +425,86 @@ export function ResizableContext({
     },
     onLayoutMount,
     onLayoutChanged,
+    saveLayout: () => {
+      const layout: Record<string, SavedGroupLayout> = {}
+      for (const [groupId, group] of ref.groups) {
+        const panels: Record<string, SavedPanelLayout> = {}
+        const panelEntries = Array.from(group.panels.entries())
+        for (let i = 0; i < panelEntries.length; i++) {
+          const [panelId, p] = panelEntries[i]
+          panels[panelId] = {
+            id: p.id,
+            size: p.size,
+            openSize: p.openSize,
+            isCollapsed: p.isCollapsed,
+            isMaximized: p.isMaximized,
+            prevMaximize: group.prevMaximize?.[i],
+          }
+        }
+        layout[groupId] = { panels }
+      }
+      return JSON.stringify(layout)
+    },
+    loadLayout: (json: string | null) => {
+      if (json === null) return null
+      try {
+        const parsed = JSON.parse(json)
+        if (typeof parsed !== "object" || parsed === null) {
+          console.debug("[ResizableContext] Invalid layout format: not an object")
+          return null
+        }
+        for (const [groupId, groupData] of Object.entries(parsed)) {
+          if (!isValidSavedGroupLayout(groupData)) {
+            console.debug(`[ResizableContext] Invalid layout format for group: ${groupId}`)
+            return null
+          }
+        }
+        return parsed as Record<string, SavedGroupLayout>
+      } catch (e) {
+        console.debug("[ResizableContext] Failed to load layout:", e)
+        return null
+      }
+    },
+    applyLayout: (layout: Record<string, SavedGroupLayout>) => {
+      for (const [groupId, groupData] of Object.entries(layout)) {
+        const group = ref.groups.get(groupId)
+        if (!group) continue
+
+        const panels = Array.from(group.panels.values())
+        const { panels: savedPanels } = groupData
+
+        // Restore prevMaximize state from panels
+        const prevMaximize: [boolean, number][] = []
+        for (let i = 0; i < panels.length; i++) {
+          const saved = savedPanels[panels[i].id]
+          if (saved?.prevMaximize) {
+            prevMaximize[i] = saved.prevMaximize
+          }
+        }
+        if (prevMaximize.length === panels.length) {
+          group.prevMaximize = prevMaximize
+        } else {
+          // Invalid Layout, use current valid state
+          continue
+        }
+
+        // Apply panel states (match by panel id)
+        for (const panel of panels) {
+          const saved = savedPanels[panel.id]
+          if (!saved) continue
+          panel.size = saved.size
+          panel.openSize = saved.openSize
+          panel.isCollapsed = saved.isCollapsed
+          panel.isMaximized = saved.isMaximized
+        }
+
+        // Trigger re-render for all panels
+        for (const panel of panels) {
+          panel.setDirty()
+        }
+      }
+      console.debug("[ResizableContext] Layout applied:", layout)
+    },
     isDragging: false,
     prevPos: { x: 0, y: 0 },
     startPos: { x: 0, y: 0 },

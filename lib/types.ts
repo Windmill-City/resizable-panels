@@ -15,6 +15,12 @@ export interface ContextValue {
   onLayoutMount?: (context: ContextValue) => void
   // Layout Changed - Save changed layout
   onLayoutChanged?: (context: ContextValue) => void
+  // Save current layout to JSON string
+  saveLayout: () => string
+  // Load layout from JSON string
+  loadLayout: (json: string | null) => Record<string, SavedGroupLayout> | null
+  // Apply loaded layout to groups
+  applyLayout: (layout: Record<string, SavedGroupLayout>) => void
   // Is Dragging Panels?
   isDragging: boolean
   // Previous Mouse Pos
@@ -67,10 +73,8 @@ export interface GroupValue {
 }
 
 export interface SavedGroupLayout {
-  // Panels in the group
-  panels: SavedPanelLayout[]
-  // State before maximize - [isCollapsed, size]
-  prevMaximize?: [boolean, number][]
+  // Panels in the group (keyed by panel id)
+  panels: Record<string, SavedPanelLayout>
 }
 
 export interface PanelValue {
@@ -101,6 +105,8 @@ export interface PanelValue {
 }
 
 export interface SavedPanelLayout {
+  // Unique Identifier
+  id: string
   // Active Size (px)
   size: number
   // Size before Collapse (px)
@@ -109,6 +115,8 @@ export interface SavedPanelLayout {
   isCollapsed: boolean
   // Is panel maximized
   isMaximized: boolean
+  // State before maximize - [isCollapsed, size]
+  prevMaximize?: [boolean, number]
 }
 
 export interface HandleValue {

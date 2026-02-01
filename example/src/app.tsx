@@ -5,10 +5,8 @@ import {
   ResizableContext,
   ResizableGroup,
   ResizablePanel,
-  SavedGroupLayout,
   useGroupContext,
   usePanelContext,
-  useResizableContext,
 } from "@local/resizable-panels"
 import { useState } from "react"
 import ActivityBar from "./ui/activity-bar"
@@ -29,7 +27,7 @@ function usePanelControl(panelIndex: number) {
     console.debug("[App] handleClick")
 
     const panels = Array.from(group.panels.values())
-    const targetPanel = panels[panelIndex]
+    const target = panels[panelIndex]
 
     // Click to restore when maximized
     if (group.prevMaximize) {
@@ -38,16 +36,16 @@ function usePanelControl(panelIndex: number) {
     }
 
     // Click to expand when collapsed
-    if (targetPanel.isCollapsed) {
+    if (target.isCollapsed) {
       const isBefore = panelIndex < panels.length / 2
-      const delta = isBefore ? targetPanel.openSize : -targetPanel.openSize
+      const delta = isBefore ? target.openSize : -target.openSize
       group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
       return
     }
 
     // Click to collapse when expanded and not maximized
     const isBefore = panelIndex < panels.length / 2
-    const delta = isBefore ? -targetPanel.size : targetPanel.size
+    const delta = isBefore ? -target.size : target.size
     group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
   }
 
@@ -55,7 +53,7 @@ function usePanelControl(panelIndex: number) {
     console.debug("[App] handleDoubleClick")
 
     const panels = Array.from(group.panels.values())
-    const targetPanel = panels[panelIndex]
+    const target = panels[panelIndex]
 
     // Double-click to restore when maximized
     if (group.prevMaximize) {
@@ -64,15 +62,15 @@ function usePanelControl(panelIndex: number) {
     }
 
     // Double-click to expand when collapsed
-    if (targetPanel.isCollapsed) {
+    if (target.isCollapsed) {
       const isBefore = panelIndex < panels.length / 2
-      const delta = isBefore ? targetPanel.openSize : -targetPanel.openSize
+      const delta = isBefore ? target.openSize : -target.openSize
       group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
       return
     }
 
     // Double-click to maximize when expanded
-    group.maximizePanel(targetPanel)
+    group.maximizePanel(target)
   }
 
   return { handleClick, handleDoubleClick }
@@ -301,43 +299,8 @@ const EditorPanel = () => {
   )
 }
 
-// Storage key for saving layout (v2 includes isMaximized, isCollapsed, openSize)
-const LAYOUT_STORAGE_KEY = "resizable-panels-layout-v2"
-
-/**
- * Save layout to localStorage
- */
-function saveLayout(ctx: ContextValue) {
-  const layout: Record<string, SavedGroupLayout> = {}
-  for (const [groupId, group] of ctx.groups) {
-    layout[groupId] = {
-      panels: Array.from(group.panels.values()).map((p) => ({
-        size: p.size,
-        openSize: p.openSize,
-        isCollapsed: p.isCollapsed,
-        isMaximized: p.isMaximized,
-      })),
-      prevMaximize: group.prevMaximize,
-    }
-  }
-  localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout))
-  console.debug("[App] Layout saved:", layout)
-}
-
-/**
- * Load layout from localStorage
- */
-function loadLayout(): Record<string, SavedGroupLayout> | null {
-  try {
-    const saved = localStorage.getItem(LAYOUT_STORAGE_KEY)
-    if (saved) {
-      return JSON.parse(saved)
-    }
-  } catch (e) {
-    console.error("[App] Failed to load layout:", e)
-  }
-  return null
-}
+// Storage key for saving layout
+const LAYOUT_STORAGE_KEY = "resizable-panels-layout"
 
 function App() {
   // Track panel visibility states
@@ -347,38 +310,9 @@ function App() {
 
   // Handle layout mount - load saved layout
   const handleLayoutMount = (ctx: ContextValue) => {
-    const savedLayout = loadLayout()
+    const savedLayout = ctx.loadLayout(localStorage.getItem(LAYOUT_STORAGE_KEY))
     if (!savedLayout) return
-
-    // Apply saved layout
-    for (const [groupId, groupData] of Object.entries(savedLayout)) {
-      const group = ctx.groups.get(groupId)
-      if (!group) continue
-
-      const panels = Array.from(group.panels.values())
-      const { panels: savedPanels, prevMaximize } = groupData
-
-      // Apply panel states
-      for (let i = 0; i < panels.length && i < savedPanels.length; i++) {
-        const panel = panels[i]
-        const saved = savedPanels[i]
-        panel.size = saved.size
-        panel.openSize = saved.openSize
-        panel.isCollapsed = saved.isCollapsed
-        panel.isMaximized = saved.isMaximized
-      }
-
-      // Restore prevMaximize state if exists
-      if (prevMaximize && prevMaximize.length === panels.length) {
-        group.prevMaximize = prevMaximize
-      }
-
-      // Trigger re-render for all panels
-      for (const panel of panels) {
-        panel.setDirty()
-      }
-    }
-    console.debug("[App] Layout loaded:", savedLayout)
+    ctx.applyLayout(savedLayout)
   }
 
   // Handle layout changes to update visibility states and save
@@ -393,7 +327,7 @@ function App() {
       if (bottomPanel) setBottomVisible(!bottomPanel.isCollapsed)
     }
     // Save layout to localStorage
-    saveLayout(ctx)
+    localStorage.setItem(LAYOUT_STORAGE_KEY, ctx.saveLayout())
   }
 
   return (
