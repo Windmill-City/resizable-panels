@@ -65,7 +65,7 @@ export interface GroupValue {
   // Unregister Handle
   unregisterHandle: (id: string) => void
   // Drag panel by delta at given handle index
-  dragPanel: (delta: number, index: number) => void
+  dragHandle: (delta: number, index: number) => void
   // Restore all panels to their previous state before maximization
   restorePanels: () => void
   // Maximize a specific panel by collapsing all others

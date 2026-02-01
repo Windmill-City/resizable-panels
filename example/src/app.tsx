@@ -17,17 +17,14 @@ import StatusBar from "./ui/status-bar"
 
 /**
  * Hook for panel control logic
- * @param panelIndex - Index of the target panel to control
+ * @param panelId - Id of the target panel to control
  * @returns Click and double-click handlers
  */
-function usePanelControl(panelIndex: number) {
+function usePanelControl(panelId: string) {
   const group = useGroupContext()
 
   const handleClick = () => {
     console.debug("[App] handleClick")
-
-    const panels = Array.from(group.panels.values())
-    const target = panels[panelIndex]
 
     // Click to restore when maximized
     if (group.prevMaximize) {
@@ -35,18 +32,14 @@ function usePanelControl(panelIndex: number) {
       return
     }
 
-    // Click to expand when collapsed
-    if (target.isCollapsed) {
-      const isBefore = panelIndex < panels.length / 2
-      const delta = isBefore ? target.openSize : -target.openSize
-      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
-      return
+    switch (panelId) {
+      case "left":
+        break
+      case "bottom":
+        break
+      case "right":
+        break
     }
-
-    // Click to collapse when expanded and not maximized
-    const isBefore = panelIndex < panels.length / 2
-    const delta = isBefore ? -target.size : target.size
-    group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
   }
 
   const handleDoubleClick = () => {
@@ -65,7 +58,7 @@ function usePanelControl(panelIndex: number) {
     if (target.isCollapsed) {
       const isBefore = panelIndex < panels.length / 2
       const delta = isBefore ? target.openSize : -target.openSize
-      group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+      group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
       return
     }
 
@@ -109,14 +102,14 @@ function togglePanel(panel: PanelValue, group: GroupValue) {
   if (panel.isCollapsed) {
     const isBefore = panelIndex < panels.length / 2
     const delta = isBefore ? panel.openSize : -panel.openSize
-    group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+    group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
     return
   }
 
   // Collapse if expanded
   const isBefore = panelIndex < panels.length / 2
   const delta = isBefore ? -panel.size : panel.size
-  group.dragPanel(delta, isBefore ? panelIndex : panelIndex - 1)
+  group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
 }
 
 /**

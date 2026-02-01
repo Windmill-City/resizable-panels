@@ -49,8 +49,8 @@ export function ResizableGroup({
       ref.handles = ref.handles.filter((h) => h.id != handleId)
       console.debug("[ResizableGroup] Unregister handle:", handleId)
     },
-    dragPanel: (delta: number, index: number) => {
-      console.debug("[ResizableGroup] dragPanel:", { delta, index })
+    dragHandle: (delta: number, index: number) => {
+      console.debug("[ResizableGroup] dragHandle:", { delta, index })
       const panels = Array.from(ref.panels.values())
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
