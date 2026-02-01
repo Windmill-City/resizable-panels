@@ -84,10 +84,11 @@ export function ResizableGroup({
         if (panel.id !== target.id) {
           panel.isCollapsed = true
           panel.size = 0
+        } else {
+          panel.isMaximized = true
+          panel.isCollapsed = false
         }
       }
-      target.isMaximized = true
-      target.isCollapsed = false
       for (const panel of panels) panel.setDirty()
       console.debug("[Resizable] MaximizePanel:", {
         targetPanel: target,
