@@ -491,17 +491,25 @@ export function ResizableContext({
         }
 
         console.assert(
-          prevMaximize.length === panels.length,
-          `[ResizableContext] Skipping group "${groupId}": prevMaximize length mismatch (${prevMaximize.length} vs ${panels.length})`,
+          !prevMaximize.length || prevMaximize.length === panels.length,
+          "[ResizableContext] Skipping group:",
+          {
+            group,
+            panels,
+            prevMaximize,
+          },
         )
-        if (prevMaximize.length !== panels.length) continue
+        if (prevMaximize.length > 0 && prevMaximize.length !== panels.length) continue
 
-        group.prevMaximize = prevMaximize
+        group.prevMaximize = prevMaximize.length > 0 ? prevMaximize : undefined
 
         // Apply panel states (match by panel id)
         for (const panel of panels) {
           const saved = savedPanels[panel.id]
+
+          console.assert(saved !== undefined, "[ResizableContext] Skipping panel", { id: panel.id, savedPanels })
           if (!saved) continue
+
           panel.size = saved.size
           panel.openSize = saved.openSize
           panel.isCollapsed = saved.isCollapsed
