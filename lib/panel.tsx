@@ -86,7 +86,7 @@ export function ResizablePanel({
   }
 
   return (
-    <PanelContext.Provider value={ref}>
+    <PanelContext.Provider value={{ ...ref }}>
       <div
         ref={containerEl}
         data-resizable-panel={id}
