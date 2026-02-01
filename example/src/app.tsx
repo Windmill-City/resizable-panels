@@ -1,4 +1,11 @@
-import { ResizableContext, ResizableGroup, ResizablePanel, useGroupContext, restorePanels, maximizePanel } from "@local/resizable-panels"
+import {
+  maximizePanel,
+  ResizableContext,
+  ResizableGroup,
+  ResizablePanel,
+  restorePanels,
+  useGroupContext,
+} from "@local/resizable-panels"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import ResizeHandle from "./ui/resize-handle"
@@ -55,7 +62,7 @@ function usePanelControl(panelIndex: number) {
     }
 
     // Double-click to maximize when expanded
-    maximizePanel(targetPanel, panels, group)
+    if (targetPanel.okMaximize) maximizePanel(targetPanel, panels, group)
   }
 
   return { handleClick, handleDoubleClick }
@@ -114,7 +121,7 @@ function App() {
             </ResizablePanel>
             <RightResizeHandle />
             {/* Right Sidebar */}
-            <ResizablePanel id="right" collapsible collapsed>
+            <ResizablePanel id="right" collapsible okMaximize collapsed>
               right
             </ResizablePanel>
           </ResizableGroup>
