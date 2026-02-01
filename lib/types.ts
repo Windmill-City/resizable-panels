@@ -40,8 +40,6 @@ export interface PanelValue {
   minSize: number
   // Maximum Size (px)
   maxSize: number
-  // Default Size (px)
-  defaultSize: number
   // Allow Collapse?
   collapsible: boolean
   // Is Collapsed?
@@ -97,8 +95,6 @@ export interface GroupValue {
   setCollapse: (id: string, collapse: boolean, reverse?: boolean) => boolean
   // Set Maximize Panel, returns true if successful
   setMaximize: (id?: string) => boolean
-  // Set Panel to Default Size, returns true if successful
-  setDefaultSize: (id: string) => boolean
   // State before Maximize - [isCollapsed, size]
   prevMaximize?: [boolean, number][]
 }

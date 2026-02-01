@@ -158,35 +158,6 @@ export function ResizableGroup({
         return true
       }
     },
-    setDefaultSize: (panelId: string): boolean => {
-      console.assert(!context.isDragging, "[ResizableGroup] Try to setDefaultSize while Dragging:", {
-        context,
-        group: ref,
-        panelId,
-      })
-      if (context.isDragging) return false
-
-      const panel = ref.panels.get(panelId)
-      if (!panel) {
-        throw new Error(`[ResizableGroup] Panel not found: ${panelId}`)
-      }
-
-      const panels = Array.from(ref.panels.values())
-      const index = panels.indexOf(panel)
-
-      // Calculate the delta needed to reach defaultSize
-      const delta = panel.defaultSize - panel.size
-
-      if (delta === 0) return true
-
-      const panelsBefore = panels.slice(0, index + 1).reverse()
-      const panelsAfter = panels.slice(index + 1)
-
-      // Adjust panels by delta
-      adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
-
-      return true
-    },
   }).current
 
   useLayoutEffect(() => {
