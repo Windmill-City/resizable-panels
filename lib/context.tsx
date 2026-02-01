@@ -454,7 +454,7 @@ export function ResizableContext({
       return JSON.stringify(layout)
     },
     loadLayout: (json: string | null) => {
-      if (json === null) return null
+      if (!json) return null
       try {
         const parsed = JSON.parse(json)
         if (typeof parsed !== "object" || parsed === null) {
@@ -473,7 +473,8 @@ export function ResizableContext({
         return null
       }
     },
-    applyLayout: (layout: Record<string, SavedGroupLayout>) => {
+    applyLayout: (layout: Record<string, SavedGroupLayout> | null) => {
+      if (!layout) return
       for (const [groupId, groupData] of Object.entries(layout)) {
         const group = ref.groups.get(groupId)
         if (!group) continue

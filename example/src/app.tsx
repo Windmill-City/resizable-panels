@@ -311,7 +311,6 @@ function App() {
   // Handle layout mount - load saved layout
   const handleLayoutMount = (ctx: ContextValue) => {
     const savedLayout = ctx.loadLayout(localStorage.getItem(LAYOUT_STORAGE_KEY))
-    if (!savedLayout) return
     ctx.applyLayout(savedLayout)
   }
 

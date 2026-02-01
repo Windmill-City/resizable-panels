@@ -20,7 +20,7 @@ export interface ContextValue {
   // Load layout from JSON string
   loadLayout: (json: string | null) => Record<string, SavedGroupLayout> | null
   // Apply loaded layout to groups
-  applyLayout: (layout: Record<string, SavedGroupLayout>) => void
+  applyLayout: (layout: Record<string, SavedGroupLayout> | null) => void
   // Is Dragging Panels?
   isDragging: boolean
   // Previous Mouse Pos
