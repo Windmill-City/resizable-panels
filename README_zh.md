@@ -78,14 +78,14 @@ interface ResizableContextProps {
 
 ```tsx
 interface ResizableGroupProps {
-  id?: string;                                          // 唯一标识符
-  children?: ReactNode;                                 // 子元素（ResizablePanels）
-  className?: string;                                   // CSS 类名
-  direction?: 'row' | 'col';                            // 调整大小方向（默认：'col'）
-                                                        // 'col' = 面板水平排列（左右布局），拖拽手柄水平调整大小
-                                                        // 'row' = 面板垂直排列（上下布局），拖拽手柄垂直调整大小
-  ratio?: boolean;                                      // 使用比例模式的弹性布局（默认：false）
-                                                        // 为 true 时，面板尺寸作为 flex-grow 比例使用
+  id?: string;                  // 唯一标识符
+  children?: ReactNode;         // 子元素（ResizablePanels）
+  className?: string;           // CSS 类名
+  direction?: 'row' | 'col';    // 调整大小方向（默认：'col'）
+                                // 'col' = 面板水平排列（左右布局），拖拽手柄水平调整大小
+                                // 'row' = 面板垂直排列（上下布局），拖拽手柄垂直调整大小
+  ratio?: boolean;              // 使用比例模式的弹性布局（默认：false）
+                                // 为 true 时，面板尺寸作为 flex-grow 比例使用
 }
 ```
 
