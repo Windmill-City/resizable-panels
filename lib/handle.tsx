@@ -28,6 +28,9 @@ export function ResizableHandle({ className = undefined, children }: ResizableHa
       data-direction={group.direction}
       data-handle-index={ref.index}
       data-hover={ref.isHover || undefined}
+      style={{
+        flex: "0 0 auto",
+      }}
       className={className}
     >
       {children}
