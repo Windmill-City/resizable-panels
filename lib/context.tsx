@@ -333,9 +333,11 @@ export function adjustPanelByDelta(
   // Update maximized state
   const nonCollapsed = panels.filter((p) => !p.isCollapsed)
   if (nonCollapsed.length === 1) {
-    group.prevMaximize = panels.map((p) => [p.prevCollapsed, p.prevSize])
     const panel = nonCollapsed[0]
-    panel.isMaximized = true
+    if (panel.okMaximize) {
+      group.prevMaximize = panels.map((p) => [p.prevCollapsed, p.prevSize])
+      panel.isMaximized = true
+    }
   } else if (nonCollapsed.length > 1) {
     for (const panel of nonCollapsed) {
       panel.isMaximized = false
