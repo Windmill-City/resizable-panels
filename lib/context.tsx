@@ -1,7 +1,15 @@
 "use client"
 
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
-import type { ContextValue, Direction, GroupValue, PanelValue, ResizableContextProps, SavedGroupLayout, SavedPanelLayout } from "./types"
+import type {
+  ContextValue,
+  Direction,
+  GroupValue,
+  PanelValue,
+  ResizableContextProps,
+  SavedGroupLayout,
+  SavedPanelLayout,
+} from "./types"
 
 /**
  * Validate if the loaded data matches SavedPanelLayout format
@@ -481,12 +489,14 @@ export function ResizableContext({
             prevMaximize[i] = saved.prevMaximize
           }
         }
-        if (prevMaximize.length === panels.length) {
-          group.prevMaximize = prevMaximize
-        } else {
-          // Invalid Layout, use current valid state
-          continue
-        }
+
+        console.assert(
+          prevMaximize.length === panels.length,
+          `[ResizableContext] Skipping group "${groupId}": prevMaximize length mismatch (${prevMaximize.length} vs ${panels.length})`,
+        )
+        if (prevMaximize.length !== panels.length) continue
+
+        group.prevMaximize = prevMaximize
 
         // Apply panel states (match by panel id)
         for (const panel of panels) {

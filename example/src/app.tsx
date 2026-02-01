@@ -328,6 +328,7 @@ function App() {
     }
     // Save layout to localStorage
     localStorage.setItem(LAYOUT_STORAGE_KEY, ctx.saveLayout())
+    console.debug("Layout saved")
   }
 
   return (
