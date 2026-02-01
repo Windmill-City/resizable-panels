@@ -1,10 +1,10 @@
 "use client"
 
-import { useId, useLayoutEffect, useReducer, useRef } from "react"
+import { useEffect, useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useGroupContext } from "./group"
 import type { HandleValue, ResizableHandleProps } from "./types"
 
-export function ResizableHandle({ className = undefined, children, onDoubleClick }: ResizableHandleProps) {
+export function ResizableHandle({ className = undefined, children, onClick, onDoubleClick }: ResizableHandleProps) {
   const group = useGroupContext()
 
   const id = useId()
@@ -15,11 +15,16 @@ export function ResizableHandle({ className = undefined, children, onDoubleClick
     index: group.handles.length,
     isHover: false,
     setDirty,
+    onClick,
     onDoubleClick,
   }).current
 
   // Update callback when it changes
-  useLayoutEffect(() => {
+  useEffect(() => {
+    ref.onClick = onClick
+  }, [onClick])
+
+  useEffect(() => {
     ref.onDoubleClick = onDoubleClick
   }, [onDoubleClick])
 

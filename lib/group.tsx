@@ -4,21 +4,6 @@ import { createContext, useContext, useId, useLayoutEffect, useRef } from "react
 import { adjustPanelByDelta, useResizableContext } from "./context"
 import type { GroupValue, HandleValue, PanelValue, ResizableGroupProps } from "./types"
 
-/**
- * Restore multiple panels state
- * @param panels - Panels array to restore
- * @param prevState - Previous state array [isCollapsed, size][]
- */
-function restorePanelsState(panels: PanelValue[], prevState: [boolean, number][]): void {
-  panels.forEach((p, i) => {
-    if (i < prevState.length) {
-      const [wasCollapsed, prevSize] = prevState[i]
-      p.isCollapsed = wasCollapsed
-      p.size = wasCollapsed ? 0 : Math.max(p.minSize, Math.min(prevSize, p.maxSize))
-    }
-  })
-}
-
 export const GroupContext = createContext<GroupValue | null>(null)
 
 export function useGroupContext() {
@@ -154,7 +139,15 @@ export function ResizableGroup({
         const prevState = ref.prevMaximize
         if (prevState) {
           const panels = Array.from(ref.panels.values())
-          restorePanelsState(panels, prevState)
+          panels.forEach((p, i) => {
+            if (i < prevState.length) {
+              const [wasCollapsed, prevSize] = prevState[i]
+              p.isMaximized = false
+              p.isCollapsed = wasCollapsed
+              p.size = wasCollapsed ? 0 : Math.max(p.minSize, Math.min(prevSize, p.maxSize))
+              p.setDirty()
+            }
+          })
           ref.prevMaximize = undefined
         }
         return true

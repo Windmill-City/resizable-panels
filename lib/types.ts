@@ -25,6 +25,8 @@ export interface ContextValue {
   dragIndex: Map<Direction, [GroupValue, number]>
   // Index of the resize handle (edge) being hover
   hoverIndex: Map<Direction, [GroupValue, number]>
+  // Update hover state based on mouse point
+  updateHoverState: (point: { x: number; y: number }) => void
 }
 
 export interface PanelValue {
@@ -65,6 +67,8 @@ export interface HandleValue {
   isHover: boolean
   // Trigger Re-render
   setDirty: () => void
+  // Click callback
+  onClick?: () => void
   // Double click callback
   onDoubleClick?: () => void
 }
@@ -154,6 +158,8 @@ export interface ResizableHandleProps {
   className?: string
   // Custom content like drag icons
   children?: ReactNode
+  // Click callback
+  onClick?: () => void
   // Double click callback
   onDoubleClick?: () => void
 }

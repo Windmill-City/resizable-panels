@@ -7,34 +7,58 @@ import StatusBar from "./ui/status-bar"
 const LeftResizeHandle = () => {
   const group = useGroupContext()
 
-  const handleDoubleClick = () => {
+  const handleClick = () => {
     const leftPanel = group.panels.get("left")!
     group.setCollapse("left", !leftPanel.isCollapsed)
   }
 
-  return <ResizeHandle onDoubleClick={handleDoubleClick} />
+  const handleDoubleClick = () => {
+    if (group.prevMaximize) {
+      group.setMaximize(undefined)
+    } else {
+      group.setMaximize("left")
+    }
+  }
+
+  return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 const RightResizeHandle = () => {
   const group = useGroupContext()
 
-  const handleDoubleClick = () => {
+  const handleClick = () => {
     const rightPanel = group.panels.get("right")!
     group.setCollapse("right", !rightPanel.isCollapsed, true)
   }
 
-  return <ResizeHandle onDoubleClick={handleDoubleClick} />
+  const handleDoubleClick = () => {
+    if (group.prevMaximize) {
+      group.setMaximize(undefined)
+    } else {
+      group.setMaximize("right")
+    }
+  }
+
+  return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 const BottomResizeHandle = () => {
   const group = useGroupContext()
 
-  const handleDoubleClick = () => {
+  const handleClick = () => {
     const bottomPanel = group.panels.get("bottom")!
     group.setCollapse("bottom", !bottomPanel.isCollapsed, true)
   }
 
-  return <ResizeHandle onDoubleClick={handleDoubleClick} />
+  const handleDoubleClick = () => {
+    if (group.prevMaximize) {
+      group.setMaximize(undefined)
+    } else {
+      group.setMaximize("bottom")
+    }
+  }
+
+  return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 function App() {

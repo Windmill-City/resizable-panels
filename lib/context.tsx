@@ -391,6 +391,43 @@ export function ResizableContext({
     startPos: { x: 0, y: 0 },
     dragIndex: new Map(),
     hoverIndex: new Map(),
+    updateHoverState: (point: { x: number; y: number }) => {
+      const edges = findEdgeIndexAtPoint(ref.groups, point)
+
+      // Update cursor
+      switch (edges.size) {
+        case 0:
+          // No edge: show default
+          document.body.style.cursor = ""
+          break
+        case 1:
+          const direction = edges.keys().next().value!
+          // Single edge: show bidirectional arrow
+          document.body.style.cursor = direction === "row" ? "ns-resize" : "ew-resize"
+          break
+        case 2:
+          // Two edges (intersection): show crosshair
+          document.body.style.cursor = "move"
+          break
+      }
+
+      // Update hover state
+      for (const [group, index] of ref.hoverIndex.values()) {
+        const handle = group.handles.at(index)
+        if (handle) {
+          handle.isHover = false
+          handle.setDirty()
+        }
+      }
+      ref.hoverIndex = edges
+      for (const [group, index] of ref.hoverIndex.values()) {
+        const handle = group.handles.at(index)
+        if (handle) {
+          handle.isHover = true
+          handle.setDirty()
+        }
+      }
+    },
   }).current
 
   useEffect(() => {
@@ -426,44 +463,7 @@ export function ResizableContext({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!ref.isDragging) {
-        const edges = findEdgeIndexAtPoint(ref.groups, {
-          x: e.clientX,
-          y: e.clientY,
-        })
-
-        // Update cursor
-        switch (edges.size) {
-          case 0:
-            // No edge: show default
-            document.body.style.cursor = ""
-            break
-          case 1:
-            const direction = edges.keys().next().value!
-            // Single edge: show bidirectional arrow
-            document.body.style.cursor = direction === "row" ? "ns-resize" : "ew-resize"
-            break
-          case 2:
-            // Two edges (intersection): show crosshair
-            document.body.style.cursor = "move"
-            break
-        }
-
-        // Update hover state
-        for (const [group, index] of ref.hoverIndex.values()) {
-          const handle = group.handles.at(index)
-          if (handle) {
-            handle.isHover = false
-            handle.setDirty()
-          }
-        }
-        ref.hoverIndex = edges
-        for (const [group, index] of ref.hoverIndex.values()) {
-          const handle = group.handles.at(index)
-          if (handle) {
-            handle.isHover = true
-            handle.setDirty()
-          }
-        }
+        ref.updateHoverState({ x: e.clientX, y: e.clientY })
         return
       }
 
@@ -516,11 +516,53 @@ export function ResizableContext({
       }
     }
 
+    let timClick: ReturnType<typeof setTimeout> | null = null
+
+    const handleClick = (e: MouseEvent) => {
+      const edges = findEdgeIndexAtPoint(
+        ref.groups,
+        {
+          x: e.clientX,
+          y: e.clientY,
+        },
+        true,
+      )
+
+      // Clear any existing timer
+      if (timClick) {
+        clearTimeout(timClick)
+      }
+
+      // Delay click execution to wait for potential double click
+      timClick = setTimeout(() => {
+        for (const [group, index] of edges.values()) {
+          // If moved consider it is a drag
+          if (ref.startPos.x != e.clientX || ref.startPos.y != e.clientY) return
+          // Emit click event
+          const handle = group.handles.at(index)
+          if (handle && handle.onClick) {
+            handle.onClick()
+          }
+        }
+        timClick = null
+      }, 250)
+    }
+
     const handleDoubleClick = (e: MouseEvent) => {
-      const edges = findEdgeIndexAtPoint(ref.groups, {
-        x: e.clientX,
-        y: e.clientY,
-      }, true)
+      // Cancel pending click if double click occurs
+      if (timClick) {
+        clearTimeout(timClick)
+        timClick = null
+      }
+
+      const edges = findEdgeIndexAtPoint(
+        ref.groups,
+        {
+          x: e.clientX,
+          y: e.clientY,
+        },
+        true,
+      )
 
       for (const [group, index] of edges.values()) {
         const handle = group.handles.at(index)
@@ -533,6 +575,7 @@ export function ResizableContext({
     document.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
+    document.addEventListener("click", handleClick)
     document.addEventListener("dblclick", handleDoubleClick)
 
     console.debug("[Resizable] useEffect ContextValue:", ref)
@@ -541,6 +584,7 @@ export function ResizableContext({
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
+      document.removeEventListener("click", handleClick)
       document.removeEventListener("dblclick", handleDoubleClick)
     }
   }, [])
