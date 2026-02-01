@@ -1,12 +1,11 @@
 import {
   ContextValue,
   GroupValue,
-  maximizePanel,
   PanelValue,
   ResizableContext,
   ResizableGroup,
   ResizablePanel,
-  restorePanels,
+  SavedGroupLayout,
   useGroupContext,
   usePanelContext,
   useResizableContext,
@@ -25,7 +24,6 @@ import StatusBar from "./ui/status-bar"
  */
 function usePanelControl(panelIndex: number) {
   const group = useGroupContext()
-  const context = useResizableContext()
 
   const handleClick = () => {
     console.debug("[App] handleClick")
@@ -35,7 +33,7 @@ function usePanelControl(panelIndex: number) {
 
     // Click to restore when maximized
     if (group.prevMaximize) {
-      restorePanels(group, context)
+      group.restorePanels()
       return
     }
 
@@ -61,7 +59,7 @@ function usePanelControl(panelIndex: number) {
 
     // Double-click to restore when maximized
     if (group.prevMaximize) {
-      restorePanels(group, context)
+      group.restorePanels()
       return
     }
 
@@ -74,7 +72,7 @@ function usePanelControl(panelIndex: number) {
     }
 
     // Double-click to maximize when expanded
-    maximizePanel(targetPanel, group, context)
+    group.maximizePanel(targetPanel)
   }
 
   return { handleClick, handleDoubleClick }
@@ -98,7 +96,7 @@ const BottomResizeHandle = () => {
 /**
  * Toggle panel collapsed state
  */
-function togglePanel(panel: PanelValue, group: GroupValue, context: ContextValue) {
+function togglePanel(panel: PanelValue, group: GroupValue) {
   const panels = Array.from(group.panels.values())
   const panelIndex = panels.findIndex((p) => p.id === panel.id)
 
@@ -106,7 +104,7 @@ function togglePanel(panel: PanelValue, group: GroupValue, context: ContextValue
 
   // Restore if maximized
   if (group.prevMaximize) {
-    restorePanels(group, context)
+    group.restorePanels()
   }
 
   // Expand if collapsed
@@ -126,11 +124,11 @@ function togglePanel(panel: PanelValue, group: GroupValue, context: ContextValue
 /**
  * Maximize or restore panel
  */
-function toggleMaximize(panel: PanelValue, group: GroupValue, context: ContextValue) {
+function toggleMaximize(panel: PanelValue, group: GroupValue) {
   if (group.prevMaximize) {
-    restorePanels(group, context)
+    group.restorePanels()
   } else {
-    maximizePanel(panel, group, context)
+    group.maximizePanel(panel)
   }
 }
 
@@ -140,7 +138,6 @@ function toggleMaximize(panel: PanelValue, group: GroupValue, context: ContextVa
 const LeftPanel = () => {
   const group = useGroupContext()
   const panel = usePanelContext()
-  const context = useResizableContext()
 
   return (
     <div className="flex-1 flex flex-col">
@@ -150,13 +147,13 @@ const LeftPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group, context)
+          togglePanel(panel, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group, context)
+          toggleMaximize(panel, group)
         }}
         onRestore={() => {
-          restorePanels(group, context)
+          group.restorePanels()
         }}
       />
       <div className="flex-1 p-4 overflow-auto">
@@ -177,7 +174,6 @@ const LeftPanel = () => {
 const RightPanel = () => {
   const group = useGroupContext()
   const panel = usePanelContext()
-  const context = useResizableContext()
 
   return (
     <div className="flex-1 flex flex-col">
@@ -187,13 +183,13 @@ const RightPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group, context)
+          togglePanel(panel, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group, context)
+          toggleMaximize(panel, group)
         }}
         onRestore={() => {
-          restorePanels(group, context)
+          group.restorePanels()
         }}
       />
       <div className="flex-1 p-4 overflow-auto">
@@ -212,7 +208,6 @@ const RightPanel = () => {
 const BottomPanel = () => {
   const group = useGroupContext()
   const panel = usePanelContext()
-  const context = useResizableContext()
 
   return (
     <div className="flex-1 flex flex-col">
@@ -222,13 +217,13 @@ const BottomPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group, context)
+          togglePanel(panel, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group, context)
+          toggleMaximize(panel, group)
         }}
         onRestore={() => {
-          restorePanels(group, context)
+          group.restorePanels()
         }}
       />
       <div className="flex-1 p-2 overflow-auto  font-mono text-xs">
@@ -308,18 +303,6 @@ const EditorPanel = () => {
 
 // Storage key for saving layout (v2 includes isMaximized, isCollapsed, openSize)
 const LAYOUT_STORAGE_KEY = "resizable-panels-layout-v2"
-
-interface SavedPanelLayout {
-  size: number
-  openSize: number
-  isCollapsed: boolean
-  isMaximized: boolean
-}
-
-interface SavedGroupLayout {
-  panels: SavedPanelLayout[]
-  prevMaximize?: [boolean, number][]
-}
 
 /**
  * Save layout to localStorage

@@ -67,8 +67,6 @@ export interface GroupValue {
 }
 
 export interface SavedGroupLayout {
-  // Unique Identifier
-  id: string
   // Panels in the group
   panels: SavedPanelLayout[]
   // State before maximize - [isCollapsed, size]
@@ -103,8 +101,6 @@ export interface PanelValue {
 }
 
 export interface SavedPanelLayout {
-  // Unique Identifier
-  id: string
   // Active Size (px)
   size: number
   // Size before Collapse (px)
