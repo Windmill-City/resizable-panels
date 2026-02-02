@@ -732,7 +732,7 @@ export function ResizableContext({
   return (
     <ResizableContextType.Provider value={ref}>
       <div
-        data-resizable-context={id}
+        data-resizable-context={ref.id}
         style={{
           flex: 1,
           display: "flex",

@@ -119,17 +119,17 @@ export function ResizableGroup({
 
   useLayoutEffect(() => {
     context.registerGroup(ref)
-    return () => context.unregisterGroup(id)
+    return () => context.unregisterGroup(ref.id)
   }, [])
 
-  const isCol = direction === "col"
+  const isCol = ref.direction === "col"
 
   return (
     <GroupContext.Provider value={ref}>
       <div
         ref={containerEl}
-        data-resizable-group={id}
-        data-direction={direction}
+        data-resizable-group={ref.id}
+        data-direction={ref.direction}
         style={{
           flex: 1,
           display: "flex",

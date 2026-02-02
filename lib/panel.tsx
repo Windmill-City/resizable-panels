@@ -105,7 +105,7 @@ export function ResizablePanel({
     <PanelContext.Provider value={{ ...ref }}>
       <div
         ref={containerEl}
-        data-resizable-panel={id}
+        data-resizable-panel={ref.id}
         data-collapsed={ref.isCollapsed || undefined}
         data-maximized={ref.isMaximized || undefined}
         style={{
