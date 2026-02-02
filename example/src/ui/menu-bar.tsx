@@ -17,30 +17,30 @@ const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisi
     switch (panelId) {
       case "left":
         {
-          if (groups[0]!.prevMaximize) {
-            groups[0]!.restorePanels()
+          if (groups[1]!.prevMaximize) {
+            groups[1]!.restorePanels()
             return
           }
-          toggleCollapse(panelId, groups[0]!)
+          toggleCollapse(panelId, groups[1]!)
         }
         break
       case "right":
         {
-          if (groups[0]!.prevMaximize) {
-            groups[0]!.restorePanels()
+          if (groups[1]!.prevMaximize) {
+            groups[1]!.restorePanels()
             return
           }
-          toggleCollapse(panelId, groups[0]!)
+          toggleCollapse(panelId, groups[1]!)
         }
         break
       case "bottom":
         {
-          if (groups[0]!.prevMaximize) {
-            groups[0]!.restorePanels()
-            return
-          }
           if (groups[1]!.prevMaximize) {
             groups[1]!.restorePanels()
+            return
+          }
+          if (groups[0]!.prevMaximize) {
+            groups[0]!.restorePanels()
             return
           }
           toggleCollapse(panelId, groups[0]!)

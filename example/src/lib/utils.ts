@@ -23,21 +23,21 @@ export function toggleCollapse(panelId: string, group: GroupValue) {
         }
       }
       break
-    case "bottom":
-      {
-        const panel = group.panels.get("bottom")!
-        if (panel.isCollapsed) {
-          // Open if collapsed
-          group.dragHandle(-panel.openSize, 0)
-        } else {
-          // Collapse if open
-          group.dragHandle(panel.size, 0)
-        }
-      }
-      break
     case "right":
       {
         const panel = group.panels.get("right")!
+        if (panel.isCollapsed) {
+          // Open if collapsed
+          group.dragHandle(-panel.openSize, 1)
+        } else {
+          // Collapse if open
+          group.dragHandle(panel.size, 1)
+        }
+      }
+      break
+    case "bottom":
+      {
+        const panel = group.panels.get("bottom")!
         if (panel.isCollapsed) {
           // Open if collapsed
           group.dragHandle(-panel.openSize, 0)
