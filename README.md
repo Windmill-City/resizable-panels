@@ -10,7 +10,7 @@ A headless React component library designed for building IDE-like layouts (simil
 - **Constraints** - Support min/max pixel constraints
 - **Collapsible** - Panels support collapse operations
 - **Maximize** - Panels support maximize operations
-- **Layout Persistence** - Save and restore layout state
+- **Persistence** - Save and restore layout state
 
 ## Installation
 
