@@ -86,7 +86,7 @@ export function ResizablePanel({
   let flexValue: string
   if (group.ratio) {
     flexValue = `${ref.size} ${ref.size} 0%`
-  } else if (ref.expand && !ref.isCollapsed) {
+  } else if (ref.isMaximized || (ref.expand && !ref.isCollapsed)) {
     flexValue = `1 1 0%`
   } else {
     flexValue = `0 1 ${ref.size}px`
