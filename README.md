@@ -329,6 +329,7 @@ Apply a loaded layout to all groups.
 
 ```tsx
 const context = useResizableContext();
+const layout = context.loadLayout(json);
 context.applyLayout(layout);
 ```
 

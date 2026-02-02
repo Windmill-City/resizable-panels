@@ -327,6 +327,7 @@ const layout = context.loadLayout(json);
 
 ```tsx
 const context = useResizableContext();
+const layout = context.loadLayout(json);
 context.applyLayout(layout);
 ```
 
