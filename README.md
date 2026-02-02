@@ -21,7 +21,7 @@ cd /path/to/resizable-panels
 ```
 
 ```bash
-pnpm build
+pnpm install
 ```
 
 In your project's `package.json` add the following

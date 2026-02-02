@@ -21,7 +21,7 @@ cd /path/to/resizable-panels
 ```
 
 ```bash
-pnpm build
+pnpm install
 ```
 
 然后在你的项目中添加依赖：
