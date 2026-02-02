@@ -53,6 +53,7 @@ export function ResizableGroup({
       console.debug("[Group] dragHandle:", { delta, index })
 
       const panels = Array.from(ref.panels.values())
+      ref.prevDrag = panels.map((p) => [p.isCollapsed, p.size])
 
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
