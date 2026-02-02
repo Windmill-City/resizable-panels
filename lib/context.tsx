@@ -377,7 +377,7 @@ export function adjustPanelByDelta(
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
     if (panel.okMaximize) {
-      group.prevMaximize = group.prevDrag ?? Array.from(group.panels.values()).map((p) => [p.isCollapsed, p.size])
+      group.prevMaximize = group.prevDrag!
       panel.isMaximized = true
     }
   } else if (nonCollapsed.length > 1) {
@@ -510,11 +510,15 @@ export function ResizableContext({
           }
         }
 
-        console.assert(!prevMaximize.length || prevMaximize.length === panels.length, "[Context] Skipping group:", {
-          group,
-          panels,
-          prevMaximize,
-        })
+        console.assert(
+          !prevMaximize.length || prevMaximize.length === panels.length,
+          "[Context] Skipping group:",
+          {
+            group,
+            panels,
+            prevMaximize,
+          },
+        )
         if (prevMaximize.length > 0 && prevMaximize.length !== panels.length) continue
 
         group.prevMaximize = prevMaximize.length > 0 ? prevMaximize : undefined
