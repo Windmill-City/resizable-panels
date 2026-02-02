@@ -8,13 +8,26 @@ A headless React component library designed for building IDE-like layouts (simil
 
 - **Sizing** - Support both pixel (px) and ratio-based sizing modes
 - **Constraints** - Support min/max pixel constraints
-- **Collapsible/Maximize** - Panels support collapse/expand and maximize operations
+- **Collapsible** - Panels support collapse operations
+- **Maximize** - Panels support maximize operations
 - **Layout Persistence** - Save and restore layout state
 
 ## Installation
 
+In your `package.json` add the following
+
+```json
+{
+  "dependencies": {
+    "@local/resizable-panels": "file:/absolute/path/to/resizable-panels"
+  }
+}
+```
+
+Then install
+
 ```bash
-pnpm add @local/resizable-panels
+pnpm install
 ```
 
 ## Development
@@ -24,12 +37,16 @@ This project uses pnpm workspaces. To run the example:
 ```bash
 # Install dependencies
 pnpm install
+```
 
-# Start development server (run in project root, NOT in example directory)
+```bash
+# Start development server
 pnpm dev
 ```
 
-> **Note**: Do not run `pnpm dev` in the `example` directory. Due to workspace configuration, it must be started from the project root.
+**Note**: Do not run `pnpm install` in the `example` directory.
+
+> Due to workspace configuration, it must be started from the project root.
 
 ## Quick Start
 
@@ -67,8 +84,8 @@ interface ResizableContextProps {
   id?: string;                                          // Unique identifier
   children?: ReactNode;                                 // Child elements
   className?: string;                                   // CSS class name
-  onLayoutChanged?: (context: ContextValue) => void;    // Layout change callback
-  onLayoutMount?: (context: ContextValue) => void;      // Layout mount callback - for loading saved data
+  onLayoutMount?: (context: ContextValue) => void;      // Layout mount callback - for loading saved layout
+  onLayoutChanged?: (context: ContextValue) => void;    // Layout change callback - for saving changed layout
 }
 ```
 
@@ -188,7 +205,7 @@ function PanelContent() {
 
 ## Utility Functions
 
-### dragPanel
+### dragHandle
 
 Programmatically resize panels at a specific handle index. Called on `GroupValue`.
 
@@ -196,11 +213,11 @@ Programmatically resize panels at a specific handle index. Called on `GroupValue
 const group = useGroupContext();
 
 // Expand left panel by 200px (handle index 0)
-group.dragPanel(200, 0);
+group.dragHandle(200, 0);
 
 // Collapse right panel (handle index 1)
 const panel = Array.from(group.panels.values())[1];
-group.dragPanel(-panel.size, 1);
+group.dragHandle(-panel.size, 1);
 ```
 
 **Parameters:**
@@ -355,7 +372,6 @@ Listen to layout changes when resizing ends:
     localStorage.setItem('layout', saved);
   }}
 >
-  {/* ... */}
 </ResizableContext>
 ```
 
@@ -373,7 +389,6 @@ Called when the context is mounted, useful for restoring previously saved layout
     context.applyLayout(layout);
   }}
 >
-  {/* ... */}
 </ResizableContext>
 ```
 
@@ -389,7 +404,7 @@ function PanelControls() {
 
   return (
     <div>
-      <button onClick={() => group.dragPanel(100, 0)}>
+      <button onClick={() => group.dragHandle(100, 0)}>
         Expand Left
       </button>
       <button onClick={() => group.maximizePanel(leftPanel.id)}>

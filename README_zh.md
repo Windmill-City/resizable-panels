@@ -8,28 +8,45 @@
 
 - **尺寸** - 支持像素（px）和比例（ratio）两种尺寸模式
 - **约束** - 支持最大/最小像素约束
-- **可折叠/最大化** - 面板支持折叠展开和最大化操作
+- **可折叠** - 面板支持折叠展开操作
+- **最大化** - 面板支持最大化操作
 - **布局持久化** - 保存和恢复布局状态
 
 ## 安装
 
+在你的 `package.json` 中添加以下内容
+
+```json
+{
+  "dependencies": {
+    "@local/resizable-panels": "file:/absolute/path/to/resizable-panels"
+  }
+}
+```
+
+然后安装
+
 ```bash
-pnpm add @local/resizable-panels
+pnpm install
 ```
 
 ## 开发
 
-本项目使用 pnpm workspace。要运行示例：
+本项目使用 pnpm workspaces。要运行示例：
 
 ```bash
 # 安装依赖
 pnpm install
+```
 
-# 启动开发服务器（在项目根目录运行，不要在 example 目录下运行）
+```bash
+# 启动开发服务器
 pnpm dev
 ```
 
-> **注意**：请勿在 `example` 目录下运行 `pnpm dev`。由于 workspace 配置，必须从项目根目录启动。
+**注意**：请勿在 `example` 目录下运行 `pnpm install`。
+
+> 由于 workspace 配置，必须从项目根目录启动。
 
 ## 快速开始
 
@@ -67,8 +84,8 @@ interface ResizableContextProps {
   id?: string;                                          // 唯一标识符
   children?: ReactNode;                                 // 子元素
   className?: string;                                   // CSS 类名
-  onLayoutChanged?: (context: ContextValue) => void;    // 布局变化回调
-  onLayoutMount?: (context: ContextValue) => void;      // 布局挂载回调 - 用于加载保存的数据
+  onLayoutMount?: (context: ContextValue) => void;      // 布局挂载回调 - 用于加载保存的布局
+  onLayoutChanged?: (context: ContextValue) => void;    // 布局变化回调 - 用于保存变化的布局
 }
 ```
 
@@ -110,7 +127,7 @@ interface ResizablePanelProps {
 
 ### ResizableHandle
 
-面板之间的拖拽手柄，用于在面板间显示视觉分隔线
+面板之间的拖拽手柄，用于在面板间显示视觉分隔线。
 
 **注意：Handle 的索引（index）按照声明顺序绑定，而非 DOM 位置。**
 
@@ -137,6 +154,18 @@ function GlobalControls() {
   
   // 访问所有分组
   const groups = Array.from(context.groups.values());
+  
+  // 保存布局到 localStorage
+  const handleSave = () => {
+    const saved = context.saveLayout();
+    localStorage.setItem('layout', saved);
+  };
+  
+  // 从 localStorage 加载布局
+  const handleLoad = () => {
+    const json = localStorage.getItem('layout');
+    context.applyLayout(context.loadLayout(json));
+  };
   
   return <div>全局控制</div>;
 }
@@ -176,7 +205,7 @@ function PanelContent() {
 
 ## 工具函数
 
-### dragPanel
+### dragHandle
 
 在特定 handle 索引处编程方式调整面板大小。通过 `GroupValue` 调用。
 
@@ -184,11 +213,11 @@ function PanelContent() {
 const group = useGroupContext();
 
 // 将左侧面板展开 200px（handle 索引 0）
-group.dragPanel(200, 0);
+group.dragHandle(200, 0);
 
 // 折叠右侧面板（handle 索引 1）
 const panel = Array.from(group.panels.values())[1];
-group.dragPanel(-panel.size, 1);
+group.dragHandle(-panel.size, 1);
 ```
 
 **参数：**
@@ -377,7 +406,7 @@ function PanelControls() {
 
   return (
     <div>
-      <button onClick={() => group.dragPanel(100, 0)}>
+      <button onClick={() => group.dragHandle(100, 0)}>
         展开左侧
       </button>
       <button onClick={() => group.maximizePanel(leftPanel.id)}>
