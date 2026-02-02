@@ -79,7 +79,7 @@ export interface GroupValue {
   maximizePanel: (targetId: string) => void
   // Toggle maximize/restore panel
   toggleMaximize: (targetId: string) => void
-  // Call on group size (may) changed
+  // Called when group container size changes (or may have changed)
   onContainerResize: () => void
 }
 
