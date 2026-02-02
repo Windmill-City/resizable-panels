@@ -652,9 +652,30 @@ export function ResizableContext({
         return
       }
 
-      // Reset group state
       for (const [group] of ref.dragIndex.values()) {
+        // Reset group state
         group.prevDrag = undefined
+
+        const el = group.containerEl.current!
+        const isCol = group.direction === "col"
+
+        // Check if group size changed
+        const newSize = isCol ? el.clientWidth : el.clientHeight
+        if (group.size === newSize) return
+
+        // Update panel size
+        for (const panel of group.panels.values()) {
+          if (panel.isCollapsed) continue
+
+          const el = panel.containerEl.current!
+
+          const newSize = isCol ? el.clientWidth : el.clientHeight
+
+          if (panel.size != newSize) {
+            console.debug("[Context] Panel Size Changed:", { id: panel.id, oldSize: panel.size, newSize })
+            panel.size = newSize
+          }
+        }
       }
 
       // Reset drag state
