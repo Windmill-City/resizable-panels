@@ -96,17 +96,6 @@ export function usePanelControl(panelId: string) {
 }
 
 /**
- * Maximize or restore panel
- */
-export function toggleMaximize(panelId: string, group: GroupValue) {
-  if (group.prevMaximize) {
-    group.restorePanels()
-  } else {
-    group.maximizePanel(panelId)
-  }
-}
-
-/**
  * Hook to debounce a callback function
  * @param fn - The function to debounce
  * @param delay - Delay in milliseconds

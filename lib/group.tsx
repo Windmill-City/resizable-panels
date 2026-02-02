@@ -121,6 +121,13 @@ export function ResizableGroup({
       // Notify layout changed
       context.notify()
     },
+    toggleMaximize: (targetId: string) => {
+      if (ref.prevMaximize) {
+        ref.restorePanels()
+      } else {
+        ref.maximizePanel(targetId)
+      }
+    },
   }).current
 
   useLayoutEffect(() => {

@@ -287,6 +287,20 @@ const group = useGroupContext();
 group.maximizePanel(targetId);
 ```
 
+### toggleMaximize
+
+Toggle maximize/restore state of a specific panel. If any panel is currently maximized, it restores all panels; otherwise, it maximizes the specified panel.
+
+```tsx
+const group = useGroupContext();
+const panel = usePanelContext();
+
+// Toggle maximize/restore on button click
+<button onClick={() => group.toggleMaximize(panel.id)}>
+  {panel.isMaximized ? 'Restore' : 'Maximize'}
+</button>
+```
+
 ### Layout Persistence Functions
 
 #### saveLayout

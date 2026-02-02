@@ -285,6 +285,20 @@ const group = useGroupContext();
 group.maximizePanel(targetId);
 ```
 
+### toggleMaximize
+
+切换指定面板的最大化/恢复状态。如果有面板当前处于最大化状态，则恢复所有面板；否则最大化指定面板。
+
+```tsx
+const group = useGroupContext();
+const panel = usePanelContext();
+
+// 点击按钮时切换最大化/恢复
+<button onClick={() => group.toggleMaximize(panel.id)}>
+  {panel.isMaximized ? '恢复' : '最大化'}
+</button>
+```
+
 ### 布局持久化函数
 
 #### saveLayout

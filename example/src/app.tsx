@@ -6,7 +6,7 @@ import {
   useGroupContext,
   usePanelContext,
 } from "@local/resizable-panels"
-import { toggleCollapse, toggleMaximize, useDebounce, usePanelControl } from "./lib/utils"
+import { toggleCollapse, useDebounce, usePanelControl } from "./lib/utils"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import PanelHeader from "./ui/panel-header"
@@ -46,7 +46,7 @@ const LeftPanel = () => {
           toggleCollapse(panel.id, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel.id, group)
+          group.toggleMaximize(panel.id)
         }}
         onRestore={() => {
           group.restorePanels()
@@ -82,7 +82,7 @@ const RightPanel = () => {
           toggleCollapse(panel.id, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel.id, group)
+          group.toggleMaximize(panel.id)
         }}
         onRestore={() => {
           group.restorePanels()
@@ -116,7 +116,7 @@ const BottomPanel = () => {
           toggleCollapse(panel.id, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel.id, group)
+          group.toggleMaximize(panel.id)
         }}
         onRestore={() => {
           group.restorePanels()
