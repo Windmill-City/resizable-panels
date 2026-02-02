@@ -231,7 +231,7 @@ export function shrinkSequentially(panels: PanelValue[], amount: number): void {
  * @param panelsBefore - Panels before the resize handle (in reverse order, closest first)
  * @param panelsAfter - Panels after the resize handle
  * @param delta - The resize delta in pixels (positive = panelsBefore grows, negative = panelsBefore shrinks)
- * @param group - The group containing these panels, used for updating maximized state
+ * @param group - The group containing these panels, used for updating maximized state. Must have prevDrag initialized
  */
 export function adjustPanelByDelta(
   panelsBefore: PanelValue[],
@@ -239,7 +239,13 @@ export function adjustPanelByDelta(
   delta: number,
   group: GroupValue,
 ): void {
+  // Sanity Check
+  if (!group.prevDrag) {
+    throw new Error("[Resizable] prevDrag is not initialized")
+  }
+
   const panels = [...panelsBefore, ...panelsAfter]
+
   // Save prevTotalSize for diff check, diff should be 0 after resizing
   const prevTotalSize = panels.reduce((sum, panel) => sum + panel.size, 0)
 
@@ -377,9 +383,6 @@ export function adjustPanelByDelta(
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
     if (panel.okMaximize) {
-      if (!group.prevDrag) {
-        throw new Error("[Resizable] prevDrag is not initialized")
-      }
       group.prevMaximize = group.prevDrag
       panel.isMaximized = true
     }
