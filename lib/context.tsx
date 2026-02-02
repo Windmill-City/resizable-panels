@@ -746,7 +746,7 @@ export function ResizableContext({
     if (ref.onLayoutMount) {
       ref.onLayoutMount(ref)
     }
-  }, [])
+  }, [onLayoutMount])
 
   return (
     <ResizableContextType.Provider value={ref}>
