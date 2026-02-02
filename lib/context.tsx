@@ -449,11 +449,11 @@ export function ResizableContext({
     groups: new Map<string, GroupValue>(),
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
-      console.debug(`[Context] Register group: ${group.id}, Groups: ${[...ref.groups.keys()]}`)
+      console.debug(`[Context] Register (${group.id}) => [${[...ref.groups.keys()]}]`)
     },
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
-      console.debug(`[Context] Unregister group: ${groupId}, Groups: ${[...ref.groups.keys()]}`)
+      console.debug(`[Context] Unregister: (${groupId}) => [${[...ref.groups.keys()]}]`)
     },
     onLayoutMount,
     onLayoutChanged,
