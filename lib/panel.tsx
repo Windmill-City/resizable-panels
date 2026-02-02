@@ -87,7 +87,7 @@ export function ResizablePanel({
       if (!group.prevDrag) {
         const newSize = isCol ? el.clientWidth : el.clientHeight
         if (ref.size != newSize) {
-          console.debug("[Panel] Panel Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
+          console.debug("[Panel] Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
           ref.size = newSize
         }
       }
