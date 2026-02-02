@@ -124,6 +124,35 @@ export function ResizableGroup({
         ref.maximizePanel(targetId)
       }
     },
+    onContainerResize: () => {
+      const isCol = direction == "col"
+      const el = ref.containerEl.current!
+      const newSize = isCol ? el.clientWidth : el.clientHeight
+
+      if (ref.size === newSize) return
+      console.debug("[Group] Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
+      ref.size = newSize
+
+      if (!ref.prevDrag) {
+        const panels = [...ref.panels.values()]
+        for (const panel of panels) {
+          if (!panel.isCollapsed) {
+            const el = panel.containerEl.current!
+            const isCol = ref.direction === "col"
+
+            const newSize = isCol ? el.clientWidth : el.clientHeight
+
+            if (panel.size != newSize) {
+              console.debug("[Group] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
+              panel.size = newSize
+            }
+          }
+        }
+      }
+
+      // Notify layout changed
+      context.notify()
+    },
   }).current
 
   useLayoutEffect(() => {
@@ -132,36 +161,8 @@ export function ResizableGroup({
   }, [])
 
   useLayoutEffect(() => {
-    const isCol = direction == "col"
-    const el = ref.containerEl.current!
-
-    // Initialize content size
-    ref.size = isCol ? el.clientWidth : el.clientHeight
-
-    // Observe size changes and update panel size (content-box)
     const observer = new ResizeObserver((_) => {
-      const newSize = isCol ? el.clientWidth : el.clientHeight
-      if (ref.size === newSize) return
-      console.debug("[Group] Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
-      ref.size = newSize
-
-      if (!ref.prevDrag) {
-        const panels = [...ref.panels.values()]
-        for (const panel of panels) {
-          if (panel.isCollapsed) continue
-
-          const el = panel.containerEl.current!
-          const isCol = ref.direction === "col"
-
-          const newSize = isCol ? el.clientWidth : el.clientHeight
-
-          if (panel.size != newSize) {
-            console.debug("[Group] Panel Size Changed:", { id: panel.id, oldSize: panel.size, newSize })
-            panel.size = newSize
-          }
-        }
-        if (!context.isDragging) context.notify()
-      }
+      ref.onContainerResize()
     })
     observer.observe(ref.containerEl.current!)
     return () => observer.disconnect()

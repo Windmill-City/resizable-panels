@@ -651,40 +651,16 @@ export function ResizableContext({
       if (!ref.isDragging) {
         return
       }
+      console.debug("[Context] MouseUp")
 
       for (const [group] of ref.dragIndex.values()) {
-        // Reset group state
         group.prevDrag = undefined
-
-        const el = group.containerEl.current!
-        const isCol = group.direction === "col"
-
-        // Check if group size changed
-        const newSize = isCol ? el.clientWidth : el.clientHeight
-        if (group.size === newSize) continue
-        console.debug("[Context] Group Size Changed:", { id: group.id, oldSize: group.size, newSize })
-        group.size = newSize
-
-        // Update panel size
-        for (const panel of group.panels.values()) {
-          if (panel.isCollapsed) continue
-
-          const el = panel.containerEl.current!
-
-          const newSize = isCol ? el.clientWidth : el.clientHeight
-
-          if (panel.size != newSize) {
-            console.debug("[Context] Panel Size Changed:", { id: panel.id, oldSize: panel.size, newSize })
-            panel.size = newSize
-          }
-        }
+        group.onContainerResize()
       }
 
       // Reset drag state
       ref.isDragging = false
       ref.dragIndex.clear()
-
-      console.debug("[Context] MouseUp")
 
       // Notify layout changed
       ref.notify()
