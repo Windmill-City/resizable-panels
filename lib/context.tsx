@@ -735,7 +735,7 @@ export function ResizableContext({
     document.addEventListener("click", handleClick)
     document.addEventListener("dblclick", handleDoubleClick)
 
-    console.debug("[Resizable] ContextValue:", ref)
+    console.debug("[Context] ContextValue:", ref)
 
     return () => {
       document.removeEventListener("mousedown", handleMouseDown)
