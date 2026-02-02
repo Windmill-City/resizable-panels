@@ -100,7 +100,7 @@ export function findEdgeIndexAtPoint(
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
-    const panels = Array.from(group.panels.values())
+    const panels = [...group.panels.values()]
     const rect = group.containerEl.current!.getBoundingClientRect()
 
     // Skip if point is not within group bounds (with margin)
@@ -463,7 +463,7 @@ export function ResizableContext({
       const layout: Record<string, SavedGroupLayout> = {}
       for (const [groupId, group] of ref.groups) {
         const panels: Record<string, SavedPanelLayout> = {}
-        const panelEntries = Array.from(group.panels.entries())
+        const panelEntries = [...group.panels.entries()]
         for (let i = 0; i < panelEntries.length; i++) {
           const [panelId, p] = panelEntries[i]
           panels[panelId] = {
@@ -505,7 +505,7 @@ export function ResizableContext({
         const group = ref.groups.get(groupId)
         if (!group) continue
 
-        const panels = Array.from(group.panels.values())
+        const panels = [...group.panels.values()]
         const { panels: savedPanels } = groupData
 
         // Restore prevMaximize state from panels
@@ -606,7 +606,7 @@ export function ResizableContext({
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
-          group.prevDrag = Array.from(group.panels.values()).map((p) => [p.isCollapsed, p.size])
+          group.prevDrag = [...group.panels.values()].map((p) => [p.isCollapsed, p.size])
         }
 
         console.debug("[Context] MouseDown", {
@@ -630,7 +630,7 @@ export function ResizableContext({
 
       // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
-        const panels = Array.from(group.panels.values())
+        const panels = [...group.panels.values()]
         const panelsBefore = panels.slice(0, index + 1).reverse()
         const panelsAfter = panels.slice(index + 1)
 

@@ -171,7 +171,7 @@ function GlobalControls() {
   const context = useResizableContext();
   
   // 访问所有分组
-  const groups = Array.from(context.groups.values());
+  const groups = [...context.groups.values()];
   
   // 保存布局到 localStorage
   const handleSave = () => {
@@ -224,7 +224,7 @@ function CustomComponent() {
   const group = useGroupContext();
   
   // 访问面板和组属性
-  const panels = Array.from(group.panels.values());
+  const panels = [...group.panels.values()];
 }
 ```
 
@@ -258,7 +258,7 @@ const group = useGroupContext();
 group.dragHandle(200, 0);
 
 // 折叠右侧面板（handle 索引 1）
-const panel = Array.from(group.panels.values())[1];
+const panel = [...group.panels.values()][1];
 group.dragHandle(-panel.size, 1);
 ```
 
@@ -447,7 +447,7 @@ context.applyLayout(layout);
 ```tsx
 function PanelControls() {
   const group = useGroupContext();
-  const panels = Array.from(group.panels.values());
+  const panels = [...group.panels.values()];
   const leftPanel = panels[0];
 
   return (

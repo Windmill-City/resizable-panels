@@ -21,7 +21,7 @@ const MenuBar = ({ children }: MenuBarProps) => {
   // Subscribe to layout changes
   useEffect(() => {
     const handleLayoutChanged = (ctx: ContextValue) => {
-      const groups = Array.from(ctx.groups.values())
+      const groups = [...ctx.groups.values()]
 
       const left = groups[1].panels.get("left")!
       const right = groups[1].panels.get("right")!
@@ -36,7 +36,7 @@ const MenuBar = ({ children }: MenuBarProps) => {
   }, [])
 
   const togglePanel = (panelId: string) => {
-    const groups = Array.from(context.groups.values())
+    const groups = [...context.groups.values()]
     switch (panelId) {
       case "left":
         {

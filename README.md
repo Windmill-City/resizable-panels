@@ -171,7 +171,7 @@ function GlobalControls() {
   const context = useResizableContext();
   
   // Access all groups
-  const groups = Array.from(context.groups.values());
+  const groups = [...context.groups.values()];
   
   // Save layout to localStorage
   const handleSave = () => {
@@ -226,7 +226,7 @@ function CustomComponent() {
   const group = useGroupContext();
   
   // Access panels and group properties
-  const panels = Array.from(group.panels.values());
+  const panels = [...group.panels.values()];
 }
 ```
 
@@ -260,7 +260,7 @@ const group = useGroupContext();
 group.dragHandle(200, 0);
 
 // Collapse right panel (handle index 1)
-const panel = Array.from(group.panels.values())[1];
+const panel = [...group.panels.values()][1];
 group.dragHandle(-panel.size, 1);
 ```
 
@@ -449,7 +449,7 @@ Use `useGroupContext` and utility functions to create custom panel controls:
 ```tsx
 function PanelControls() {
   const group = useGroupContext();
-  const panels = Array.from(group.panels.values());
+  const panels = [...group.panels.values()];
   const leftPanel = panels[0];
 
   return (

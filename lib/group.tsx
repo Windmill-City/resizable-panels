@@ -53,7 +53,7 @@ export function ResizableGroup({
     dragHandle: (delta: number, index: number) => {
       console.debug("[Group] dragHandle:", { delta, index })
 
-      const panels = Array.from(ref.panels.values())
+      const panels = [...ref.panels.values()]
       ref.prevDrag = panels.map((p) => [p.isCollapsed, p.size])
 
       const panelsBefore = panels.slice(0, index + 1).reverse()
@@ -69,7 +69,7 @@ export function ResizableGroup({
     restorePanels: () => {
       if (!ref.prevMaximize) return
 
-      const panels = Array.from(ref.panels.values())
+      const panels = [...ref.panels.values()]
       console.debug("[Group] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
 
       for (let i = 0; i < panels.length; i++) {
@@ -95,7 +95,7 @@ export function ResizableGroup({
         return
       }
 
-      const panels = Array.from(ref.panels.values())
+      const panels = [...ref.panels.values()]
       ref.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
 
       for (const panel of panels) {
@@ -146,7 +146,7 @@ export function ResizableGroup({
       ref.size = newSize
 
       if (!ref.prevDrag) {
-        const panels = Array.from(ref.panels.values())
+        const panels = [...ref.panels.values()]
         for (const panel of panels) {
           if (panel.isCollapsed) continue
 
