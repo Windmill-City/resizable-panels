@@ -155,7 +155,7 @@ export function ResizableGroup({
             panel.size = newSize
           }
         }
-        context.notify()
+        if (!context.isDragging) context.notify()
       }
     })
     observer.observe(ref.containerEl.current!)
