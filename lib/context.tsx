@@ -440,7 +440,8 @@ export function ResizableContext({
   }, [])
 
   useEffect(() => {
-    if (onLayoutChanged) subscribe(onLayoutChanged)
+    if (!onLayoutChanged) return () => {}
+    return subscribe(onLayoutChanged)
   }, [onLayoutChanged])
 
   const ref = useRef<ContextValue>({
@@ -752,7 +753,7 @@ export function ResizableContext({
     if (ref.onLayoutMount) {
       ref.onLayoutMount(ref)
     }
-  }, [onLayoutMount])
+  }, [])
 
   return (
     <ResizableContextType.Provider value={ref}>
