@@ -232,7 +232,7 @@ function App() {
 
         <ResizableGroup id="col">
           {/* Left Sidebar */}
-          <ResizablePanel id="left" collapsible collapsed>
+          <ResizablePanel id="left" collapsible>
             <LeftPanel />
           </ResizablePanel>
           <LeftResizeHandle />
@@ -252,7 +252,6 @@ function App() {
                 minSize={80}
                 collapsible
                 okMaximize
-                collapsed
               >
                 <BottomPanel />
               </ResizablePanel>
@@ -262,7 +261,7 @@ function App() {
           <RightResizeHandle />
 
           {/* Right Sidebar */}
-          <ResizablePanel id="right" collapsible okMaximize collapsed>
+          <ResizablePanel id="right" collapsible okMaximize>
             <RightPanel />
           </ResizablePanel>
         </ResizableGroup>
