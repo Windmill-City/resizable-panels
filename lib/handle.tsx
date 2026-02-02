@@ -30,12 +30,12 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
 
   useLayoutEffect(() => {
     group.registerHandle(ref)
-    return () => group.unregisterHandle(id)
+    return () => group.unregisterHandle(ref.id)
   }, [])
 
   return (
     <div
-      data-resizable-handle={id}
+      data-resizable-handle={ref.id}
       data-direction={group.direction}
       data-handle-index={ref.index}
       data-hover={ref.isHover || undefined}
