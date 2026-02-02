@@ -740,6 +740,18 @@ export function ResizableContext({
     }
   }, [])
 
+  // Update hover state after layout changed
+  useEffect(() => {
+    const unsubscribe = subscribe((context) => {
+      setTimeout(() => {
+        context.updateHoverState(context.prevPos)
+      })
+    })
+    return () => {
+      unsubscribe()
+    }
+  }, [])
+
   useLayoutEffect(() => {
     if (ref.onLayoutMount) {
       ref.onLayoutMount(ref)
