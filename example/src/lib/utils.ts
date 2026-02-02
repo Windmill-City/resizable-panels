@@ -1,5 +1,6 @@
 import { GroupValue, useGroupContext } from "@local/resizable-panels"
 import { clsx, type ClassValue } from "clsx"
+import { useMemo } from "react"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -103,4 +104,20 @@ export function toggleMaximize(panelId: string, group: GroupValue) {
   } else {
     group.maximizePanel(panelId)
   }
+}
+
+/**
+ * Hook to debounce a callback function
+ * @param fn - The function to debounce
+ * @param delay - Delay in milliseconds
+ * @returns Debounced function
+ */
+export function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+  return useMemo(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
+    return (...args: Parameters<T>) => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => fn(...args), delay)
+    }
+  }, [fn, delay])
 }
