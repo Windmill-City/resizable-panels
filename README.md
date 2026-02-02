@@ -18,6 +18,9 @@ Build first
 
 ```bash
 cd /path/to/resizable-panels
+```
+
+```bash
 pnpm build
 ```
 
@@ -35,6 +38,9 @@ Then install
 
 ```bash
 cd /path/to/your-project
+```
+
+```bash
 pnpm install
 ```
 
