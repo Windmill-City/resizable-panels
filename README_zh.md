@@ -189,6 +189,30 @@ function GlobalControls() {
 }
 ```
 
+#### subscribe
+
+订阅布局变化事件。当你需要在子组件监听布局变化，这个方法非常有用。
+
+```tsx
+const context = useResizableContext();
+
+// 订阅布局变化
+const unsubscribe = context.subscribe((ctx) => {
+  // ...
+});
+
+// 当不再需要监听时，取消订阅
+unsubscribe();
+```
+
+**参数：**
+
+- `callback`: 布局变化时调用的函数，接收 `ContextValue` 作为参数。
+
+**返回值：**
+
+- `unsubscribe`: 用于取消订阅布局变化的函数。
+
 ### useGroupContext
 
 在 `ResizableGroup` 内部访问组上下文以编程方式控制面板：

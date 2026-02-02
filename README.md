@@ -189,6 +189,32 @@ function GlobalControls() {
 }
 ```
 
+#### subscribe
+
+Subscribe to layout change events.
+
+This is useful when you need to listen for layout changes in the sub components.
+
+```tsx
+const context = useResizableContext();
+
+// Subscribe to layout changes
+const unsubscribe = context.subscribe((ctx) => {
+  // ...
+});
+
+// Unsubscribe when no longer needed
+unsubscribe();
+```
+
+**Parameters:**
+
+- `callback`: Function to be called when layout changes. Receives the `ContextValue` as parameter.
+
+**Returns:**
+
+- `unsubscribe`: Function to unsubscribe from layout changes.
+
 ### useGroupContext
 
 Access the group context within a `ResizableGroup` to programmatically control panels:
