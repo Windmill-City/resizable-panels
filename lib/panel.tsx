@@ -84,9 +84,9 @@ export function ResizablePanel({
 
     // Observe size changes and update ref.size (content-box)
     const observer = new ResizeObserver((_) => {
-      if (!group.prevDrag) {
+      if (!group.prevDrag && !ref.isCollapsed) {
         const newSize = isCol ? el.clientWidth : el.clientHeight
-        if (!ref.isCollapsed && ref.size != newSize) {
+        if (ref.size != newSize) {
           console.debug("[Panel] Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
           ref.size = newSize
         }
