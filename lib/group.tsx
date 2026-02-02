@@ -33,6 +33,7 @@ export function ResizableGroup({
     panels: new Map<string, PanelValue>(),
     handles: [],
     containerEl,
+    size: 0,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
       console.debug("[Group] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
@@ -125,6 +126,39 @@ export function ResizableGroup({
   useLayoutEffect(() => {
     context.registerGroup(ref)
     return () => context.unregisterGroup(ref.id)
+  }, [])
+
+  useLayoutEffect(() => {
+    const isCol = direction == "col"
+    const el = ref.containerEl.current!
+
+    // Initialize content size
+    ref.size = isCol ? el.clientWidth : el.clientHeight
+
+    // Observe size changes and update panel size (content-box)
+    const observer = new ResizeObserver((_) => {
+      const newSize = isCol ? el.clientWidth : el.clientHeight
+      if (ref.size === newSize) return
+
+      if (!ref.prevDrag) {
+        const panels = Array.from(ref.panels.values())
+        for (const panel of panels) {
+          if (panel.isCollapsed) continue
+
+          const el = panel.containerEl.current!
+          const isCol = ref.direction === "col"
+
+          const newSize = isCol ? el.clientWidth : el.clientHeight
+
+          if (panel.size != newSize) {
+            console.debug("[Group] Panel Size Changed:", { id: panel.id, oldSize: panel.size, newSize })
+            panel.size = newSize
+          }
+        }
+      }
+    })
+    observer.observe(ref.containerEl.current!)
+    return () => observer.disconnect()
   }, [])
 
   const isCol = ref.direction === "col"

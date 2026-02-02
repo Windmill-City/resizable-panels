@@ -652,21 +652,12 @@ export function ResizableContext({
         return
       }
 
-      // Update panel size, in case group size changed while resizing
+      // Reset group state
       for (const [group] of ref.dragIndex.values()) {
-        for (const panel of group.panels.values()) {
-          const el = panel.containerEl.current!
-          const isCol = group.direction === "col"
-          const newSize = isCol ? el.clientWidth : el.clientHeight
-          if (panel.size != newSize) {
-            console.debug("[Context] Panel Size Changed:", { id: panel.id, oldSize: panel.size, newSize })
-            panel.size = newSize
-          }
-        }
         group.prevDrag = undefined
       }
 
-      // Reset drag state after constraint check
+      // Reset drag state
       ref.isDragging = false
       ref.dragIndex.clear()
 

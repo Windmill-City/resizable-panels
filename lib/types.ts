@@ -56,6 +56,8 @@ export interface GroupValue {
   handles: HandleValue[]
   // Ref of the ResizableGroup Element
   containerEl: RefObject<HTMLElement>
+  // content size of containerEl
+  size: number
   // State before Drag - [isCollapsed, size]
   prevDrag?: [boolean, number][]
   // State before Maximize - [isCollapsed, size]
