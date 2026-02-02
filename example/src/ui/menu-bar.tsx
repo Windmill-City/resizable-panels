@@ -11,9 +11,9 @@ interface MenuBarProps {
 
 const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisible = true }: MenuBarProps) => {
   const context = useResizableContext()
-  const groups = Array.from(context.groups.values())
 
   const togglePanel = (panelId: string) => {
+    const groups = Array.from(context.groups.values())
     switch (panelId) {
       case "left":
         {
