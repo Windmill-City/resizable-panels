@@ -381,10 +381,7 @@ context.applyLayout(layout);
 ```tsx
 <ResizableContext 
   onLayoutChanged={(context) => {
-    console.log('布局变化:', context);
     // 保存布局到 localStorage
-    const saved = context.saveLayout();
-    localStorage.setItem('layout', saved);
   }}
 >
   {/* ... */}
@@ -398,11 +395,7 @@ context.applyLayout(layout);
 ```tsx
 <ResizableContext 
   onLayoutMount={(context) => {
-    console.log('布局挂载:', context);
-    // 从 localStorage 加载布局并应用
-    const savedLayout = localStorage.getItem('layout');
-    const layout = context.loadLayout(savedLayout);
-    context.applyLayout(layout);
+    // 从 localStorage 加载布局
   }}
 >
   {/* ... */}

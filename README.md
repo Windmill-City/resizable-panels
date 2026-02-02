@@ -381,10 +381,7 @@ Listen to layout changes when resizing ends:
 ```tsx
 <ResizableContext 
   onLayoutChanged={(context) => {
-    console.log('Layout changed:', context);
     // Save layout to localStorage
-    const saved = context.saveLayout();
-    localStorage.setItem('layout', saved);
   }}
 >
 </ResizableContext>
@@ -397,11 +394,7 @@ Called when the context is mounted, useful for restoring previously saved layout
 ```tsx
 <ResizableContext 
   onLayoutMount={(context) => {
-    console.log('Layout mounted:', context);
     // Load layout from localStorage and apply
-    const savedLayout = localStorage.getItem('layout');
-    const layout = context.loadLayout(savedLayout);
-    context.applyLayout(layout);
   }}
 >
 </ResizableContext>
