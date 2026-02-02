@@ -81,19 +81,6 @@ export function ResizablePanel({
     // Initialize size from actual DOM dimensions (content-box)
     ref.size = isCol ? el.clientWidth : el.clientHeight
     if (!ref.isCollapsed) ref.openSize = ref.size
-
-    // Observe size changes and update ref.size (content-box)
-    const observer = new ResizeObserver((_) => {
-      if (!group.prevDrag && !ref.isCollapsed) {
-        const newSize = isCol ? el.clientWidth : el.clientHeight
-        if (ref.size != newSize) {
-          console.debug("[Panel] Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
-          ref.size = newSize
-        }
-      }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
   }, [])
 
   let flexValue: string
