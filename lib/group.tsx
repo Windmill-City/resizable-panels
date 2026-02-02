@@ -146,7 +146,7 @@ export function ResizableGroup({
     const observer = new ResizeObserver((_) => {
       const newSize = isCol ? el.clientWidth : el.clientHeight
       if (ref.size === newSize) return
-      console.debug("[Group] Group Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
+      console.debug("[Group] Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
       ref.size = newSize
 
       if (!ref.prevDrag) {

@@ -230,7 +230,7 @@ function App() {
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
 
-        <ResizableGroup>
+        <ResizableGroup id="col">
           {/* Left Sidebar */}
           <ResizablePanel id="left" collapsible collapsed>
             <LeftPanel />
@@ -238,7 +238,7 @@ function App() {
           <LeftResizeHandle />
 
           <ResizablePanel id="middle" expand>
-            <ResizableGroup direction="row">
+            <ResizableGroup id="row" direction="row">
               {/* Editor */}
               <ResizablePanel id="editor" minSize={80} collapsible expand>
                 <EditorPanel />
