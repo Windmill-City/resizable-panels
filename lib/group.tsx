@@ -155,6 +155,7 @@ export function ResizableGroup({
             panel.size = newSize
           }
         }
+        context.notify()
       }
     })
     observer.observe(ref.containerEl.current!)
