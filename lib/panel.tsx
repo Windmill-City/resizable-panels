@@ -102,7 +102,7 @@ export function ResizablePanel({
   } else if (ref.isCollapsed) {
     flexValue = `0 1 ${ref.size}px`
   } else if (ref.expand) {
-    flexValue = `9999 1 0%`
+    flexValue = `999 1 0%`
   } else {
     flexValue = `1 1 ${ref.size}px`
   }
