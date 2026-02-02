@@ -265,12 +265,12 @@ group.maximizePanel(targetId);
 
 #### saveLayout
 
-将所有分组的当前布局保存为 JSON 字符串。
+将所有分组的当前布局保存为 Record 对象。
 
 ```tsx
 const context = useResizableContext();
 const savedLayout = context.saveLayout();
-localStorage.setItem(LAYOUT_STORAGE_KEY, , JSON.stringify(savedLayout));
+localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(savedLayout));
 ```
 
 #### loadLayout
@@ -279,7 +279,7 @@ localStorage.setItem(LAYOUT_STORAGE_KEY, , JSON.stringify(savedLayout));
 
 ```tsx
 const context = useResizableContext();
-const json = localStorage.getItem(LAYOUT_STORAGE_KEY, );
+const json = localStorage.getItem(LAYOUT_STORAGE_KEY);
 const layout = context.loadLayout(json);
 ```
 

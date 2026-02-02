@@ -265,12 +265,12 @@ group.maximizePanel(targetId);
 
 #### saveLayout
 
-Save the current layout of all groups to a JSON string.
+Save the current layout of all groups to a Record object.
 
 ```tsx
 const context = useResizableContext();
 const savedLayout = context.saveLayout();
-localStorage.setItem(LAYOUT_STORAGE_KEY, , JSON.stringify(savedLayout));
+localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(savedLayout));
 ```
 
 #### loadLayout
@@ -279,7 +279,7 @@ Load and validate a layout from a JSON string.
 
 ```tsx
 const context = useResizableContext();
-const json = localStorage.getItem(LAYOUT_STORAGE_KEY, );
+const json = localStorage.getItem(LAYOUT_STORAGE_KEY);
 const layout = context.loadLayout(json);
 ```
 
