@@ -49,12 +49,10 @@ pnpm install
 This project uses pnpm workspaces. To run the example:
 
 ```bash
-# Install dependencies
 pnpm install
 ```
 
 ```bash
-# Start development server
 pnpm dev
 ```
 

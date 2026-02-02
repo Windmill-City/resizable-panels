@@ -49,12 +49,10 @@ pnpm install
 本项目使用 pnpm workspaces。要运行示例：
 
 ```bash
-# 安装依赖
 pnpm install
 ```
 
 ```bash
-# 启动开发服务器
 pnpm dev
 ```
 
