@@ -264,7 +264,7 @@ export function adjustPanelByDelta(
       nextPanel.isCollapsed = true
       nextPanel.openSize = nextPanel.size
       nextPanel.size = 0
-      console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel, remaining })
+      console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel.id, remaining })
       return true
     }
     return false
@@ -277,7 +277,7 @@ export function adjustPanelByDelta(
       expandedSpace += nextPanel.minSize
       nextPanel.isCollapsed = false
       nextPanel.size = nextPanel.minSize
-      console.debug("[Resizable] Expanded Panel:", { panel: nextPanel, remaining })
+      console.debug("[Resizable] Expanded Panel:", { panel: nextPanel.id, remaining })
       return true
     }
     return false
@@ -399,16 +399,16 @@ export function adjustPanelByDelta(
   console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
   console.debug("[Resizable] Adjusted:", {
+    group: group.id,
     delta,
     clamped,
     amount,
     collapsedSpace,
     expandedSpace,
+    diff,
     prevTotalSize,
     currTotalSize,
-    diff,
-    group,
-    nonCollapsed,
+    nonCollapsed: nonCollapsed.map((p) => p.id),
   })
 
   // Trigger re-render for all affected panels
@@ -449,11 +449,11 @@ export function ResizableContext({
     groups: new Map<string, GroupValue>(),
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
-      console.debug("[Context] Register group:", group.id, "Groups:", Array.from(ref.groups.keys()))
+      console.debug(`[Context] Register group: ${group.id}, Groups: ${[...ref.groups.keys()]}`)
     },
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
-      console.debug("[Context] Unregister group:", groupId, "Groups:", Array.from(ref.groups.keys()))
+      console.debug(`[Context] Unregister group: ${groupId}, Groups: ${[...ref.groups.keys()]}`)
     },
     onLayoutMount,
     onLayoutChanged,
@@ -518,7 +518,7 @@ export function ResizableContext({
         }
 
         console.assert(!prevMaximize.length || prevMaximize.length === panels.length, "[Context] Skipping group:", {
-          group,
+          group: group.id,
           panels,
           prevMaximize,
         })

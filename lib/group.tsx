@@ -36,11 +36,11 @@ export function ResizableGroup({
     size: 0,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
-      console.debug("[Group] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
+      console.debug(`[Group] Register panel: ${panel.id}, Panels: ${[...ref.panels.keys()]}`)
     },
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
-      console.debug("[Group] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
+      console.debug(`[Group] Unregister panel: ${panelId}, Panels: ${[...ref.panels.keys()]}`)
     },
     registerHandle: (handle: HandleValue) => {
       ref.handles = [...ref.handles, handle]
@@ -112,10 +112,6 @@ export function ResizableGroup({
 
       console.debug("[Group] MaximizePanel:", {
         targetId,
-        targetPanel: target,
-        panels,
-        group: ref,
-        prevMaximize: ref.prevMaximize,
       })
 
       // Notify layout changed
