@@ -451,7 +451,7 @@ export function ResizableContext({
         }
         layout[groupId] = { panels }
       }
-      return JSON.stringify(layout)
+      return layout
     },
     loadLayout: (json: string | null) => {
       if (!json) return null

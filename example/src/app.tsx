@@ -225,7 +225,7 @@ function App() {
       if (bottomPanel) setBottomVisible(!bottomPanel.isCollapsed)
     }
     // Save layout to localStorage
-    localStorage.setItem(LAYOUT_STORAGE_KEY, ctx.saveLayout())
+    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(ctx.saveLayout()))
     console.debug("[App] Layout saved")
   }
 

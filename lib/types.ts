@@ -15,8 +15,8 @@ export interface ContextValue {
   onLayoutMount?: (context: ContextValue) => void
   // Layout Changed - Save changed layout
   onLayoutChanged?: (context: ContextValue) => void
-  // Save current layout to JSON string
-  saveLayout: () => string
+  // Save current layout to Record object
+  saveLayout: () => Record<string, SavedGroupLayout>
   // Load layout from JSON string
   loadLayout: (json: string | null) => Record<string, SavedGroupLayout> | null
   // Apply loaded layout to groups

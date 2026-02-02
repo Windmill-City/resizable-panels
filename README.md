@@ -56,6 +56,12 @@ pnpm install
 pnpm dev
 ```
 
+If you want to strip the console logs, run:
+
+```bash
+pnpm dev:minify
+```
+
 **Note**: Do not run `pnpm install` in the `example` directory.
 
 > Due to workspace configuration, it must be run from the project root.
@@ -264,7 +270,7 @@ Save the current layout of all groups to a JSON string.
 ```tsx
 const context = useResizableContext();
 const savedLayout = context.saveLayout();
-localStorage.setItem('myLayout', savedLayout);
+localStorage.setItem(LAYOUT_STORAGE_KEY, , JSON.stringify(savedLayout));
 ```
 
 #### loadLayout
@@ -273,11 +279,8 @@ Load and validate a layout from a JSON string.
 
 ```tsx
 const context = useResizableContext();
-const json = localStorage.getItem('myLayout');
+const json = localStorage.getItem(LAYOUT_STORAGE_KEY, );
 const layout = context.loadLayout(json);
-if (layout) {
-  // Layout is valid
-}
 ```
 
 #### applyLayout
@@ -286,7 +289,7 @@ Apply a loaded layout to all groups.
 
 ```tsx
 const context = useResizableContext();
-context.applyLayout(context.loadLayout(json));
+context.applyLayout(layout);
 ```
 
 ## Advanced Examples

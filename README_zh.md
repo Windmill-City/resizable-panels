@@ -56,6 +56,12 @@ pnpm install
 pnpm dev
 ```
 
+如果你需要去除日志信息, 运行以下指令:
+
+```bash
+pnpm dev:minify
+```
+
 **注意**：请勿在 `example` 目录下运行 `pnpm install`。
 
 > 由于 workspace 配置，必须从项目根目录运行。
@@ -264,7 +270,7 @@ group.maximizePanel(targetId);
 ```tsx
 const context = useResizableContext();
 const savedLayout = context.saveLayout();
-localStorage.setItem('myLayout', savedLayout);
+localStorage.setItem(LAYOUT_STORAGE_KEY, , JSON.stringify(savedLayout));
 ```
 
 #### loadLayout
@@ -273,11 +279,8 @@ localStorage.setItem('myLayout', savedLayout);
 
 ```tsx
 const context = useResizableContext();
-const json = localStorage.getItem('myLayout');
+const json = localStorage.getItem(LAYOUT_STORAGE_KEY, );
 const layout = context.loadLayout(json);
-if (layout) {
-  // 布局有效
-}
 ```
 
 #### applyLayout
@@ -286,7 +289,7 @@ if (layout) {
 
 ```tsx
 const context = useResizableContext();
-context.applyLayout(context.loadLayout(json));
+context.applyLayout(layout);
 ```
 
 ## 高级示例
