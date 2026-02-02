@@ -6,6 +6,7 @@ import {
   useGroupContext,
   usePanelContext,
 } from "@local/resizable-panels"
+import { useMemo } from "react"
 import { toggleCollapse, toggleMaximize, usePanelControl } from "./lib/utils"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
@@ -208,12 +209,17 @@ function App() {
     console.debug("[App] Layout loaded")
   }
 
-  // Handle layout changes - save changed layout
-  const handleLayoutChanged = (ctx: ContextValue) => {
-    // Save layout to localStorage
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(ctx.saveLayout()))
-    console.debug("[App] Layout saved")
-  }
+  // Handle layout changes - save changed layout (debounced)
+  const handleLayoutChanged = useMemo(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
+    return (ctx: ContextValue) => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(ctx.saveLayout()))
+        console.debug("[App] Layout saved")
+      }, 300)
+    }
+  }, [])
 
   return (
     <ResizableContext
