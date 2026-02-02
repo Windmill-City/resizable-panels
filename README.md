@@ -14,7 +14,14 @@ A headless React component library designed for building IDE-like layouts (simil
 
 ## Installation
 
-In your `package.json` add the following
+Build first
+
+```bash
+cd /path/to/resizable-panels
+pnpm build
+```
+
+In your project's `package.json` add the following
 
 ```json
 {
@@ -27,6 +34,7 @@ In your `package.json` add the following
 Then install
 
 ```bash
+cd /path/to/your-project
 pnpm install
 ```
 
@@ -46,7 +54,7 @@ pnpm dev
 
 **Note**: Do not run `pnpm install` in the `example` directory.
 
-> Due to workspace configuration, it must be started from the project root.
+> Due to workspace configuration, it must be run from the project root.
 
 ## Quick Start
 

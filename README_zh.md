@@ -14,7 +14,17 @@
 
 ## 安装
 
-在你的 `package.json` 中添加以下内容
+首先在本仓库构建：
+
+```bash
+cd /path/to/resizable-panels
+```
+
+```bash
+pnpm build
+```
+
+然后在你的项目中添加依赖：
 
 ```json
 {
@@ -24,7 +34,11 @@
 }
 ```
 
-然后安装
+最后在你的项目中安装：
+
+```bash
+cd /path/to/your-project
+```
 
 ```bash
 pnpm install
@@ -46,7 +60,7 @@ pnpm dev
 
 **注意**：请勿在 `example` 目录下运行 `pnpm install`。
 
-> 由于 workspace 配置，必须从项目根目录启动。
+> 由于 workspace 配置，必须从项目根目录运行。
 
 ## 快速开始
 
