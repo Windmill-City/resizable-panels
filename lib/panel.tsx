@@ -32,9 +32,26 @@ export function ResizablePanel({
   const id = idProp ?? useId()
   const containerEl = useRef<HTMLDivElement>(null)
 
-  console.assert(defaultSize >= minSize, `[ResizablePanel] defaultSize < minSize: ${id}`)
-  console.assert(defaultSize <= maxSize, `[ResizablePanel] defaultSize > maxSize: ${id}`)
-  console.assert(minSize <= maxSize, `[ResizablePanel] minSize > maxSize: ${id}`)
+  if (!group.ratio) {
+    console.assert(defaultSize >= minSize, "[ResizablePanel] defaultSize < minSize:", {
+      id,
+      defaultSize,
+      minSize,
+      maxSize,
+    })
+    console.assert(defaultSize <= maxSize, "[ResizablePanel] defaultSize > maxSize:", {
+      id,
+      defaultSize,
+      minSize,
+      maxSize,
+    })
+  }
+  console.assert(minSize <= maxSize, "[ResizablePanel] minSize > maxSize:", {
+    id,
+    minSize,
+    maxSize,
+  })
+  console.assert(minSize >= 0, "[ResizablePanel] minSize < 0:", { id, minSize, maxSize })
 
   const ref = useRef<PanelValue>({
     id,
