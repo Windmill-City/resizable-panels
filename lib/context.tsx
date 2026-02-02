@@ -661,7 +661,7 @@ export function ResizableContext({
 
         // Check if group size changed
         const newSize = isCol ? el.clientWidth : el.clientHeight
-        if (group.size === newSize) return
+        if (group.size === newSize) continue
         console.debug("[Context] Group Size Changed:", { id: group.id, oldSize: group.size, newSize })
         group.size = newSize
 
