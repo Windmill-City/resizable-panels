@@ -60,6 +60,8 @@ export function ResizableGroup({
 
       adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
 
+      ref.prevDrag = undefined
+
       // Notify layout changed
       context.notify()
     },
