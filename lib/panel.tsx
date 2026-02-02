@@ -33,25 +33,25 @@ export function ResizablePanel({
   const containerEl = useRef<HTMLDivElement>(null)
 
   if (!group.ratio) {
-    console.assert(defaultSize >= minSize, "[ResizablePanel] defaultSize < minSize:", {
+    console.assert(defaultSize >= minSize, "[Panel] defaultSize < minSize:", {
       id,
       defaultSize,
       minSize,
       maxSize,
     })
-    console.assert(defaultSize <= maxSize, "[ResizablePanel] defaultSize > maxSize:", {
+    console.assert(defaultSize <= maxSize, "[Panel] defaultSize > maxSize:", {
       id,
       defaultSize,
       minSize,
       maxSize,
     })
   }
-  console.assert(minSize <= maxSize, "[ResizablePanel] minSize > maxSize:", {
+  console.assert(minSize <= maxSize, "[Panel] minSize > maxSize:", {
     id,
     minSize,
     maxSize,
   })
-  console.assert(minSize >= 0, "[ResizablePanel] minSize < 0:", { id, minSize, maxSize })
+  console.assert(minSize >= 0, "[Panel] minSize < 0:", { id, minSize, maxSize })
 
   const ref = useRef<PanelValue>({
     id,
@@ -84,7 +84,13 @@ export function ResizablePanel({
 
     // Observe size changes and update ref.size (content-box)
     const observer = new ResizeObserver((_) => {
-      if (!group.prevDrag) ref.size = isCol ? el.clientWidth : el.clientHeight
+      if (!group.prevDrag) {
+        const newSize = isCol ? el.clientWidth : el.clientHeight
+        if (ref.size != newSize) {
+          console.debug("[Panel] Panel Size Changed:", { id: ref.id, oldSize: ref.size, newSize })
+          ref.size = newSize
+        }
+      }
     })
     observer.observe(el)
     return () => observer.disconnect()

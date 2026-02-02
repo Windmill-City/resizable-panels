@@ -442,11 +442,11 @@ export function ResizableContext({
     groups: new Map<string, GroupValue>(),
     registerGroup: (group: GroupValue) => {
       ref.groups.set(group.id, group)
-      console.debug("[ResizableContext] Register group:", group.id, "Groups:", Array.from(ref.groups.keys()))
+      console.debug("[Context] Register group:", group.id, "Groups:", Array.from(ref.groups.keys()))
     },
     unregisterGroup: (groupId: string) => {
       ref.groups.delete(groupId)
-      console.debug("[ResizableContext] Unregister group:", groupId, "Groups:", Array.from(ref.groups.keys()))
+      console.debug("[Context] Unregister group:", groupId, "Groups:", Array.from(ref.groups.keys()))
     },
     onLayoutMount,
     onLayoutChanged,
@@ -477,18 +477,18 @@ export function ResizableContext({
       try {
         const parsed = JSON.parse(json)
         if (typeof parsed !== "object" || parsed === null) {
-          console.error("[ResizableContext] Invalid layout format: not an object")
+          console.error("[Context] Invalid layout format: not an object")
           return null
         }
         for (const [groupId, groupData] of Object.entries(parsed)) {
           if (!isValidSavedGroupLayout(groupData)) {
-            console.error(`[ResizableContext] Invalid layout format for group: ${groupId}`)
+            console.error(`[Context] Invalid layout format for group: ${groupId}`)
             return null
           }
         }
         return parsed as Record<string, SavedGroupLayout>
       } catch (e) {
-        console.error("[ResizableContext] Failed to load layout:", e)
+        console.error("[Context] Failed to load layout:", e)
         return null
       }
     },
@@ -512,7 +512,7 @@ export function ResizableContext({
 
         console.assert(
           !prevMaximize.length || prevMaximize.length === panels.length,
-          "[ResizableContext] Skipping group:",
+          "[Context] Skipping group:",
           {
             group,
             panels,
@@ -527,7 +527,7 @@ export function ResizableContext({
         for (const panel of panels) {
           const saved = savedPanels[panel.id]
 
-          console.assert(saved !== undefined, "[ResizableContext] Skipping panel", { id: panel.id, savedPanels })
+          console.assert(saved !== undefined, "[Context] Skipping panel", { id: panel.id, savedPanels })
           if (!saved) continue
 
           panel.size = saved.size
@@ -541,7 +541,7 @@ export function ResizableContext({
           panel.setDirty()
         }
       }
-      console.debug("[ResizableContext] Layout applied:", layout)
+      console.debug("[Context] Layout applied:", layout)
     },
     isDragging: false,
     prevPos: { x: 0, y: 0 },
@@ -606,7 +606,7 @@ export function ResizableContext({
           group.prevDrag = Array.from(group.panels.values()).map((p) => [p.isCollapsed, p.size])
         }
 
-        console.debug("[Resizable] MouseDown", {
+        console.debug("[Context] MouseDown", {
           startPos: ref.startPos,
           dragIndex: ref.dragIndex,
         })
@@ -654,7 +654,11 @@ export function ResizableContext({
         for (const panel of group.panels.values()) {
           const el = panel.containerEl.current!
           const isCol = group.direction === "col"
-          panel.size = isCol ? el.clientWidth : el.clientHeight
+          const newSize = isCol ? el.clientWidth : el.clientHeight
+          if (panel.size != newSize) {
+            console.debug("[Context] Panel Size Changed:", { id: panel.id, oldSize: panel.size, newSize })
+            panel.size = newSize
+          }
         }
         group.prevDrag = undefined
       }
@@ -663,7 +667,7 @@ export function ResizableContext({
       ref.isDragging = false
       ref.dragIndex.clear()
 
-      console.debug("[Resizable] MouseUp")
+      console.debug("[Context] MouseUp")
 
       // Notify layout changed
       ref.notify()

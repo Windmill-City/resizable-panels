@@ -238,7 +238,7 @@ function App() {
           </ResizablePanel>
           <LeftResizeHandle />
 
-          <ResizablePanel expand>
+          <ResizablePanel id="middle" expand>
             <ResizableGroup direction="row">
               {/* Editor */}
               <ResizablePanel id="editor" minSize={80} collapsible expand>

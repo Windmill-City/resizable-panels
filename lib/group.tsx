@@ -35,22 +35,22 @@ export function ResizableGroup({
     containerEl,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
-      console.debug("[ResizableGroup] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
+      console.debug("[Group] Register panel:", panel.id, "Panels:", Array.from(ref.panels.keys()))
     },
     unregisterPanel: (panelId: string) => {
       ref.panels.delete(panelId)
-      console.debug("[ResizableGroup] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
+      console.debug("[Group] Unregister panel:", panelId, "Panels:", Array.from(ref.panels.keys()))
     },
     registerHandle: (handle: HandleValue) => {
       ref.handles = [...ref.handles, handle]
-      console.debug("[ResizableGroup] Register handle:", handle.id, "index:", handle.index)
+      console.debug("[Group] Register handle:", handle.id, "index:", handle.index)
     },
     unregisterHandle: (handleId: string) => {
       ref.handles = ref.handles.filter((h) => h.id != handleId)
-      console.debug("[ResizableGroup] Unregister handle:", handleId)
+      console.debug("[Group] Unregister handle:", handleId)
     },
     dragHandle: (delta: number, index: number) => {
-      console.debug("[ResizableGroup] dragHandle:", { delta, index })
+      console.debug("[Group] dragHandle:", { delta, index })
 
       const panels = Array.from(ref.panels.values())
 
@@ -66,7 +66,7 @@ export function ResizableGroup({
       if (!ref.prevMaximize) return
 
       const panels = Array.from(ref.panels.values())
-      console.debug("[Resizable] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
+      console.debug("[Group] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
 
       for (let i = 0; i < panels.length; i++) {
         panels[i].isCollapsed = ref.prevMaximize[i][0]
@@ -83,11 +83,11 @@ export function ResizableGroup({
     maximizePanel: (targetId: string) => {
       const target = ref.panels.get(targetId)
       if (!target) {
-        console.error(`[ResizableGroup] maximizePanel: Panel with id "${targetId}" not found`)
+        console.error(`[Group] maximizePanel: Panel with id "${targetId}" not found`)
         return
       }
       if (!target.okMaximize) {
-        console.error(`[ResizableGroup] maximizePanel: Panel "${targetId}" cannot be maximized (okMaximize is false)`)
+        console.error(`[Group] maximizePanel: Panel "${targetId}" cannot be maximized (okMaximize is false)`)
         return
       }
 
@@ -106,7 +106,7 @@ export function ResizableGroup({
 
       for (const panel of panels) panel.setDirty()
 
-      console.debug("[Resizable] MaximizePanel:", {
+      console.debug("[Group] MaximizePanel:", {
         targetId,
         targetPanel: target,
         panels,
