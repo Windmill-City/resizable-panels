@@ -51,30 +51,34 @@ export function ResizableGroup({
     },
     dragHandle: (delta: number, index: number) => {
       console.debug("[ResizableGroup] dragHandle:", { delta, index })
+
       const panels = Array.from(ref.panels.values())
+
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
+
       adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
-      // Trigger onLayoutChanged callback
-      if (context.onLayoutChanged) {
-        context.onLayoutChanged(context)
-      }
+
+      // Notify layout changed
+      context.notify()
     },
     restorePanels: () => {
       if (!ref.prevMaximize) return
+
       const panels = Array.from(ref.panels.values())
       console.debug("[Resizable] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
+
       for (let i = 0; i < panels.length; i++) {
         panels[i].isCollapsed = ref.prevMaximize[i][0]
         panels[i].size = ref.prevMaximize[i][1]
         panels[i].isMaximized = false
       }
       ref.prevMaximize = undefined
+
       for (const panel of panels) panel.setDirty()
-      // Trigger onLayoutChanged callback
-      if (context.onLayoutChanged) {
-        context.onLayoutChanged(context)
-      }
+
+      // Notify layout changed
+      context.notify()
     },
     maximizePanel: (targetId: string) => {
       const target = ref.panels.get(targetId)
@@ -110,10 +114,8 @@ export function ResizableGroup({
         prevMaximize: ref.prevMaximize,
       })
 
-      // Trigger onLayoutChanged callback
-      if (context.onLayoutChanged) {
-        context.onLayoutChanged(context)
-      }
+      // Notify layout changed
+      context.notify()
     },
   }).current
 

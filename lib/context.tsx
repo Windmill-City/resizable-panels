@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
 import type {
   ContextValue,
   Direction,
@@ -420,6 +420,23 @@ export function ResizableContext({
 }: ResizableContextProps) {
   const id = idProp ?? useId()
 
+  // Store subscribers
+  const subscribers = useRef<Set<(context: ContextValue) => void>>(new Set())
+  const contextRef = useRef<ContextValue | null>(null)
+
+  const notify = useCallback(() => {
+    subscribers.current.forEach((cb) => cb(contextRef.current!))
+  }, [])
+
+  const subscribe = useCallback((callback: (context: ContextValue) => void) => {
+    subscribers.current.add(callback)
+    return () => subscribers.current.delete(callback)
+  }, [])
+
+  useEffect(() => {
+    if (onLayoutChanged) subscribe(onLayoutChanged)
+  }, [onLayoutChanged])
+
   const ref = useRef<ContextValue>({
     id,
     groups: new Map<string, GroupValue>(),
@@ -433,6 +450,8 @@ export function ResizableContext({
     },
     onLayoutMount,
     onLayoutChanged,
+    subscribe,
+    notify,
     saveLayout: () => {
       const layout: Record<string, SavedGroupLayout> = {}
       for (const [groupId, group] of ref.groups) {
@@ -568,6 +587,8 @@ export function ResizableContext({
     },
   }).current
 
+  contextRef.current = ref
+
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       ref.startPos = { x: e.clientX, y: e.clientY }
@@ -644,10 +665,8 @@ export function ResizableContext({
 
       console.debug("[Resizable] MouseUp")
 
-      // Call onLayoutChanged when drag ends
-      if (ref.onLayoutChanged) {
-        ref.onLayoutChanged(ref)
-      }
+      // Notify layout changed
+      ref.notify()
     }
 
     let timClick: ReturnType<typeof setTimeout> | null = null

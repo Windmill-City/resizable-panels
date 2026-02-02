@@ -15,6 +15,10 @@ export interface ContextValue {
   onLayoutMount?: (context: ContextValue) => void
   // Layout Changed - Save changed layout
   onLayoutChanged?: (context: ContextValue) => void
+  // Subscribe to layout changes
+  subscribe: (callback: (context: ContextValue) => void) => () => void
+  // Notify all subscribers
+  notify: () => void
   // Save current layout to Record object
   saveLayout: () => Record<string, SavedGroupLayout>
   // Load layout from JSON string

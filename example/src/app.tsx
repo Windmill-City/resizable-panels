@@ -6,7 +6,6 @@ import {
   useGroupContext,
   usePanelContext,
 } from "@local/resizable-panels"
-import { useState } from "react"
 import { toggleCollapse, toggleMaximize, usePanelControl } from "./lib/utils"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
@@ -202,28 +201,15 @@ const EditorPanel = () => {
 const LAYOUT_STORAGE_KEY = "resizable-panels-layout"
 
 function App() {
-  // Track panel visibility states
-  const [leftVisible, setLeftVisible] = useState(false)
-  const [rightVisible, setRightVisible] = useState(false)
-  const [bottomVisible, setBottomVisible] = useState(false)
-
   // Handle layout mount - load saved layout
   const handleLayoutMount = (ctx: ContextValue) => {
     const savedLayout = ctx.loadLayout(localStorage.getItem(LAYOUT_STORAGE_KEY))
     ctx.applyLayout(savedLayout)
+    console.debug("[App] Layout loaded")
   }
 
-  // Handle layout changes to update visibility states and save
+  // Handle layout changes - save changed layout
   const handleLayoutChanged = (ctx: ContextValue) => {
-    for (const group of ctx.groups.values()) {
-      const leftPanel = group.panels.get("left")
-      const rightPanel = group.panels.get("right")
-      const bottomPanel = group.panels.get("bottom")
-
-      if (leftPanel) setLeftVisible(!leftPanel.isCollapsed)
-      if (rightPanel) setRightVisible(!rightPanel.isCollapsed)
-      if (bottomPanel) setBottomVisible(!bottomPanel.isCollapsed)
-    }
     // Save layout to localStorage
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(ctx.saveLayout()))
     console.debug("[App] Layout saved")
@@ -236,7 +222,7 @@ function App() {
       onLayoutChanged={handleLayoutChanged}
     >
       {/* Menu Bar with panel toggle buttons */}
-      <MenuBar leftVisible={leftVisible} rightVisible={rightVisible} bottomVisible={bottomVisible}>
+      <MenuBar>
         <span className="font-semibold text-sm m-2">Resizable Panels Demo</span>
       </MenuBar>
 

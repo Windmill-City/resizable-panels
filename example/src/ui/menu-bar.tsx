@@ -1,5 +1,6 @@
-import { useResizableContext } from "@local/resizable-panels"
+import { ContextValue, useResizableContext } from "@local/resizable-panels"
 import { PanelBottom, PanelLeft, PanelRight, RotateCcw } from "lucide-react"
+import { useEffect, useState } from "react"
 import { toggleCollapse } from "../lib/utils"
 
 interface MenuBarProps {
@@ -9,8 +10,30 @@ interface MenuBarProps {
   bottomVisible?: boolean
 }
 
-const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisible = true }: MenuBarProps) => {
+const MenuBar = ({ children }: MenuBarProps) => {
   const context = useResizableContext()
+
+  // Track panel visibility states
+  const [leftVisible, setLeftVisible] = useState(false)
+  const [rightVisible, setRightVisible] = useState(false)
+  const [bottomVisible, setBottomVisible] = useState(false)
+
+  // Subscribe to layout changes
+  useEffect(() => {
+    const handleLayoutChanged = (ctx: ContextValue) => {
+      const groups = Array.from(ctx.groups.values())
+
+      const left = groups[1].panels.get("left")!
+      const right = groups[1].panels.get("right")!
+      const bottom = groups[0].panels.get("bottom")!
+
+      setLeftVisible(!left.isCollapsed)
+      setRightVisible(!right.isCollapsed)
+      setBottomVisible(!bottom.isCollapsed)
+    }
+
+    return context.subscribe(handleLayoutChanged)
+  }, [])
 
   const togglePanel = (panelId: string) => {
     const groups = Array.from(context.groups.values())
