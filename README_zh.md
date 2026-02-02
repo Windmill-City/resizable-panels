@@ -405,7 +405,9 @@ context.applyLayout(layout);
 ```tsx
 <ResizableContext 
   onLayoutChanged={(context) => {
+  const handleLayoutChanged = useDebounce((ctx: ContextValue) => {
     // 保存布局到 localStorage
+  }, 300)
   }}
 >
 </ResizableContext>

@@ -407,7 +407,9 @@ Listen to layout changes when resizing ends:
 ```tsx
 <ResizableContext 
   onLayoutChanged={(context) => {
+  const handleLayoutChanged = useDebounce((ctx: ContextValue) => {
     // Save layout to localStorage
+  }, 300)
   }}
 >
 </ResizableContext>
