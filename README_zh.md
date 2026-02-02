@@ -384,7 +384,6 @@ context.applyLayout(layout);
     // 保存布局到 localStorage
   }}
 >
-  {/* ... */}
 </ResizableContext>
 ```
 
@@ -398,7 +397,6 @@ context.applyLayout(layout);
     // 从 localStorage 加载布局
   }}
 >
-  {/* ... */}
 </ResizableContext>
 ```
 
