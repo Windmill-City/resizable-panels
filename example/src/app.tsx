@@ -1,7 +1,5 @@
 import {
   ContextValue,
-  GroupValue,
-  PanelValue,
   ResizableContext,
   ResizableGroup,
   ResizablePanel,
@@ -9,118 +7,26 @@ import {
   usePanelContext,
 } from "@local/resizable-panels"
 import { useState } from "react"
+import { toggleCollapse, toggleMaximize, usePanelControl } from "./lib/utils"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import PanelHeader from "./ui/panel-header"
 import ResizeHandle from "./ui/resize-handle"
 import StatusBar from "./ui/status-bar"
 
-/**
- * Hook for panel control logic
- * @param panelId - Id of the target panel to control
- * @returns Click and double-click handlers
- */
-function usePanelControl(panelId: string) {
-  const group = useGroupContext()
-
-  const handleClick = () => {
-    console.debug("[App] handleClick")
-
-    // Click to restore when maximized
-    if (group.prevMaximize) {
-      group.restorePanels()
-      return
-    }
-
-    switch (panelId) {
-      case "left":
-        break
-      case "bottom":
-        break
-      case "right":
-        break
-    }
-  }
-
-  const handleDoubleClick = () => {
-    console.debug("[App] handleDoubleClick")
-
-    const panels = Array.from(group.panels.values())
-    const target = panels[panelIndex]
-
-    // Double-click to restore when maximized
-    if (group.prevMaximize) {
-      group.restorePanels()
-      return
-    }
-
-    // Double-click to expand when collapsed
-    if (target.isCollapsed) {
-      const isBefore = panelIndex < panels.length / 2
-      const delta = isBefore ? target.openSize : -target.openSize
-      group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
-      return
-    }
-
-    // Double-click to maximize when expanded
-    group.maximizePanel(target.id)
-  }
-
-  return { handleClick, handleDoubleClick }
-}
-
 const LeftResizeHandle = () => {
-  const { handleClick, handleDoubleClick } = usePanelControl(0)
+  const { handleClick, handleDoubleClick } = usePanelControl("left")
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 const RightResizeHandle = () => {
-  const { handleClick, handleDoubleClick } = usePanelControl(2)
+  const { handleClick, handleDoubleClick } = usePanelControl("right")
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
 }
 
 const BottomResizeHandle = () => {
-  const { handleClick, handleDoubleClick } = usePanelControl(1)
+  const { handleClick, handleDoubleClick } = usePanelControl("bottom")
   return <ResizeHandle onClick={handleClick} onDoubleClick={handleDoubleClick} />
-}
-
-/**
- * Toggle panel collapsed state
- */
-function togglePanel(panel: PanelValue, group: GroupValue) {
-  const panels = Array.from(group.panels.values())
-  const panelIndex = panels.findIndex((p) => p.id === panel.id)
-
-  if (panelIndex < 0) return
-
-  // Restore if maximized
-  if (group.prevMaximize) {
-    group.restorePanels()
-  }
-
-  // Expand if collapsed
-  if (panel.isCollapsed) {
-    const isBefore = panelIndex < panels.length / 2
-    const delta = isBefore ? panel.openSize : -panel.openSize
-    group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
-    return
-  }
-
-  // Collapse if expanded
-  const isBefore = panelIndex < panels.length / 2
-  const delta = isBefore ? -panel.size : panel.size
-  group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
-}
-
-/**
- * Maximize or restore panel
- */
-function toggleMaximize(panel: PanelValue, group: GroupValue) {
-  if (group.prevMaximize) {
-    group.restorePanels()
-  } else {
-    group.maximizePanel(panel.id)
-  }
 }
 
 /**
@@ -138,10 +44,10 @@ const LeftPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group)
+          toggleCollapse(panel.id, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group)
+          toggleMaximize(panel.id, group)
         }}
         onRestore={() => {
           group.restorePanels()
@@ -174,10 +80,10 @@ const RightPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group)
+          toggleCollapse(panel.id, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group)
+          toggleMaximize(panel.id, group)
         }}
         onRestore={() => {
           group.restorePanels()
@@ -208,10 +114,10 @@ const BottomPanel = () => {
         isMaximized={panel.isMaximized}
         canMaximize={panel.okMaximize}
         onClose={() => {
-          togglePanel(panel, group)
+          toggleCollapse(panel.id, group)
         }}
         onMaximize={() => {
-          toggleMaximize(panel, group)
+          toggleMaximize(panel.id, group)
         }}
         onRestore={() => {
           group.restorePanels()

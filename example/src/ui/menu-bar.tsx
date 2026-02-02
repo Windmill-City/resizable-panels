@@ -1,5 +1,6 @@
 import { useResizableContext } from "@local/resizable-panels"
 import { PanelBottom, PanelLeft, PanelRight, RotateCcw } from "lucide-react"
+import { toggleCollapse } from "../lib/utils"
 
 interface MenuBarProps {
   children?: React.ReactNode
@@ -10,39 +11,41 @@ interface MenuBarProps {
 
 const MenuBar = ({ children, leftVisible = true, rightVisible = true, bottomVisible = true }: MenuBarProps) => {
   const context = useResizableContext()
+  const groups = Array.from(context.groups.values())
 
   const togglePanel = (panelId: string) => {
-    let hasRestored = false
-    for (const group of context.groups.values()) {
-      // Restore if maximized
-      if (group.prevMaximize) {
-        group.restorePanels()
-        hasRestored = true
-      }
-    }
-    if (hasRestored) return
-
-    for (const group of context.groups.values()) {
-      const panels = Array.from(group.panels.values())
-      const panelIndex = panels.findIndex((p) => p.id === panelId)
-
-      if (panelIndex >= 0) {
-        const panel = panels[panelIndex]
-
-        // Expand if collapsed
-        if (panel.isCollapsed) {
-          const isBefore = panelIndex < panels.length / 2
-          const delta = isBefore ? panel.openSize : -panel.openSize
-          group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
-          return
+    switch (panelId) {
+      case "left":
+        {
+          if (groups[0]!.prevMaximize) {
+            groups[0]!.restorePanels()
+            return
+          }
+          toggleCollapse(panelId, groups[0]!)
         }
-
-        // Collapse if expanded
-        const isBefore = panelIndex < panels.length / 2
-        const delta = isBefore ? -panel.size : panel.size
-        group.dragHandle(delta, isBefore ? panelIndex : panelIndex - 1)
-        return
-      }
+        break
+      case "right":
+        {
+          if (groups[0]!.prevMaximize) {
+            groups[0]!.restorePanels()
+            return
+          }
+          toggleCollapse(panelId, groups[0]!)
+        }
+        break
+      case "bottom":
+        {
+          if (groups[0]!.prevMaximize) {
+            groups[0]!.restorePanels()
+            return
+          }
+          if (groups[1]!.prevMaximize) {
+            groups[1]!.restorePanels()
+            return
+          }
+          toggleCollapse(panelId, groups[0]!)
+        }
+        break
     }
   }
 

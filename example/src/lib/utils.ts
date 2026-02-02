@@ -1,6 +1,106 @@
+import { GroupValue, useGroupContext } from "@local/resizable-panels"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+/**
+ * Toggle panel collapsed state
+ */
+export function toggleCollapse(panelId: string, group: GroupValue) {
+  switch (panelId) {
+    case "left":
+      {
+        const panel = group.panels.get("left")!
+        if (panel.isCollapsed) {
+          // Open if collapsed
+          group.dragHandle(panel.openSize, 0)
+        } else {
+          // Collapse if open
+          group.dragHandle(-panel.size, 0)
+        }
+      }
+      break
+    case "bottom":
+      {
+        const panel = group.panels.get("bottom")!
+        if (panel.isCollapsed) {
+          // Open if collapsed
+          group.dragHandle(-panel.openSize, 0)
+        } else {
+          // Collapse if open
+          group.dragHandle(panel.size, 0)
+        }
+      }
+      break
+    case "right":
+      {
+        const panel = group.panels.get("right")!
+        if (panel.isCollapsed) {
+          // Open if collapsed
+          group.dragHandle(-panel.openSize, 0)
+        } else {
+          // Collapse if open
+          group.dragHandle(panel.size, 0)
+        }
+      }
+      break
+  }
+}
+
+/**
+ * Hook for panel control logic
+ * @param panelId - Id of the target panel to control
+ * @returns Click and double-click handlers
+ */
+export function usePanelControl(panelId: string) {
+  const group = useGroupContext()
+
+  const handleClick = () => {
+    console.debug("[App] handleClick")
+
+    // Click to restore when maximized
+    if (group.prevMaximize) {
+      group.restorePanels()
+      return
+    }
+
+    toggleCollapse(panelId, group)
+  }
+
+  const handleDoubleClick = () => {
+    console.debug("[App] handleDoubleClick")
+
+    // Double-click to restore when maximized
+    if (group.prevMaximize) {
+      group.restorePanels()
+      return
+    }
+
+    const target = group.panels.get(panelId)!
+
+    // Double-click to expand when collapsed
+    if (target.isCollapsed) {
+      toggleCollapse(panelId, group)
+      return
+    }
+
+    // Double-click to maximize when expanded
+    group.maximizePanel(target.id)
+  }
+
+  return { handleClick, handleDoubleClick }
+}
+
+/**
+ * Maximize or restore panel
+ */
+export function toggleMaximize(panelId: string, group: GroupValue) {
+  if (group.prevMaximize) {
+    group.restorePanels()
+  } else {
+    group.maximizePanel(panelId)
+  }
 }
