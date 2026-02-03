@@ -644,6 +644,8 @@ export function ResizableContext({
         return
       }
 
+      ref.hasDragged = true
+
       const deltaX = e.clientX - ref.startPos.x
       const deltaY = e.clientY - ref.startPos.y
 
@@ -698,7 +700,6 @@ export function ResizableContext({
         clearTimeout(timClick)
       }
 
-      ref.hasDragged = false
       // Delay click execution to wait for potential double click
       timClick = setTimeout(() => {
         for (const [group, index] of edges.values()) {
