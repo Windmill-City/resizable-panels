@@ -132,7 +132,7 @@ export function ResizableGroup({
       const newSize = isCol ? el.clientWidth : el.clientHeight
 
       if (ref.prevDrag || ref.size === newSize) return
-      console.debug("[Resize] >Group:", { id: ref.id, oldSize: ref.size, newSize })
+      console.debug("[Resize] Group>", { id: ref.id, oldSize: ref.size, newSize })
       ref.size = newSize
 
       const panels = [...ref.panels.values()]
