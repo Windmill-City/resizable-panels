@@ -155,6 +155,12 @@ export function ResizableGroup({
   }, [])
 
   useLayoutEffect(() => {
+    const isCol = ref.direction == "col"
+    const el = ref.containerEl.current!
+
+    // Initialize Group size
+    ref.size = isCol ? el.clientWidth : el.clientHeight
+
     const observer = new ResizeObserver((_) => {
       ref.onContainerResize()
     })
