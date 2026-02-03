@@ -21,11 +21,12 @@ const MenuBar = ({ children }: MenuBarProps) => {
   // Subscribe to layout changes
   useEffect(() => {
     const handleLayoutChanged = (ctx: ContextValue) => {
-      const groups = [...ctx.groups.values()]
+      const col = ctx.groups.get("col")!
+      const row = ctx.groups.get("row")!
 
-      const left = groups[1].panels.get("left")!
-      const right = groups[1].panels.get("right")!
-      const bottom = groups[0].panels.get("bottom")!
+      const left = col.panels.get("left")!
+      const right = col.panels.get("right")!
+      const bottom = row.panels.get("bottom")!
 
       setLeftVisible(!left.isCollapsed)
       setRightVisible(!right.isCollapsed)
@@ -36,37 +37,34 @@ const MenuBar = ({ children }: MenuBarProps) => {
   }, [])
 
   const togglePanel = (panelId: string) => {
-    const groups = [...context.groups.values()]
+    const col = context.groups.get("col")!
+    const row = context.groups.get("row")!
     switch (panelId) {
       case "left":
         {
-          if (groups[1]!.prevMaximize) {
-            groups[1]!.restorePanels()
+          if (col.restorePanels()) {
             return
           }
-          toggleCollapse(panelId, groups[1]!)
+          toggleCollapse(panelId, col)
         }
         break
       case "right":
         {
-          if (groups[1]!.prevMaximize) {
-            groups[1]!.restorePanels()
+          if (col.restorePanels()) {
             return
           }
-          toggleCollapse(panelId, groups[1]!)
+          toggleCollapse(panelId, col)
         }
         break
       case "bottom":
         {
-          if (groups[1]!.prevMaximize) {
-            groups[1]!.restorePanels()
+          if (col.restorePanels()) {
             return
           }
-          if (groups[0]!.prevMaximize) {
-            groups[0]!.restorePanels()
+          if (row.restorePanels()) {
             return
           }
-          toggleCollapse(panelId, groups[0]!)
+          toggleCollapse(panelId, row)
         }
         break
     }
