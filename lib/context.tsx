@@ -80,23 +80,8 @@ export const WINDOW_EDGE_MARGIN = 8
 export function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
   point: { x: number; y: number },
-  ignoreWindowEdge = false,
 ): Map<Direction, [GroupValue, number]> {
   const result = new Map<Direction, [GroupValue, number]>()
-
-  // Skip if point is too close to window edges (to avoid conflict with window resize)
-  if (!ignoreWindowEdge) {
-    const windowWidth = window.innerWidth
-    const windowHeight = window.innerHeight
-    if (
-      point.x < WINDOW_EDGE_MARGIN ||
-      point.x > windowWidth - WINDOW_EDGE_MARGIN ||
-      point.y < WINDOW_EDGE_MARGIN ||
-      point.y > windowHeight - WINDOW_EDGE_MARGIN
-    ) {
-      return result
-    }
-  }
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
@@ -570,23 +555,6 @@ export function ResizableContext({
     updateHoverState: (point: { x: number; y: number }) => {
       const edges = findEdgeIndexAtPoint(ref.groups, point)
 
-      // Update cursor
-      switch (edges.size) {
-        case 0:
-          // No edge: show default
-          document.body.style.cursor = ""
-          break
-        case 1:
-          const direction = edges.keys().next().value!
-          // Single edge: show bidirectional arrow
-          document.body.style.cursor = direction === "row" ? "ns-resize" : "ew-resize"
-          break
-        case 2:
-          // Two edges (intersection): show crosshair
-          document.body.style.cursor = "move"
-          break
-      }
-
       // Update hover state
       for (const [group, index] of ref.hoverIndex.values()) {
         const handle = group.handles.at(index)
@@ -602,6 +570,36 @@ export function ResizableContext({
           handle.isHover = true
           handle.setDirty()
         }
+      }
+
+      // Skip if point is too close to window edges (to avoid conflict with window resize)
+      const windowWidth = window.innerWidth
+      const windowHeight = window.innerHeight
+      if (
+        point.x < WINDOW_EDGE_MARGIN ||
+        point.x > windowWidth - WINDOW_EDGE_MARGIN ||
+        point.y < WINDOW_EDGE_MARGIN ||
+        point.y > windowHeight - WINDOW_EDGE_MARGIN
+      ) {
+        document.body.style.cursor = ""
+        return
+      }
+
+      // Update cursor
+      switch (edges.size) {
+        case 0:
+          // No edge: show default
+          document.body.style.cursor = ""
+          break
+        case 1:
+          const direction = edges.keys().next().value!
+          // Single edge: show bidirectional arrow
+          document.body.style.cursor = direction === "row" ? "ns-resize" : "ew-resize"
+          break
+        case 2:
+          // Two edges (intersection): show crosshair
+          document.body.style.cursor = "move"
+          break
       }
     },
   }).current
@@ -689,14 +687,10 @@ export function ResizableContext({
     let timClick: ReturnType<typeof setTimeout> | null = null
 
     const handleClick = (e: MouseEvent) => {
-      const edges = findEdgeIndexAtPoint(
-        ref.groups,
-        {
-          x: e.clientX,
-          y: e.clientY,
-        },
-        true,
-      )
+      const edges = findEdgeIndexAtPoint(ref.groups, {
+        x: e.clientX,
+        y: e.clientY,
+      })
 
       // Clear any existing timer
       if (timClick) {
@@ -725,14 +719,10 @@ export function ResizableContext({
         timClick = null
       }
 
-      const edges = findEdgeIndexAtPoint(
-        ref.groups,
-        {
-          x: e.clientX,
-          y: e.clientY,
-        },
-        true,
-      )
+      const edges = findEdgeIndexAtPoint(ref.groups, {
+        x: e.clientX,
+        y: e.clientY,
+      })
 
       for (const [group, index] of edges.values()) {
         const handle = group.handles.at(index)
