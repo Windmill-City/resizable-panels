@@ -129,21 +129,19 @@ export function ResizableGroup({
       const el = ref.containerEl.current!
       const newSize = isCol ? el.clientWidth : el.clientHeight
 
-      if (ref.size === newSize) return
+      if (ref.prevDrag || ref.size === newSize) return
       console.debug("[Resize] Group:", { id: ref.id, oldSize: ref.size, newSize })
       ref.size = newSize
 
-      if (!ref.prevDrag) {
-        const panels = [...ref.panels.values()]
-        for (const panel of panels) {
-          if (!panel.isCollapsed) {
-            const el = panel.containerEl.current!
-            const isCol = ref.direction === "col"
+      const panels = [...ref.panels.values()]
+      for (const panel of panels) {
+        if (!panel.isCollapsed) {
+          const el = panel.containerEl.current!
+          const isCol = ref.direction === "col"
 
-            const newSize = isCol ? el.clientWidth : el.clientHeight
-            console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
-            panel.size = newSize
-          }
+          const newSize = isCol ? el.clientWidth : el.clientHeight
+          console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
+          panel.size = newSize
         }
       }
 
