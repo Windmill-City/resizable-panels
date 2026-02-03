@@ -548,6 +548,7 @@ export function ResizableContext({
       console.debug("[Context] Layout applied:", layout)
     },
     isDragging: false,
+    hasDragged: false,
     prevPos: { x: 0, y: 0 },
     startPos: { x: 0, y: 0 },
     dragIndex: new Map(),
@@ -581,7 +582,6 @@ export function ResizableContext({
         point.y < WINDOW_EDGE_MARGIN ||
         point.y > windowHeight - WINDOW_EDGE_MARGIN
       ) {
-        document.body.style.cursor = ""
         return
       }
 
@@ -617,6 +617,7 @@ export function ResizableContext({
       if (edges.size) {
         ref.dragIndex = edges
         ref.isDragging = true
+        ref.hasDragged = false
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
@@ -697,11 +698,11 @@ export function ResizableContext({
         clearTimeout(timClick)
       }
 
+      ref.hasDragged = false
       // Delay click execution to wait for potential double click
       timClick = setTimeout(() => {
         for (const [group, index] of edges.values()) {
-          // If moved consider it is a drag
-          if (Math.abs(ref.startPos.x - ref.prevPos.x) > 8 || Math.abs(ref.startPos.y - ref.prevPos.y) > 8) return
+          if (ref.hasDragged) return
           // Emit click event
           const handle = group.handles.at(index)
           if (handle && handle.onClick) {
@@ -732,6 +733,19 @@ export function ResizableContext({
       }
     }
 
+    const handleMouseLeave = (_: MouseEvent) => {
+      // Update hover state
+      for (const [group, index] of ref.hoverIndex.values()) {
+        const handle = group.handles.at(index)
+        if (handle) {
+          handle.isHover = false
+          handle.setDirty()
+        }
+      }
+      ref.hoverIndex = new Map()
+    }
+
+    document.addEventListener("mouseleave", handleMouseLeave)
     document.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)

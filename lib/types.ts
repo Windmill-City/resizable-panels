@@ -27,6 +27,8 @@ export interface ContextValue {
   applyLayout: (layout: Record<string, SavedGroupLayout> | null) => void
   // Is Dragging Panels?
   isDragging: boolean
+  // hasDragged?
+  hasDragged: boolean
   // Previous Mouse Pos
   prevPos: { x: number; y: number }
   // Drag Start Pos
