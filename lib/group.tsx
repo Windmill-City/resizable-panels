@@ -125,7 +125,7 @@ export function ResizableGroup({
       }
     },
     onContainerResize: () => {
-      const isCol = direction == "col"
+      const isCol = ref.direction == "col"
       const el = ref.containerEl.current!
       const newSize = isCol ? el.clientWidth : el.clientHeight
 
@@ -137,7 +137,6 @@ export function ResizableGroup({
       for (const panel of panels) {
         if (!panel.isCollapsed) {
           const el = panel.containerEl.current!
-          const isCol = ref.direction === "col"
 
           const newSize = isCol ? el.clientWidth : el.clientHeight
           console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
