@@ -141,11 +141,8 @@ export function ResizableGroup({
             const isCol = ref.direction === "col"
 
             const newSize = isCol ? el.clientWidth : el.clientHeight
-
-            if (panel.size != newSize) {
-              console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
-              panel.size = newSize
-            }
+            console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
+            panel.size = newSize
           }
         }
       }
