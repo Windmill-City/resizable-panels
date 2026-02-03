@@ -133,8 +133,6 @@ export interface SavedPanelLayout {
 export interface HandleValue {
   // Unique Identifier
   id: string
-  // Index of the handle (0 = between panel 0 and 1)
-  index: number
   // Is Mouse Hovered
   isHover: boolean
   // Trigger Re-render

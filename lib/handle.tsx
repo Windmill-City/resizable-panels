@@ -12,7 +12,6 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
 
   const ref = useRef<HandleValue>({
     id,
-    index: group.handles.length,
     isHover: false,
     setDirty,
     onClick,
@@ -37,7 +36,6 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
     <div
       data-resizable-handle={ref.id}
       data-direction={group.direction}
-      data-handle-index={ref.index}
       data-hover={ref.isHover || undefined}
       style={{
         flex: "0 0 auto",
