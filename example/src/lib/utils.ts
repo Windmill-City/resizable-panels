@@ -11,6 +11,7 @@ export function cn(...inputs: ClassValue[]) {
  * Toggle panel collapsed state
  */
 export function toggleCollapse(panelId: string, group: GroupValue) {
+  group.restorePanels()
   switch (panelId) {
     case "left":
       {
