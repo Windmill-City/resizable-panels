@@ -379,7 +379,6 @@ export function adjustPanelByDelta(
   }
 
   // Update maximized state
-  panels.forEach((p) => (p.isMaximized = false))
   const nonCollapsed = panels.filter((p) => !p.isCollapsed)
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
