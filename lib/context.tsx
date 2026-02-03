@@ -609,7 +609,7 @@ export function ResizableContext({
           group.prevDrag = [...group.panels.values()].map((p) => [p.isCollapsed, p.size])
         }
 
-        console.debug("[Context] MouseDown", {
+        console.debug("[Context] DragStart", {
           startPos: ref.startPos,
           dragIndex: ref.dragIndex,
         })
@@ -651,7 +651,7 @@ export function ResizableContext({
       if (!ref.isDragging) {
         return
       }
-      console.debug("[Context] MouseUp")
+      console.debug("[Context] DragEnd")
 
       for (const [group] of ref.dragIndex.values()) {
         group.prevDrag = undefined
