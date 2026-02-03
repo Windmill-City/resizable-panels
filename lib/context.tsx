@@ -681,13 +681,13 @@ export function ResizableContext({
 
       // Reset drag state
       ref.isDragging = false
-      ref.dragIndex.clear()
+      ref.dragIndex = new Map()
 
       // Notify layout changed
       ref.notify()
     }
 
-    let timClick: ReturnType<typeof setTimeout> | null = null
+    let deferredClick: ReturnType<typeof setTimeout> | null = null
 
     const handleClick = (e: MouseEvent) => {
       const edges = findEdgeIndexAtPoint(ref.groups, {
@@ -696,12 +696,12 @@ export function ResizableContext({
       })
 
       // Clear any existing timer
-      if (timClick) {
-        clearTimeout(timClick)
+      if (deferredClick) {
+        clearTimeout(deferredClick)
       }
 
       // Delay click execution to wait for potential double click
-      timClick = setTimeout(() => {
+      deferredClick = setTimeout(() => {
         for (const [group, index] of edges.values()) {
           if (ref.hasDragged) return
           // Emit click event
@@ -710,15 +710,15 @@ export function ResizableContext({
             handle.onClick()
           }
         }
-        timClick = null
+        deferredClick = null
       }, 250)
     }
 
     const handleDoubleClick = (e: MouseEvent) => {
       // Cancel pending click if double click occurs
-      if (timClick) {
-        clearTimeout(timClick)
-        timClick = null
+      if (deferredClick) {
+        clearTimeout(deferredClick)
+        deferredClick = null
       }
 
       const edges = findEdgeIndexAtPoint(ref.groups, {
