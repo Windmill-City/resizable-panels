@@ -141,11 +141,11 @@ const EditorPanel = () => {
     <div className="flex-1 flex flex-col">
       {/* Editor tabs */}
       <div className="h-8 flex items-center">
-        <div className="px-3 h-full flex items-center bg-background border-r border-border text-sm">
+        <div className="px-3 h-full flex items-center text-sm">
           <span className="text-yellow-500 mr-1.5">JS</span>
           app.tsx
         </div>
-        <div className="px-3 h-full flex items-center text-muted-foreground text-sm hover:bg-accent/30 cursor-pointer">
+        <div className="px-3 h-full flex items-center text-sm">
           <span className="text-blue-500 mr-1.5">TS</span>
           main.tsx
         </div>
