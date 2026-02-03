@@ -102,6 +102,9 @@ export function findEdgeIndexAtPoint(
     const margin = HANDLE_SIZE / 2
     const rect = group.containerEl.current!.getBoundingClientRect()
 
+    // Skip if group collapsed
+    if (rect.height * rect.width === 0) continue
+
     // Skip if point is not within group bounds (with margin)
     if (
       point.x < rect.x - margin ||
@@ -251,6 +254,11 @@ export function adjustPanelByDelta(
     throw new Error("[Resizable] prevDrag is not initialized")
   }
 
+  console.debug("[Resizable] Panels:", {
+    panelsBefore,
+    panelsAfter,
+  })
+
   const panels = [...panelsBefore, ...panelsAfter]
 
   // Save prevTotalSize for diff check, diff should be 0 after resizing
@@ -279,7 +287,7 @@ export function adjustPanelByDelta(
 
   // Try to expand a collapsed panel from the given panels if there's enough space
   const tryExpandPanel = (panels: PanelValue[], remaining: number): boolean => {
-    const nextPanel = panels.find((p) => p.collapsible && p.isCollapsed)
+    const nextPanel = panels.find((p) => p.isCollapsed)
     if (nextPanel && remaining > nextPanel.minSize / 2) {
       expandedSpace += nextPanel.minSize
       nextPanel.isCollapsed = false
@@ -386,6 +394,7 @@ export function adjustPanelByDelta(
   }
 
   // Update maximized state
+  panels.forEach((p) => (p.isMaximized = false))
   const nonCollapsed = panels.filter((p) => !p.isCollapsed)
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
