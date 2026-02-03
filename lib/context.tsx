@@ -100,7 +100,6 @@ export function findEdgeIndexAtPoint(
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
-    const panels = [...group.panels.values()]
     const rect = group.containerEl.current!.getBoundingClientRect()
 
     // Skip if point is not within group bounds (with margin)
@@ -113,11 +112,16 @@ export function findEdgeIndexAtPoint(
       continue
     }
 
+    const panels = [...group.panels.values()]
+
     if (group.direction === "row") {
       // Calculate edge positions along y-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        const panel = panels[i].containerEl.current!
-        const rect = panel.getBoundingClientRect()
+        // If both collapsed, then the handle is hidden
+        if (panels[i].isCollapsed && panels[i + 1].isCollapsed) continue
+        // Check if point at the edge
+        const el = panels[i].containerEl.current!
+        const rect = el.getBoundingClientRect()
         const edgeY = rect.bottom
         if (Math.abs(point.y - edgeY) <= margin) {
           result.set("row", [group, i])
@@ -127,8 +131,11 @@ export function findEdgeIndexAtPoint(
     } else {
       // Calculate edge positions along x-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        const panel = panels[i].containerEl.current!
-        const rect = panel.getBoundingClientRect()
+        // If both collapsed, then the handle is hidden
+        if (panels[i].isCollapsed && panels[i + 1].isCollapsed) continue
+        // Check if point at the edge
+        const el = panels[i].containerEl.current!
+        const rect = el.getBoundingClientRect()
         const edgeX = rect.right
         if (Math.abs(point.x - edgeX) <= margin) {
           result.set("col", [group, i])
@@ -611,7 +618,11 @@ export function ResizableContext({
 
         console.debug("[Context] DragStart", {
           startPos: ref.startPos,
-          dragIndex: ref.dragIndex,
+          dragIndex: [...edges.entries()].map(([direction, [group, index]]) => ({
+            direction,
+            groupId: group.id,
+            index,
+          })),
         })
         e.preventDefault()
       }
