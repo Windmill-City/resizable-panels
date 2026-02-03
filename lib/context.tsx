@@ -701,7 +701,7 @@ export function ResizableContext({
       timClick = setTimeout(() => {
         for (const [group, index] of edges.values()) {
           // If moved consider it is a drag
-          if (ref.startPos.x != e.clientX || ref.startPos.y != e.clientY) return
+          if (Math.abs(ref.startPos.x - ref.prevPos.x) > 8 || Math.abs(ref.startPos.y - ref.prevPos.y) > 8) return
           // Emit click event
           const handle = group.handles.at(index)
           if (handle && handle.onClick) {
