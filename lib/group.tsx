@@ -44,7 +44,7 @@ export function ResizableGroup({
     },
     registerHandle: (handle: HandleValue) => {
       ref.handles = [...ref.handles, handle]
-      console.debug("[Group] Register handle:", handle.id, "index:", handle.index)
+      console.debug("[Group] Register handle:", handle.id)
     },
     unregisterHandle: (handleId: string) => {
       ref.handles = ref.handles.filter((h) => h.id != handleId)
