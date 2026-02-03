@@ -67,7 +67,7 @@ export function ResizableGroup({
       context.notify()
     },
     restorePanels: () => {
-      if (!ref.prevMaximize) return
+      if (!ref.prevMaximize) return false
 
       const panels = [...ref.panels.values()]
       console.debug("[Group] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
@@ -83,16 +83,18 @@ export function ResizableGroup({
 
       // Notify layout changed
       context.notify()
+
+      return true
     },
     maximizePanel: (targetId: string) => {
       const target = ref.panels.get(targetId)
       if (!target) {
         console.error(`[Group] maximizePanel: Panel with id "${targetId}" not found`)
-        return
+        return false
       }
       if (!target.okMaximize) {
         console.error(`[Group] maximizePanel: Panel "${targetId}" cannot be maximized (okMaximize is false)`)
-        return
+        return false
       }
 
       const panels = [...ref.panels.values()]
@@ -116,11 +118,11 @@ export function ResizableGroup({
 
       // Notify layout changed
       context.notify()
+
+      return true
     },
     toggleMaximize: (targetId: string) => {
-      if (ref.prevMaximize) {
-        ref.restorePanels()
-      } else {
+      if (!ref.restorePanels()) {
         ref.maximizePanel(targetId)
       }
     },

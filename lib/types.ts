@@ -74,9 +74,11 @@ export interface GroupValue {
   // delta < 0, drag left/top, delta > 0 drag right/bottom
   dragHandle: (delta: number, index: number) => void
   // Restore all panels to their previous state before maximization
-  restorePanels: () => void
+  // retrun if restored
+  restorePanels: () => boolean
   // Maximize a specific panel by collapsing all others
-  maximizePanel: (targetId: string) => void
+  // retrun if maximized
+  maximizePanel: (targetId: string) => boolean
   // Toggle maximize/restore panel
   toggleMaximize: (targetId: string) => void
   // Called when group container size changes (or may have changed)
