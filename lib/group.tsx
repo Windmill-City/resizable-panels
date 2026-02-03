@@ -119,6 +119,14 @@ export function ResizableGroup({
       // Notify layout changed
       context.notify()
 
+      // Update maximized panel's size
+      requestAnimationFrame(() => {
+        const isCol = ref.direction === "col"
+        const panel = ref.panels.get(targetId)!
+        const el = panel.containerEl.current!
+        panel.size = isCol ? el.clientWidth : el.clientHeight
+      })
+
       return true
     },
     toggleMaximize: (targetId: string) => {
