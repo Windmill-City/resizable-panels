@@ -130,7 +130,7 @@ export function ResizableGroup({
       const newSize = isCol ? el.clientWidth : el.clientHeight
 
       if (ref.size === newSize) return
-      console.debug("[Group] Group:", { id: ref.id, oldSize: ref.size, newSize })
+      console.debug("[Resize] Group:", { id: ref.id, oldSize: ref.size, newSize })
       ref.size = newSize
 
       if (!ref.prevDrag) {
@@ -143,7 +143,7 @@ export function ResizableGroup({
             const newSize = isCol ? el.clientWidth : el.clientHeight
 
             if (panel.size != newSize) {
-              console.debug("[Group] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
+              console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
               panel.size = newSize
             }
           }
