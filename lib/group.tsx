@@ -132,6 +132,17 @@ export function ResizableGroup({
     return () => context.unregisterGroup(ref.id)
   }, [])
 
+  useLayoutEffect(() => {
+    const observer = new ResizeObserver((_) => {
+      for (const panel of ref.panels.values()) {
+        panel.setDirty()
+      }
+      context.notify()
+    })
+    observer.observe(ref.containerEl.current!)
+    return () => observer.disconnect()
+  }, [])
+
   const isCol = ref.direction === "col"
 
   return (

@@ -79,7 +79,7 @@ export function ResizablePanel({
     const el = ref.containerEl.current!
     const isCol = group.direction === "col"
 
-    const newSize = isCol ? el.clientWidth : el.clientHeight
+    const newSize = isCol ? el.offsetWidth : el.offsetHeight
 
     console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.openSize, newSize: newSize })
     ref.size = newSize
