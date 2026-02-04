@@ -10,6 +10,7 @@ import type {
   SavedGroupLayout,
   SavedPanelLayout,
 } from "./types"
+import { useDebounce } from "./utils"
 
 /**
  * Validate if the loaded data matches SavedPanelLayout format
@@ -758,12 +759,12 @@ export function ResizableContext({
   }, [])
 
   // Update hover state after layout changed
+  const deferredUpdate = useDebounce((context) => {
+    context.updateHoverState(context.prevPos)
+  }, 250)
+
   useEffect(() => {
-    const unsubscribe = subscribe((context) => {
-      setTimeout(() => {
-        context.updateHoverState(context.prevPos)
-      })
-    })
+    const unsubscribe = subscribe(deferredUpdate)
     return () => {
       unsubscribe()
     }
