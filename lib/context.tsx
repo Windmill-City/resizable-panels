@@ -750,6 +750,7 @@ export function ResizableContext({
     console.debug("[Context] ContextValue:", ref)
 
     return () => {
+      document.removeEventListener("mouseleave", handleMouseLeave)
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
