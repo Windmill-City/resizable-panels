@@ -135,8 +135,9 @@ export function ResizableGroup({
   useLayoutEffect(() => {
     const observer = new ResizeObserver((_) => {
       for (const panel of ref.panels.values()) {
-        panel.updateSizeFromDOM()
+        panel.setDirty()
       }
+      context.notify()
     })
     observer.observe(ref.containerEl.current!)
     return () => observer.disconnect()
