@@ -33,7 +33,6 @@ export function ResizableGroup({
     panels: new Map<string, PanelValue>(),
     handles: [],
     containerEl,
-    size: 0,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
       console.debug(`[Group] Register: (${panel.id}) => [${[...ref.panels.keys()]}]`)
@@ -119,14 +118,6 @@ export function ResizableGroup({
       // Notify layout changed
       context.notify()
 
-      // Update maximized panel's size
-      requestAnimationFrame(() => {
-        const isCol = ref.direction === "col"
-        const panel = ref.panels.get(targetId)!
-        const el = panel.containerEl.current!
-        panel.size = isCol ? el.clientWidth : el.clientHeight
-      })
-
       return true
     },
     toggleMaximize: (targetId: string) => {
@@ -134,48 +125,11 @@ export function ResizableGroup({
         ref.maximizePanel(targetId)
       }
     },
-    onContainerResize: () => {
-      const isCol = ref.direction == "col"
-      const el = ref.containerEl.current!
-      const newSize = isCol ? el.clientWidth : el.clientHeight
-
-      if (ref.prevDrag || ref.size === newSize) return
-      console.debug("[Resize] Group>", { id: ref.id, oldSize: ref.size, newSize })
-      ref.size = newSize
-
-      const panels = [...ref.panels.values()]
-      for (const panel of panels) {
-        if (!panel.isCollapsed) {
-          const el = panel.containerEl.current!
-
-          const newSize = isCol ? el.clientWidth : el.clientHeight
-          console.debug("[Resize] Panel:", { id: panel.id, oldSize: panel.size, newSize: newSize })
-          panel.size = newSize
-        }
-      }
-
-      // Notify layout changed
-      context.notify()
-    },
   }).current
 
   useLayoutEffect(() => {
     context.registerGroup(ref)
     return () => context.unregisterGroup(ref.id)
-  }, [])
-
-  useLayoutEffect(() => {
-    const isCol = ref.direction == "col"
-    const el = ref.containerEl.current!
-
-    // Initialize Group size
-    ref.size = isCol ? el.clientWidth : el.clientHeight
-
-    const observer = new ResizeObserver((_) => {
-      ref.onContainerResize()
-    })
-    observer.observe(ref.containerEl.current!)
-    return () => observer.disconnect()
   }, [])
 
   const isCol = ref.direction === "col"

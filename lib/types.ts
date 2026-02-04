@@ -58,8 +58,6 @@ export interface GroupValue {
   handles: HandleValue[]
   // Ref of the ResizableGroup Element
   containerEl: RefObject<HTMLElement>
-  // content size of containerEl
-  size: number
   // State before Drag - [isCollapsed, size]
   prevDrag?: [boolean, number][]
   // State before Maximize - [isCollapsed, size]
@@ -83,8 +81,6 @@ export interface GroupValue {
   maximizePanel: (targetId: string) => boolean
   // Toggle maximize/restore panel
   toggleMaximize: (targetId: string) => void
-  // Called when group container size changes (or may have changed)
-  onContainerResize: () => void
 }
 
 export interface SavedGroupLayout {

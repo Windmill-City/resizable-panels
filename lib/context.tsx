@@ -262,7 +262,6 @@ export function adjustPanelByDelta(
     if (nextPanel && remaining > nextPanel.minSize / 2) {
       collapsedSpace += nextPanel.size
       nextPanel.isCollapsed = true
-      nextPanel.openSize = nextPanel.size
       nextPanel.size = 0
       console.debug("[Resizable] Collapsed Panel:", { panel: nextPanel.id, remaining })
       return true
@@ -378,26 +377,22 @@ export function adjustPanelByDelta(
     shrinkSequentially(panelsBefore, amount - collapsedSpace)
   }
 
+  // Check and shrink excess size if total exceeds container
+  const currTotalSize = panels.reduce((sum, panel) => sum + panel.size, 0)
+  let diff = currTotalSize - prevTotalSize
+  console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
+
   // Update maximized state
+  group.prevMaximize = undefined
   panels.forEach((p) => (p.isMaximized = false))
   const nonCollapsed = panels.filter((p) => !p.isCollapsed)
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
     if (panel.okMaximize) {
-      group.prevMaximize = group.prevDrag
       panel.isMaximized = true
-    }
-  } else if (nonCollapsed.length > 1) {
-    for (const panel of nonCollapsed) {
-      panel.isMaximized = false
-      group.prevMaximize = undefined
+      group.prevMaximize = group.prevDrag
     }
   }
-
-  // Check and shrink excess size if total exceeds container
-  const currTotalSize = panels.reduce((sum, panel) => sum + panel.size, 0)
-  let diff = currTotalSize - prevTotalSize
-  console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
   console.debug("[Resizable] Adjusted:", {
     group: group.id,
@@ -649,7 +644,6 @@ export function ResizableContext({
       const deltaX = e.clientX - ref.startPos.x
       const deltaY = e.clientY - ref.startPos.y
 
-      // Distribute size across the panel
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = [...group.panels.values()]
         const panelsBefore = panels.slice(0, index + 1).reverse()
@@ -676,7 +670,6 @@ export function ResizableContext({
 
       for (const [group] of ref.dragIndex.values()) {
         group.prevDrag = undefined
-        group.onContainerResize()
       }
 
       // Reset drag state

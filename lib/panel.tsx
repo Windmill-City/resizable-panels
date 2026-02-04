@@ -68,29 +68,34 @@ export function ResizablePanel({
     setDirty,
   }).current
 
-  const isCol = group.direction === "col"
-
   useLayoutEffect(() => {
     group.registerPanel(ref)
     return () => group.unregisterPanel(id)
   }, [])
 
   useLayoutEffect(() => {
-    const el = containerEl.current!
+    if (ref.isCollapsed) return
 
-    // Initialize size from actual DOM dimensions (content-box)
-    ref.size = isCol ? el.clientWidth : el.clientHeight
-    if (!ref.isCollapsed) ref.openSize = ref.size
-  }, [])
+    const el = ref.containerEl.current!
+    const isCol = group.direction === "col"
+
+    const newSize = isCol ? el.clientWidth : el.clientHeight
+
+    console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.openSize, newSize: newSize })
+    ref.size = newSize
+    ref.openSize = newSize
+  })
 
   let flexValue: string
-  if (group.ratio) {
-    flexValue = `${ref.size} ${ref.size} 0%`
-  } else if (ref.isMaximized || (ref.expand && !ref.isCollapsed)) {
+  if (ref.isMaximized || (ref.expand && !ref.isCollapsed)) {
     flexValue = `1 1 0%`
+  } else if (group.ratio) {
+    flexValue = `${ref.size} ${ref.size} 0%`
   } else {
     flexValue = `0 1 ${ref.size}px`
   }
+
+  const isCol = group.direction === "col"
 
   return (
     <PanelContext.Provider value={{ ...ref }}>
