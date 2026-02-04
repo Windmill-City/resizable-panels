@@ -66,6 +66,18 @@ export function ResizablePanel({
     isMaximized: false,
     containerEl,
     setDirty,
+    updateSizeFromDOM: () => {
+      if (ref.isCollapsed) return
+
+      const el = ref.containerEl.current!
+      const isCol = group.direction === "col"
+
+      const newSize = isCol ? el.offsetWidth : el.offsetHeight
+
+      console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.openSize, newSize: newSize })
+      ref.size = newSize
+      ref.openSize = newSize
+    },
   }).current
 
   useLayoutEffect(() => {
@@ -74,16 +86,7 @@ export function ResizablePanel({
   }, [])
 
   useLayoutEffect(() => {
-    if (ref.isCollapsed) return
-
-    const el = ref.containerEl.current!
-    const isCol = group.direction === "col"
-
-    const newSize = isCol ? el.offsetWidth : el.offsetHeight
-
-    console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.openSize, newSize: newSize })
-    ref.size = newSize
-    ref.openSize = newSize
+    ref.updateSizeFromDOM()
   })
 
   let flexValue: string

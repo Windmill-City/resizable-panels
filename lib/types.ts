@@ -113,6 +113,8 @@ export interface PanelValue {
   containerEl: RefObject<HTMLElement>
   // Trigger Re-render
   setDirty: () => void
+  // Update size from DOM
+  updateSizeFromDOM: () => void
 }
 
 export interface SavedPanelLayout {
