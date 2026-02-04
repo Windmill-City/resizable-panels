@@ -427,9 +427,12 @@ export function ResizableContext({
   const subscribers = useRef<Set<(context: ContextValue) => void>>(new Set())
   const contextRef = useRef<ContextValue | null>(null)
 
-  const notify = useCallback(() => {
-    subscribers.current.forEach((cb) => cb(contextRef.current!))
-  }, [])
+  const notify = useCallback(
+    useDebounce(() => {
+      subscribers.current.forEach((cb) => cb(contextRef.current!))
+    }),
+    [],
+  )
 
   const subscribe = useCallback((callback: (context: ContextValue) => void) => {
     subscribers.current.add(callback)
@@ -676,9 +679,6 @@ export function ResizableContext({
       // Reset drag state
       ref.isDragging = false
       ref.dragIndex = new Map()
-
-      // Notify layout changed
-      ref.notify()
     }
 
     let deferredClick: ReturnType<typeof setTimeout> | null = null
@@ -759,12 +759,8 @@ export function ResizableContext({
   }, [])
 
   // Update hover state after layout changed
-  const deferredUpdate = useDebounce((context) => {
-    context.updateHoverState(context.prevPos)
-  }, 250)
-
   useEffect(() => {
-    const unsubscribe = subscribe(deferredUpdate)
+    const unsubscribe = subscribe((_) => ref.updateHoverState(ref.prevPos))
     return () => {
       unsubscribe()
     }

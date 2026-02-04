@@ -61,9 +61,6 @@ export function ResizableGroup({
       adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
 
       ref.prevDrag = undefined
-
-      // Notify layout changed
-      context.notify()
     },
     restorePanels: () => {
       if (!ref.prevMaximize) return false
@@ -79,9 +76,6 @@ export function ResizableGroup({
       ref.prevMaximize = undefined
 
       for (const panel of panels) panel.setDirty()
-
-      // Notify layout changed
-      context.notify()
 
       return true
     },
@@ -115,9 +109,6 @@ export function ResizableGroup({
         targetId,
       })
 
-      // Notify layout changed
-      context.notify()
-
       return true
     },
     toggleMaximize: (targetId: string) => {
@@ -137,7 +128,6 @@ export function ResizableGroup({
       for (const panel of ref.panels.values()) {
         panel.setDirty()
       }
-      context.notify()
     })
     observer.observe(ref.containerEl.current!)
     return () => observer.disconnect()

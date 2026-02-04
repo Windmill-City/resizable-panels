@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useId, useLayoutEffect, useReducer, useRef } from "react"
+import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
 import type { PanelValue, ResizablePanelProps } from "./types"
 
@@ -26,6 +27,7 @@ export function ResizablePanel({
   collapsed = false,
   okMaximize = false,
 }: ResizablePanelProps) {
+  const context = useResizableContext()
   const group = useGroupContext()
   const [, setDirty] = useReducer(() => ({}), {})
 
@@ -77,6 +79,8 @@ export function ResizablePanel({
       console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.openSize, newSize: newSize })
       ref.size = newSize
       ref.openSize = newSize
+
+      context.notify()
     },
   }).current
 
