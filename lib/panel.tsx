@@ -58,14 +58,16 @@ export function ResizablePanel({
   const ref = useRef<PanelValue>({
     id,
     size: collapsed ? 0 : defaultSize,
+    openSize: defaultSize,
+    expand,
     minSize,
     maxSize,
-    expand,
-    openSize: defaultSize,
     collapsible,
     isCollapsed: collapsed,
     okMaximize,
     isMaximized: false,
+    prevDrag: [collapsed, defaultSize],
+    prevMaximize: [collapsed, defaultSize],
     containerEl,
     setDirty,
     updateSizeFromDOM: () => {
