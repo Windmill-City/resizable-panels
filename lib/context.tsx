@@ -664,8 +664,8 @@ export function ResizableContext({
 
   // Update hover state after layout changed
   useEffect(() => {
-    const unsubscribe = subscribe((_) => {
-      if (!ref.isDragging) ref.updateHoverState(ref.movePos)
+    const unsubscribe = subscribe((context) => {
+      if (!context.isDragging) context.updateHoverState(context.movePos)
     })
     return () => {
       unsubscribe()
