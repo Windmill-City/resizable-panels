@@ -178,7 +178,7 @@ export interface PanelProps {
   children?: ReactNode
   // CSS class name
   className?: string
-  // Grow/Shirk when Group Size Change?
+  // Grow/shirk when group size change?
   expand?: boolean
   // Minimum Size (px)
   minSize?: number
@@ -186,11 +186,11 @@ export interface PanelProps {
   maxSize?: number
   // Default size (px)
   defaultSize?: number
-  // Allow Collapse?
+  // Allow collapse?
   collapsible?: boolean
   // Initial collapsed state?
   collapsed?: boolean
-  // Allow Maximize?
+  // Allow maximize?
   okMaximize?: boolean
 }
 
