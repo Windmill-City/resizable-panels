@@ -40,8 +40,8 @@ export interface ContextValue {
   dragIndex: [GroupValue, number][]
   // Index of the resize handle (edge) being hover
   hoverIndex: [GroupValue, number][]
-  // Update hover state based on mouse point
-  updateHoverState: (point: Point) => void
+  // Update hover state based on movePos
+  updateHoverState: () => void
 }
 
 export interface GroupValue {

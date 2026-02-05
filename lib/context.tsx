@@ -6,9 +6,8 @@ import type {
   ContextValue,
   GroupValue,
   PanelValue,
-  Point,
   SavedGroupState,
-  SavedPanelState,
+  SavedPanelState
 } from "./types"
 import { useDebounce } from "./utils"
 
@@ -466,8 +465,10 @@ export function ResizableContext({
     downPos: { x: 0, y: 0 },
     dragIndex: [],
     hoverIndex: [],
-    updateHoverState: (point: Point) => {
-      const handles = findEdgeIndexAtPoint(ref.groups, point)
+    updateHoverState: () => {
+      if (ref.isDragging) return
+
+      const handles = findEdgeIndexAtPoint(ref.groups, ref.movePos)
 
       // Update hover state
       for (const [group, index] of ref.hoverIndex) {
@@ -490,10 +491,10 @@ export function ResizableContext({
       const windowWidth = window.innerWidth
       const windowHeight = window.innerHeight
       if (
-        point.x < WINDOW_EDGE_MARGIN ||
-        point.x > windowWidth - WINDOW_EDGE_MARGIN ||
-        point.y < WINDOW_EDGE_MARGIN ||
-        point.y > windowHeight - WINDOW_EDGE_MARGIN
+        ref.movePos.x < WINDOW_EDGE_MARGIN ||
+        ref.movePos.x > windowWidth - WINDOW_EDGE_MARGIN ||
+        ref.movePos.y < WINDOW_EDGE_MARGIN ||
+        ref.movePos.y > windowHeight - WINDOW_EDGE_MARGIN
       ) {
         return
       }
@@ -551,9 +552,9 @@ export function ResizableContext({
 
     const handleMouseMove = (e: MouseEvent) => {
       ref.movePos = { x: e.clientX, y: e.clientY }
+      ref.updateHoverState()
 
       if (!ref.isDragging) {
-        ref.updateHoverState({ x: e.clientX, y: e.clientY })
         return
       }
 
@@ -626,12 +627,12 @@ export function ResizableContext({
         deferredClick = null
       }
 
-      const edges = findEdgeIndexAtPoint(ref.groups, {
+      const handles = findEdgeIndexAtPoint(ref.groups, {
         x: e.clientX,
         y: e.clientY,
       })
 
-      for (const [group, index] of edges.values()) {
+      for (const [group, index] of handles.values()) {
         const handle = group.handles.at(index)
         if (handle && handle.onDoubleClick) {
           handle.onDoubleClick()
@@ -640,6 +641,7 @@ export function ResizableContext({
     }
 
     const handleMouseLeave = (_: MouseEvent) => {
+      if (ref.isDragging) return
       // Update hover state
       for (const [group, index] of ref.hoverIndex.values()) {
         const handle = group.handles.at(index)
@@ -673,7 +675,7 @@ export function ResizableContext({
   // Update hover state after layout changed
   useEffect(() => {
     const unsubscribe = subscribe((context) => {
-      if (!context.isDragging) context.updateHoverState(context.movePos)
+      context.updateHoverState()
     })
     return () => {
       unsubscribe()
