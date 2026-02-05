@@ -88,6 +88,7 @@ export function ResizablePanel({
 
   useLayoutEffect(() => {
     group.registerPanel(ref)
+    return group.unregisterPanel(ref.id)
   }, [])
 
   useLayoutEffect(() => {

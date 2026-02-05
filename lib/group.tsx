@@ -37,9 +37,17 @@ export function ResizableGroup({
       ref.panels.set(panel.id, panel)
       console.debug(`[Group] Register: (${panel.id}) => [${[...ref.panels.keys()]}]`)
     },
+    unregisterPanel: (panelId: string) => {
+      ref.panels.delete(panelId)
+      console.debug(`[Group] Unregister: (${panelId}) => [${[...ref.panels.keys()]}]`)
+    },
     registerHandle: (handle: HandleValue) => {
       ref.handles = [...ref.handles, handle]
       console.debug("[Group] Register handle:", handle.id)
+    },
+    unregisterHandle: (handleId: string) => {
+      ref.handles = ref.handles.filter((h) => h.id != handleId)
+      console.debug("[Group] Unregister handle:", handleId)
     },
     dragHandle: (delta: number, index: number) => {
       console.debug("[Group] dragHandle:", { delta, index })
@@ -114,6 +122,7 @@ export function ResizableGroup({
 
   useLayoutEffect(() => {
     context.registerGroup(ref)
+    return () => context.unregisterGroup(ref.id)
   }, [])
 
   useLayoutEffect(() => {

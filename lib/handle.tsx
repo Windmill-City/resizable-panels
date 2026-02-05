@@ -29,6 +29,7 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
 
   useLayoutEffect(() => {
     group.registerHandle(ref)
+    return group.unregisterHandle(ref.id)
   }, [])
 
   return (

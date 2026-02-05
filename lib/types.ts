@@ -16,6 +16,8 @@ export interface ContextValue {
   groups: Map<string, GroupValue>
   // Register group
   registerGroup: (group: GroupValue) => void
+  // Unregister group
+  unregisterGroup: (groupId: string) => void
   // Subscribe to layout changes
   subscribe: (callback: (context: ContextValue) => void) => () => void
   // Notify listeners on layout changes
@@ -61,8 +63,12 @@ export interface GroupValue {
   isMaximized: boolean
   // Register panel
   registerPanel: (panel: PanelValue) => void
-  // Register handle
+  // Unregister Panel
+  unregisterPanel: (id: string) => void
+  // Register Handle
   registerHandle: (handle: HandleValue) => void
+  // Unregister Handle
+  unregisterHandle: (id: string) => void
   // Drag panel by delta at given handle index
   // Delta < 0, drag left/top, delta > 0 drag right/bottom
   dragHandle: (delta: number, index: number) => void
