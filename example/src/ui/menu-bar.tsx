@@ -115,7 +115,7 @@ const MenuBar = ({ children }: MenuBarProps) => {
         <div className="w-px h-4 bg-border mx-1" />
         <button
           onClick={() => {
-            localStorage.removeItem("resizable-panels-layout")
+            localStorage.removeItem("resizable-panels-state")
             window.location.reload()
           }}
           className="p-1.5 rounded transition-colors hover:bg-accent/50 text-muted-foreground hover:text-foreground"
