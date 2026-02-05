@@ -135,10 +135,10 @@ export function ResizableGroup({
     return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
-    ref.direction = direction
-    ref.ratio = ratio
+  ref.direction = direction
+  ref.ratio = ratio
 
+  useEffect(() => {
     for (const panel of ref.panels.values()) {
       panel.setDirty()
     }
