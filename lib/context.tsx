@@ -1,7 +1,15 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
-import type { ContextProps, ContextValue, GroupValue, PanelValue, SavedGroupState, SavedPanelState } from "./types"
+import type {
+  ContextProps,
+  ContextValue,
+  GroupValue,
+  PanelValue,
+  Point,
+  SavedGroupState,
+  SavedPanelState,
+} from "./types"
 import { useDebounce } from "./utils"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
@@ -458,7 +466,7 @@ export function ResizableContext({
     downPos: { x: 0, y: 0 },
     dragIndex: [],
     hoverIndex: [],
-    updateHoverState: (point: { x: number; y: number }) => {
+    updateHoverState: (point: Point) => {
       const handles = findEdgeIndexAtPoint(ref.groups, point)
 
       // Update hover state
