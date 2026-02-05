@@ -18,19 +18,16 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
     onDoubleClick,
   }).current
 
-  // Update callback when it changes
-  useEffect(() => {
-    ref.onClick = onClick
-  }, [onClick])
-
-  useEffect(() => {
-    ref.onDoubleClick = onDoubleClick
-  }, [onDoubleClick])
-
   useLayoutEffect(() => {
     group.registerHandle(ref)
     return group.unregisterHandle(ref.id)
   }, [])
+
+  // Update callback when it changes
+  useEffect(() => {
+    ref.onClick = onClick
+    ref.onDoubleClick = onDoubleClick
+  }, [onClick, onDoubleClick])
 
   return (
     <div
