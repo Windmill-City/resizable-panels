@@ -71,11 +71,3 @@
   background-color: var(--rp-menu-bar-bg);
   border-color: var(--rp-border-color);
 }
-
-/* --------------------------------------------------------
-   Resize Handle
-   -------------------------------------------------------- */
-[data-resizable-handle][data-hover]::after,
-[data-resizable-handle]:hover::after {
-  background-color: var(--rp-handle-hover) !important;
-}

@@ -15,7 +15,7 @@ const ResizeHandle = ({ onClick, onDoubleClick }: ResizeHandleProps) => {
         // after base
         "after:absolute after:inset-0 after:content-['']",
         // :after style
-        "data-hover:after:bg-(--rp-handle-accent) after:transition-colors",
+        "data-hover:after:bg-(--rp-handle-hover) after:transition-colors",
         // row direction
         "data-[direction=row]:after:-translate-y-1/2",
         "data-[direction=row]:after:h-1",
