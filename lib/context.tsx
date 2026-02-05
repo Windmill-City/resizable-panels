@@ -438,22 +438,6 @@ export function ResizableContext({
         const panels = [...group.panels.values()]
         const { panels: savedPanels } = groupData
 
-        // Restore prevMaximize state from panels
-        const prevMaximize: [boolean, number][] = []
-        for (let i = 0; i < panels.length; i++) {
-          const saved = savedPanels[panels[i].id]
-          if (saved?.prevMaximize) {
-            prevMaximize[i] = saved.prevMaximize
-          }
-        }
-
-        console.assert(!prevMaximize.length || prevMaximize.length === panels.length, "[Context] Skipping group:", {
-          group: group.id,
-          panels,
-          prevMaximize,
-        })
-        if (prevMaximize.length > 0 && prevMaximize.length !== panels.length) continue
-
         group.isMaximized = groupData.isMaximized
 
         // Apply panel states (match by panel id)
@@ -590,8 +574,8 @@ export function ResizableContext({
         // Restore initial states
         for (let i = 0; i < panels.length; i++) {
           const panel = panels[i]
-          panel.isCollapsed = panel.prevDrag![0]
-          panel.size = panel.prevDrag![1]
+          panel.isCollapsed = panel.prevDrag[0]
+          panel.size = panel.prevDrag[1]
         }
 
         adjustPanelByDelta(panelsBefore, panelsAfter, delta, group)

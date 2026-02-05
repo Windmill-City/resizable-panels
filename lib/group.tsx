@@ -62,8 +62,8 @@ export function ResizableGroup({
 
       for (let i = 0; i < panels.length; i++) {
         const panel = panels[i]
-        panel.isCollapsed = panel.prevMaximize![0]
-        panel.size = panel.prevMaximize![1]
+        panel.isCollapsed = panel.prevMaximize[0]
+        panel.size = panel.prevMaximize[1]
         panel.isMaximized = false
       }
 

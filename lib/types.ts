@@ -111,9 +111,9 @@ export interface PanelValue {
   // Is maximized?
   isMaximized: boolean
   // State before drag - [isCollapsed, size]
-  prevDrag?: [boolean, number]
+  prevDrag: [boolean, number]
   // State before maximize - [isCollapsed, size]
-  prevMaximize?: [boolean, number]
+  prevMaximize: [boolean, number]
   // Ref of the ResizablePanel element
   containerEl: RefObject<HTMLElement>
   // Trigger Re-render
@@ -134,7 +134,7 @@ export interface SavedPanelState {
   // Is panel maximized
   isMaximized: boolean
   // State before maximize - [isCollapsed, size]
-  prevMaximize?: [boolean, number]
+  prevMaximize: [boolean, number]
 }
 
 export interface HandleValue {
