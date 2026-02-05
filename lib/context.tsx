@@ -454,16 +454,13 @@ export function ResizableContext({
     },
     isDragging: false,
     hasDragged: false,
-    movePos: { x: 0, y: 0 },
+    mousePos: { x: 0, y: 0 },
     downPos: { x: 0, y: 0 },
     dragIndex: [],
     hoverIndex: [],
     updateHoverState: () => {
       if (ref.isDragging) return
 
-      const handles = findEdgeIndexAtPoint(ref.groups, ref.movePos)
-
-      // Update hover state
       for (const [group, index] of ref.hoverIndex) {
         const handle = group.handles.at(index)
         if (handle) {
@@ -471,6 +468,12 @@ export function ResizableContext({
           handle.setDirty()
         }
       }
+
+      if (!ref.mousePos) return
+
+      const handles = findEdgeIndexAtPoint(ref.groups, ref.mousePos)
+
+      // Update hover state
       ref.hoverIndex = handles
       for (const [group, index] of ref.hoverIndex) {
         const handle = group.handles.at(index)
@@ -484,10 +487,10 @@ export function ResizableContext({
       const windowWidth = window.innerWidth
       const windowHeight = window.innerHeight
       if (
-        ref.movePos.x < WINDOW_EDGE_MARGIN ||
-        ref.movePos.x > windowWidth - WINDOW_EDGE_MARGIN ||
-        ref.movePos.y < WINDOW_EDGE_MARGIN ||
-        ref.movePos.y > windowHeight - WINDOW_EDGE_MARGIN
+        ref.mousePos.x < WINDOW_EDGE_MARGIN ||
+        ref.mousePos.x > windowWidth - WINDOW_EDGE_MARGIN ||
+        ref.mousePos.y < WINDOW_EDGE_MARGIN ||
+        ref.mousePos.y > windowHeight - WINDOW_EDGE_MARGIN
       ) {
         return
       }
@@ -544,7 +547,7 @@ export function ResizableContext({
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      ref.movePos = { x: e.clientX, y: e.clientY }
+      ref.mousePos = { x: e.clientX, y: e.clientY }
       ref.updateHoverState()
 
       if (!ref.isDragging) {
@@ -579,11 +582,14 @@ export function ResizableContext({
       if (!ref.isDragging) {
         return
       }
-      console.debug("[Context] DragEnd")
 
       // Reset drag state
       ref.isDragging = false
       ref.dragIndex = []
+
+      console.debug("[Context] DragEnd")
+
+      ref.updateHoverState()
     }
 
     let deferredClick: ReturnType<typeof setTimeout> | null = null
@@ -634,6 +640,7 @@ export function ResizableContext({
     }
 
     const handleMouseLeave = (_: MouseEvent) => {
+      ref.mousePos = undefined
       if (ref.isDragging) return
       // Update hover state
       for (const [group, index] of ref.hoverIndex.values()) {

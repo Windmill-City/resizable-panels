@@ -28,8 +28,8 @@ export interface ContextValue {
   isDragging: boolean
   // When true the handle was moved by dragging, reset on next mouse down
   hasDragged: boolean
-  // Latest mouse pos from mouse move event
-  movePos: Point
+  // Latest mouse pos from mouse move event, undefined when mouseleave
+  mousePos?: Point
   // Latest mouse pos from mouse down event
   downPos: Point
   // Index of the resize handle (edge) being dragged
