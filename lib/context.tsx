@@ -31,10 +31,8 @@ export const WINDOW_EDGE_MARGIN = 8
  *
  * @param groups - Map of group IDs to GroupValue objects
  * @param point - The point coordinates {x, y} to check (viewport coordinates)
- * @param ignoreWindowEdge - Whether to ignore window edge margin check
- *                           (used for double-click to allow edge detection near window borders)
- * @returns tuples of [GroupValue, handleIndex]. Handle index i represents
- *          the boundary between panel[i] and panel[i+1].
+ * @returns tuples of [GroupValue, handleIndex].
+ *          Handle index i represents the boundary between panel[i] and panel[i+1].
  */
 export function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
