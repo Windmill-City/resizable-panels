@@ -391,11 +391,6 @@ export function ResizableContext({
     return () => subscribers.current.delete(callback)
   }, [])
 
-  useEffect(() => {
-    if (!onStateChanged) return () => {}
-    return subscribe(onStateChanged)
-  }, [onStateChanged])
-
   const ref = useRef<ContextValue>({
     id,
     groups: new Map<string, GroupValue>(),
@@ -403,8 +398,6 @@ export function ResizableContext({
       ref.groups.set(group.id, group)
       console.debug(`[Context] Register (${group.id}) => [${[...ref.groups.keys()]}]`)
     },
-    onContextMount,
-    onStateChanged,
     subscribe,
     notify,
     getState: () => {
@@ -680,10 +673,14 @@ export function ResizableContext({
   }, [])
 
   useLayoutEffect(() => {
-    if (ref.onContextMount) {
-      ref.onContextMount(ref)
-    }
+    if (!onContextMount) return
+    onContextMount(ref)
   }, [])
+
+  useEffect(() => {
+    if (!onStateChanged) return () => {}
+    return subscribe(useDebounce(onStateChanged, 250))
+  }, [onStateChanged])
 
   return (
     <ResizableContextType.Provider value={ref}>

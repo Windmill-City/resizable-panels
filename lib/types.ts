@@ -16,10 +16,6 @@ export interface ContextValue {
   groups: Map<string, GroupValue>
   // Register group
   registerGroup: (group: GroupValue) => void
-  // Context mount - load saved state
-  onContextMount?: (context: ContextValue) => void
-  // State changed - save changed state
-  onStateChanged?: (context: ContextValue) => void
   // Subscribe to layout changes
   subscribe: (callback: (context: ContextValue) => void) => () => void
   // Notify listeners on layout changes
