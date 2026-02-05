@@ -13,14 +13,14 @@
      Panel Background Colors
      -------------------------------------------------------- */
   --rp-menu-bar-bg: #c4b7d7;
-  --rp-activity-bar-bg: #EDEDF5;
+  --rp-activity-bar-bg: #ededf5;
   --rp-status-bar-bg: #705697;
   --rp-handle-hover: #9769dc;
   --rp-border-color: #cccccc;
-  --rp-panel-left-bg: #F2F2F2;
-  --rp-editor-bg: #F5F5F5;
-  --rp-panel-right-bg: #F2F2F2;
-  --rp-panel-bottom-bg: #F5F5F5;
+  --rp-panel-left-bg: #f2f2f2;
+  --rp-editor-bg: #f5f5f5;
+  --rp-panel-right-bg: #f2f2f2;
+  --rp-panel-bottom-bg: #f5f5f5;
 }
 
 /* ============================================================
@@ -75,7 +75,7 @@
 /* --------------------------------------------------------
    Resize Handle
    -------------------------------------------------------- */
-[data-resizable-handle][data-hover="true"]::after,
+[data-resizable-handle][data-hover]::after,
 [data-resizable-handle]:hover::after {
   background-color: var(--rp-handle-hover) !important;
 }
