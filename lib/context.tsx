@@ -1,14 +1,7 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
-import type {
-  ContextProps,
-  ContextValue,
-  GroupValue,
-  PanelValue,
-  SavedGroupState,
-  SavedPanelState
-} from "./types"
+import type { ContextProps, ContextValue, GroupValue, PanelValue, SavedGroupState, SavedPanelState } from "./types"
 import { useDebounce } from "./utils"
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
@@ -51,8 +44,8 @@ export function findEdgeIndexAtPoint(
     const margin = HANDLE_SIZE / 2
     const rect = group.containerEl.current!.getBoundingClientRect()
 
-    // Skip if parent collapsed
-    if (group.parent?.isCollapsed) continue
+    // Skip if group collapsed
+    if (rect.width * rect.height) continue
 
     // Skip if point is not within group bounds (with margin)
     if (

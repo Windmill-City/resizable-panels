@@ -45,8 +45,6 @@ export interface ContextValue {
 }
 
 export interface GroupValue {
-  // Parent panel
-  parent?: PanelValue
   // Unique identifier
   id: string
   // Direction of the resizable group
