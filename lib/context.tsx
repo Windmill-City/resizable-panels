@@ -1,49 +1,8 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
-import type {
-  ContextValue,
-  Direction,
-  GroupValue,
-  PanelValue,
-  ResizableContextProps,
-  SavedGroupLayout,
-  SavedPanelLayout,
-} from "./types"
+import type { ContextProps, ContextValue, GroupValue, PanelValue, SavedGroupState, SavedPanelState } from "./types"
 import { useDebounce } from "./utils"
-
-/**
- * Validate if the loaded data matches SavedPanelLayout format
- */
-function isValidSavedPanelLayout(data: unknown): data is SavedPanelLayout {
-  if (typeof data !== "object" || data === null) return false
-  const p = data as Record<string, unknown>
-  return (
-    typeof p.id === "string" &&
-    typeof p.size === "number" &&
-    typeof p.openSize === "number" &&
-    typeof p.isCollapsed === "boolean" &&
-    typeof p.isMaximized === "boolean" &&
-    (p.prevMaximize === undefined ||
-      (Array.isArray(p.prevMaximize) &&
-        p.prevMaximize.length === 2 &&
-        typeof p.prevMaximize[0] === "boolean" &&
-        typeof p.prevMaximize[1] === "number"))
-  )
-}
-
-/**
- * Validate if the loaded data matches SavedGroupLayout format
- */
-function isValidSavedGroupLayout(data: unknown): data is SavedGroupLayout {
-  if (typeof data !== "object" || data === null) return false
-  const g = data as Record<string, unknown>
-  if (typeof g.panels !== "object" || g.panels === null) return false
-  for (const panel of Object.values(g.panels)) {
-    if (!isValidSavedPanelLayout(panel)) return false
-  }
-  return true
-}
 
 export const ResizableContextType = createContext<ContextValue | null>(null)
 
@@ -74,22 +33,21 @@ export const WINDOW_EDGE_MARGIN = 8
  * @param point - The point coordinates {x, y} to check (viewport coordinates)
  * @param ignoreWindowEdge - Whether to ignore window edge margin check
  *                           (used for double-click to allow edge detection near window borders)
- * @returns A Map where keys are directions ("row" | "col") and
- *          values are tuples of [GroupValue, edgeIndex]. Edge index i represents
+ * @returns tuples of [GroupValue, handleIndex]. Handle index i represents
  *          the boundary between panel[i] and panel[i+1].
  */
 export function findEdgeIndexAtPoint(
   groups: Map<string, GroupValue>,
   point: { x: number; y: number },
-): Map<Direction, [GroupValue, number]> {
-  const result = new Map<Direction, [GroupValue, number]>()
+): [GroupValue, number][] {
+  let result: [GroupValue, number][] = []
 
   for (const group of groups.values()) {
     const margin = HANDLE_SIZE / 2
     const rect = group.containerEl.current!.getBoundingClientRect()
 
-    // Skip if group collapsed
-    if (rect.height * rect.width === 0) continue
+    // Skip if parent collapsed
+    if (group.parent?.isCollapsed) continue
 
     // Skip if point is not within group bounds (with margin)
     if (
@@ -113,7 +71,7 @@ export function findEdgeIndexAtPoint(
         const rect = el.getBoundingClientRect()
         const edgeY = rect.bottom
         if (Math.abs(point.y - edgeY) <= margin) {
-          result.set("row", [group, i])
+          result = [...result, [group, i]]
           break
         }
       }
@@ -127,7 +85,7 @@ export function findEdgeIndexAtPoint(
         const rect = el.getBoundingClientRect()
         const edgeX = rect.right
         if (Math.abs(point.x - edgeX) <= margin) {
-          result.set("col", [group, i])
+          result = [...result, [group, i]]
           break
         }
       }
@@ -235,11 +193,6 @@ export function adjustPanelByDelta(
   delta: number,
   group: GroupValue,
 ): void {
-  // Sanity Check
-  if (!group.prevDrag) {
-    throw new Error("[Resizable] prevDrag is not initialized")
-  }
-
   console.debug("[Resizable] Panels:", {
     panelsBefore,
     panelsAfter,
@@ -384,14 +337,15 @@ export function adjustPanelByDelta(
   console.assert(diff === 0, `[Resizable] Group size changed while resizing: ${diff}`)
 
   // Update maximized state
-  group.prevMaximize = undefined
+  group.isMaximized = false
   panels.forEach((p) => (p.isMaximized = false))
   const nonCollapsed = panels.filter((p) => !p.isCollapsed)
   if (nonCollapsed.length === 1) {
     const panel = nonCollapsed[0]
     if (panel.okMaximize) {
       panel.isMaximized = true
-      group.prevMaximize = group.prevDrag
+      panel.prevMaximize = panel.prevDrag
+      group.isMaximized = true
     }
   }
 
@@ -418,9 +372,9 @@ export function ResizableContext({
   id: idProp,
   children,
   className = undefined,
-  onLayoutMount,
-  onLayoutChanged,
-}: ResizableContextProps) {
+  onContextMount,
+  onStateChanged,
+}: ContextProps) {
   const id = idProp ?? useId()
 
   // Store subscribers
@@ -440,9 +394,9 @@ export function ResizableContext({
   }, [])
 
   useEffect(() => {
-    if (!onLayoutChanged) return () => {}
-    return subscribe(onLayoutChanged)
-  }, [onLayoutChanged])
+    if (!onStateChanged) return () => {}
+    return subscribe(onStateChanged)
+  }, [onStateChanged])
 
   const ref = useRef<ContextValue>({
     id,
@@ -451,18 +405,14 @@ export function ResizableContext({
       ref.groups.set(group.id, group)
       console.debug(`[Context] Register (${group.id}) => [${[...ref.groups.keys()]}]`)
     },
-    unregisterGroup: (groupId: string) => {
-      ref.groups.delete(groupId)
-      console.debug(`[Context] Unregister: (${groupId}) => [${[...ref.groups.keys()]}]`)
-    },
-    onLayoutMount,
-    onLayoutChanged,
+    onContextMount,
+    onStateChanged,
     subscribe,
     notify,
-    saveLayout: () => {
-      const layout: Record<string, SavedGroupLayout> = {}
+    getState: () => {
+      const state: Record<string, SavedGroupState> = {}
       for (const [groupId, group] of ref.groups) {
-        const panels: Record<string, SavedPanelLayout> = {}
+        const panels: Record<string, SavedPanelState> = {}
         const panelEntries = [...group.panels.entries()]
         for (let i = 0; i < panelEntries.length; i++) {
           const [panelId, p] = panelEntries[i]
@@ -472,34 +422,14 @@ export function ResizableContext({
             openSize: p.openSize,
             isCollapsed: p.isCollapsed,
             isMaximized: p.isMaximized,
-            prevMaximize: group.prevMaximize?.[i],
+            prevMaximize: p.prevMaximize,
           }
         }
-        layout[groupId] = { panels }
+        state[groupId] = { isMaximized: group.isMaximized, panels }
       }
-      return layout
+      return state
     },
-    loadLayout: (json: string | null) => {
-      if (!json) return null
-      try {
-        const parsed = JSON.parse(json)
-        if (typeof parsed !== "object" || parsed === null) {
-          console.error("[Context] Invalid layout format: not an object")
-          return null
-        }
-        for (const [groupId, groupData] of Object.entries(parsed)) {
-          if (!isValidSavedGroupLayout(groupData)) {
-            console.error(`[Context] Invalid layout format for group: ${groupId}`)
-            return null
-          }
-        }
-        return parsed as Record<string, SavedGroupLayout>
-      } catch (e) {
-        console.error("[Context] Failed to load layout:", e)
-        return null
-      }
-    },
-    applyLayout: (layout: Record<string, SavedGroupLayout> | null) => {
+    setState: (layout: Record<string, SavedGroupState> | null) => {
       if (!layout) return
       for (const [groupId, groupData] of Object.entries(layout)) {
         const group = ref.groups.get(groupId)
@@ -524,7 +454,7 @@ export function ResizableContext({
         })
         if (prevMaximize.length > 0 && prevMaximize.length !== panels.length) continue
 
-        group.prevMaximize = prevMaximize.length > 0 ? prevMaximize : undefined
+        group.isMaximized = groupData.isMaximized
 
         // Apply panel states (match by panel id)
         for (const panel of panels) {
@@ -537,6 +467,7 @@ export function ResizableContext({
           panel.openSize = saved.openSize
           panel.isCollapsed = saved.isCollapsed
           panel.isMaximized = saved.isMaximized
+          panel.prevMaximize = saved.prevMaximize
         }
 
         // Trigger re-render for all panels
@@ -548,23 +479,23 @@ export function ResizableContext({
     },
     isDragging: false,
     hasDragged: false,
-    prevPos: { x: 0, y: 0 },
-    startPos: { x: 0, y: 0 },
-    dragIndex: new Map(),
-    hoverIndex: new Map(),
+    movePos: { x: 0, y: 0 },
+    downPos: { x: 0, y: 0 },
+    dragIndex: [],
+    hoverIndex: [],
     updateHoverState: (point: { x: number; y: number }) => {
-      const edges = findEdgeIndexAtPoint(ref.groups, point)
+      const handles = findEdgeIndexAtPoint(ref.groups, point)
 
       // Update hover state
-      for (const [group, index] of ref.hoverIndex.values()) {
+      for (const [group, index] of ref.hoverIndex) {
         const handle = group.handles.at(index)
         if (handle) {
           handle.isHover = false
           handle.setDirty()
         }
       }
-      ref.hoverIndex = edges
-      for (const [group, index] of ref.hoverIndex.values()) {
+      ref.hoverIndex = handles
+      for (const [group, index] of ref.hoverIndex) {
         const handle = group.handles.at(index)
         if (handle) {
           handle.isHover = true
@@ -585,15 +516,15 @@ export function ResizableContext({
       }
 
       // Update cursor
-      switch (edges.size) {
+      switch (handles.length) {
         case 0:
           // No edge: show default
           document.body.style.cursor = ""
           break
         case 1:
-          const direction = edges.keys().next().value!
+          const item = handles[0]
           // Single edge: show bidirectional arrow
-          document.body.style.cursor = direction === "row" ? "ns-resize" : "ew-resize"
+          document.body.style.cursor = item[0].direction === "row" ? "ns-resize" : "ew-resize"
           break
         case 2:
           // Two edges (intersection): show crosshair
@@ -607,25 +538,25 @@ export function ResizableContext({
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
-      ref.startPos = { x: e.clientX, y: e.clientY }
+      ref.downPos = { x: e.clientX, y: e.clientY }
 
-      const edges = findEdgeIndexAtPoint(ref.groups, {
+      const handles = findEdgeIndexAtPoint(ref.groups, {
         x: e.clientX,
         y: e.clientY,
       })
-      if (edges.size) {
-        ref.dragIndex = edges
+      if (handles.length) {
+        ref.dragIndex = handles
         ref.isDragging = true
         ref.hasDragged = false
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
-          group.prevDrag = [...group.panels.values()].map((p) => [p.isCollapsed, p.size])
+          ;[...group.panels.values()].forEach((p) => (p.prevDrag = [p.isCollapsed, p.size]))
         }
 
         console.debug("[Context] DragStart", {
-          startPos: ref.startPos,
-          dragIndex: [...edges.entries()].map(([direction, [group, index]]) => ({
+          startPos: ref.downPos,
+          dragIndex: [...handles.entries()].map(([direction, [group, index]]) => ({
             direction,
             groupId: group.id,
             index,
@@ -636,7 +567,7 @@ export function ResizableContext({
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      ref.prevPos = { x: e.clientX, y: e.clientY }
+      ref.movePos = { x: e.clientX, y: e.clientY }
 
       if (!ref.isDragging) {
         ref.updateHoverState({ x: e.clientX, y: e.clientY })
@@ -645,8 +576,8 @@ export function ResizableContext({
 
       ref.hasDragged = true
 
-      const deltaX = e.clientX - ref.startPos.x
-      const deltaY = e.clientY - ref.startPos.y
+      const deltaX = e.clientX - ref.downPos.x
+      const deltaY = e.clientY - ref.downPos.y
 
       for (const [group, index] of ref.dragIndex.values()) {
         const panels = [...group.panels.values()]
@@ -658,8 +589,9 @@ export function ResizableContext({
 
         // Restore initial states
         for (let i = 0; i < panels.length; i++) {
-          panels[i].isCollapsed = group.prevDrag![i][0]
-          panels[i].size = group.prevDrag![i][1]
+          const panel = panels[i]
+          panel.isCollapsed = panel.prevDrag![0]
+          panel.size = panel.prevDrag![1]
         }
 
         adjustPanelByDelta(panelsBefore, panelsAfter, delta, group)
@@ -672,13 +604,9 @@ export function ResizableContext({
       }
       console.debug("[Context] DragEnd")
 
-      for (const [group] of ref.dragIndex.values()) {
-        group.prevDrag = undefined
-      }
-
       // Reset drag state
       ref.isDragging = false
-      ref.dragIndex = new Map()
+      ref.dragIndex = []
     }
 
     let deferredClick: ReturnType<typeof setTimeout> | null = null
@@ -737,7 +665,7 @@ export function ResizableContext({
           handle.setDirty()
         }
       }
-      ref.hoverIndex = new Map()
+      ref.hoverIndex = []
     }
 
     document.addEventListener("mouseleave", handleMouseLeave)
@@ -762,7 +690,7 @@ export function ResizableContext({
   // Update hover state after layout changed
   useEffect(() => {
     const unsubscribe = subscribe((_) => {
-      if (!ref.isDragging) ref.updateHoverState(ref.prevPos)
+      if (!ref.isDragging) ref.updateHoverState(ref.movePos)
     })
     return () => {
       unsubscribe()
@@ -770,8 +698,8 @@ export function ResizableContext({
   }, [])
 
   useLayoutEffect(() => {
-    if (ref.onLayoutMount) {
-      ref.onLayoutMount(ref)
+    if (ref.onContextMount) {
+      ref.onContextMount(ref)
     }
   }, [])
 

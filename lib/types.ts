@@ -2,114 +2,119 @@ import { ReactNode, RefObject } from "react"
 
 export type Direction = "row" | "col"
 
+export type Point = {
+  x: number
+  y: number
+}
+
+export type SavedContextState = Record<string, SavedGroupState>
+
 export interface ContextValue {
-  // Unique Identifier
+  // Unique identifier
   id: string
-  // Groups in the Context
+  // Groups in the context
   groups: Map<string, GroupValue>
-  // Register Group
+  // Register group
   registerGroup: (group: GroupValue) => void
-  // Unregister Group
-  unregisterGroup: (id: string) => void
-  // Layout Mount - Load saved data
-  onLayoutMount?: (context: ContextValue) => void
-  // Layout Changed - Save changed layout
-  onLayoutChanged?: (context: ContextValue) => void
+  // Context mount - load saved state
+  onContextMount?: (context: ContextValue) => void
+  // State changed - save changed state
+  onStateChanged?: (context: ContextValue) => void
   // Subscribe to layout changes
   subscribe: (callback: (context: ContextValue) => void) => () => void
-  // Notify all subscribers
+  // Notify listeners on layout changes
   notify: () => void
-  // Save current layout to Record object
-  saveLayout: () => Record<string, SavedGroupLayout>
-  // Load layout from JSON string
-  loadLayout: (json: string | null) => Record<string, SavedGroupLayout> | null
-  // Apply loaded layout to groups
-  applyLayout: (layout: Record<string, SavedGroupLayout> | null) => void
-  // Is Dragging Panels?
+  // get current context state
+  getState: () => SavedContextState
+  // Apply loaded state to groups
+  setState: (state: SavedContextState | null) => void
+  // When true the mouse is pressing handle(s)
   isDragging: boolean
-  // hasDragged?
+  // When true the handle was moved by dragging, reset on next mouse down
   hasDragged: boolean
-  // Previous Mouse Pos
-  prevPos: { x: number; y: number }
-  // Drag Start Pos
-  startPos: { x: number; y: number }
+  // Latest mouse pos from mouse move event
+  movePos: Point
+  // Latest mouse pos from mouse down event
+  downPos: Point
   // Index of the resize handle (edge) being dragged
   // For panels [P0, P1], edges are indexed as:
   //    V - Edge Index: 0 (drag handle between P0 and P1)
   // |P0|P1|
   //    0  1   (edge positions)
-  dragIndex: Map<Direction, [GroupValue, number]>
+  dragIndex: [GroupValue, number][]
   // Index of the resize handle (edge) being hover
-  hoverIndex: Map<Direction, [GroupValue, number]>
+  hoverIndex: [GroupValue, number][]
   // Update hover state based on mouse point
-  updateHoverState: (point: { x: number; y: number }) => void
+  updateHoverState: (point: Point) => void
 }
 
 export interface GroupValue {
-  // Unique Identifier
+  // Parent panel
+  parent?: PanelValue
+  // Unique identifier
   id: string
-  // Direction of the Resizable Group
+  // Direction of the resizable group
   direction: Direction
   // Use ratio mode for flex layout?
   ratio: boolean
-  // Panels in the Group
+  // Panels in the group
   panels: Map<string, PanelValue>
-  // Handles in the Group
+  // Handles in the group
   handles: HandleValue[]
-  // Ref of the ResizableGroup Element
+  // Ref of the ResizableGroup element
   containerEl: RefObject<HTMLElement>
-  // State before Drag - [isCollapsed, size]
-  prevDrag?: [boolean, number][]
-  // State before Maximize - [isCollapsed, size]
-  prevMaximize?: [boolean, number][]
-  // Register Panel
+  // Is maximized?
+  isMaximized: boolean
+  // Register panel
   registerPanel: (panel: PanelValue) => void
-  // Unregister Panel
-  unregisterPanel: (id: string) => void
-  // Register Handle
+  // Register handle
   registerHandle: (handle: HandleValue) => void
-  // Unregister Handle
-  unregisterHandle: (id: string) => void
   // Drag panel by delta at given handle index
-  // delta < 0, drag left/top, delta > 0 drag right/bottom
+  // Delta < 0, drag left/top, delta > 0 drag right/bottom
   dragHandle: (delta: number, index: number) => void
   // Restore all panels to their previous state before maximization
-  // retrun if restored
+  // Return if restored
   restorePanels: () => boolean
   // Maximize a specific panel by collapsing all others
-  // retrun if maximized
+  // Return if maximized
   maximizePanel: (targetId: string) => boolean
   // Toggle maximize/restore panel
   toggleMaximize: (targetId: string) => void
 }
 
-export interface SavedGroupLayout {
+export interface SavedGroupState {
+  // Is maximized?
+  isMaximized: boolean
   // Panels in the group (keyed by panel id)
-  panels: Record<string, SavedPanelLayout>
+  panels: Record<string, SavedPanelState>
 }
 
 export interface PanelValue {
-  // Unique Identifier
+  // Unique identifier
   id: string
-  // Active Size (px)
+  // Active size (px)
   size: number
-  // Size before Collapse (px)
+  // Size before collapse (px)
   openSize: number
-  // Grow/Shirk when Group Size Change?
+  // Grow/shirk when group size change?
   expand?: boolean
-  // Minimum Size (px)
+  // Minimum size (px)
   minSize: number
-  // Maximum Size (px)
+  // Maximum size (px)
   maxSize: number
-  // Allow Collapse?
+  // Allow collapse?
   collapsible: boolean
-  // Is Collapsed?
+  // Is collapsed?
   isCollapsed: boolean
-  // Allow Maximize?
+  // Allow maximize?
   okMaximize: boolean
-  // Is Maximized?
+  // Is maximized?
   isMaximized: boolean
-  // Ref of the ResizablePanel Element
+  // State before drag - [isCollapsed, size]
+  prevDrag?: [boolean, number]
+  // State before maximize - [isCollapsed, size]
+  prevMaximize?: [boolean, number]
+  // Ref of the ResizablePanel element
   containerEl: RefObject<HTMLElement>
   // Trigger Re-render
   setDirty: () => void
@@ -117,12 +122,12 @@ export interface PanelValue {
   updateSizeFromDOM: () => void
 }
 
-export interface SavedPanelLayout {
-  // Unique Identifier
+export interface SavedPanelState {
+  // Unique identifier
   id: string
-  // Active Size (px)
+  // Active size (px)
   size: number
-  // Size before Collapse (px)
+  // Size before collapse (px)
   openSize: number
   // Is panel collapsed
   isCollapsed: boolean
@@ -133,9 +138,9 @@ export interface SavedPanelLayout {
 }
 
 export interface HandleValue {
-  // Unique Identifier
+  // Unique identifier
   id: string
-  // Is Mouse Hovered
+  // Is mouse hovered
   isHover: boolean
   // Trigger Re-render
   setDirty: () => void
@@ -145,58 +150,58 @@ export interface HandleValue {
   onDoubleClick?: () => void
 }
 
-export interface ResizableContextProps {
-  // Unique Identifier
+export interface ContextProps {
+  // Unique identifier
   id?: string
-  // Child Elements
+  // Child elements
   children?: ReactNode
-  // CSS Class Name
+  // CSS class name
   className?: string
-  // Layout Mount - Load saved data
-  onLayoutMount?: (context: ContextValue) => void
-  // Layout Changed - Save changed layout
-  onLayoutChanged?: (context: ContextValue) => void
+  // Context Mount - Load saved data
+  onContextMount?: (context: ContextValue) => void
+  // State Changed - Save changed state
+  onStateChanged?: (context: ContextValue) => void
 }
 
-export interface ResizableGroupProps {
-  // Unique Identifier
+export interface GroupProps {
+  // Unique identifier
   id?: string
-  // Child Elements
+  // Child elements
   children?: ReactNode
-  // CSS Class Name
+  // CSS class name
   className?: string
-  // Direction of the Group
+  // Direction of the group
   direction?: Direction
   // Use ratio mode for flex layout?
   // When true, panel flex becomes: `${size} ${size} 0%`
   ratio?: boolean
 }
 
-export interface ResizablePanelProps {
-  // Unique Identifier
+export interface PanelProps {
+  // Unique identifier
   id?: string
-  // Child Elements
+  // Child elements
   children?: ReactNode
-  // CSS Class Name
+  // CSS class name
   className?: string
   // Grow/Shirk when Group Size Change?
   expand?: boolean
   // Minimum Size (px)
   minSize?: number
-  // Maximum Size (px), undefined means no limit
+  // Maximum size (px), undefined means no limit
   maxSize?: number
-  // Default Size (px)
+  // Default size (px)
   defaultSize?: number
   // Allow Collapse?
   collapsible?: boolean
-  // Initial Collapsed State?
+  // Initial collapsed state?
   collapsed?: boolean
   // Allow Maximize?
   okMaximize?: boolean
 }
 
-export interface ResizableHandleProps {
-  // CSS Class Name
+export interface HandleProps {
+  // CSS class name
   className?: string
   // Custom content like drag icons
   children?: ReactNode

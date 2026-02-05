@@ -1,12 +1,11 @@
 import {
-  ContextValue,
   ResizableContext,
   ResizableGroup,
   ResizablePanel,
   useGroupContext,
   usePanelContext,
 } from "@local/resizable-panels"
-import { toggleCollapse, useDebounce, usePanelControl } from "./lib/utils"
+import { toggleCollapse, usePanelControl } from "./lib/utils"
 import ActivityBar from "./ui/activity-bar"
 import MenuBar from "./ui/menu-bar"
 import PanelHeader from "./ui/panel-header"
@@ -197,29 +196,9 @@ const EditorPanel = () => {
   )
 }
 
-// Storage key for saving layout
-const LAYOUT_STORAGE_KEY = "resizable-panels-layout"
-
 function App() {
-  // Handle layout mount - load saved layout
-  const handleLayoutMount = (ctx: ContextValue) => {
-    const savedLayout = ctx.loadLayout(localStorage.getItem(LAYOUT_STORAGE_KEY))
-    ctx.applyLayout(savedLayout)
-    console.debug("[App] Layout loaded")
-  }
-
-  // Handle layout changes - save changed layout
-  const handleLayoutChanged = useDebounce((ctx: ContextValue) => {
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(ctx.saveLayout()))
-    console.debug("[App] Layout saved")
-  }, 300)
-
   return (
-    <ResizableContext
-      className="flex-1 flex flex-col min-w-fit"
-      onLayoutMount={handleLayoutMount}
-      onLayoutChanged={handleLayoutChanged}
-    >
+    <ResizableContext className="flex-1 flex flex-col min-w-fit">
       {/* Menu Bar with panel toggle buttons */}
       <MenuBar>
         <span className="font-semibold text-sm m-2">Resizable Panels Demo</span>

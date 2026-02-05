@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
 import { adjustPanelByDelta, useResizableContext } from "./context"
-import type { GroupValue, HandleValue, PanelValue, ResizableGroupProps } from "./types"
+import type { GroupProps, GroupValue, HandleValue, PanelValue } from "./types"
 
 export const GroupContext = createContext<GroupValue | null>(null)
 
@@ -20,9 +20,8 @@ export function ResizableGroup({
   className = undefined,
   direction = "col",
   ratio = false,
-}: ResizableGroupProps) {
+}: GroupProps) {
   const context = useResizableContext()
-
   const id = idProp ?? useId()
   const containerEl = useRef<HTMLDivElement>(null)
 
@@ -33,47 +32,40 @@ export function ResizableGroup({
     panels: new Map<string, PanelValue>(),
     handles: [],
     containerEl,
+    isMaximized: false,
     registerPanel: (panel: PanelValue) => {
       ref.panels.set(panel.id, panel)
       console.debug(`[Group] Register: (${panel.id}) => [${[...ref.panels.keys()]}]`)
-    },
-    unregisterPanel: (panelId: string) => {
-      ref.panels.delete(panelId)
-      console.debug(`[Group] Unregister: (${panelId}) => [${[...ref.panels.keys()]}]`)
     },
     registerHandle: (handle: HandleValue) => {
       ref.handles = [...ref.handles, handle]
       console.debug("[Group] Register handle:", handle.id)
     },
-    unregisterHandle: (handleId: string) => {
-      ref.handles = ref.handles.filter((h) => h.id != handleId)
-      console.debug("[Group] Unregister handle:", handleId)
-    },
     dragHandle: (delta: number, index: number) => {
       console.debug("[Group] dragHandle:", { delta, index })
 
       const panels = [...ref.panels.values()]
-      ref.prevDrag = panels.map((p) => [p.isCollapsed, p.size])
+      panels.forEach((p) => (p.prevDrag = [p.isCollapsed, p.size]))
 
       const panelsBefore = panels.slice(0, index + 1).reverse()
       const panelsAfter = panels.slice(index + 1)
 
       adjustPanelByDelta(panelsBefore, panelsAfter, delta, ref)
-
-      ref.prevDrag = undefined
     },
     restorePanels: () => {
-      if (!ref.prevMaximize) return false
+      if (!ref.isMaximized) return false
+      console.debug("[Group] RestorePanels")
+
+      ref.isMaximized = false
 
       const panels = [...ref.panels.values()]
-      console.debug("[Group] RestorePanels:", { panels, group: ref, prevMaximize: ref.prevMaximize })
 
       for (let i = 0; i < panels.length; i++) {
-        panels[i].isCollapsed = ref.prevMaximize[i][0]
-        panels[i].size = ref.prevMaximize[i][1]
-        panels[i].isMaximized = false
+        const panel = panels[i]
+        panel.isCollapsed = panel.prevMaximize![0]
+        panel.size = panel.prevMaximize![1]
+        panel.isMaximized = false
       }
-      ref.prevMaximize = undefined
 
       for (const panel of panels) panel.setDirty()
 
@@ -90,8 +82,10 @@ export function ResizableGroup({
         return false
       }
 
+      ref.isMaximized = true
+
       const panels = [...ref.panels.values()]
-      ref.prevMaximize = panels.map((p) => [p.isCollapsed, p.size] as [boolean, number])
+      panels.forEach((p) => (p.prevMaximize = [p.isCollapsed, p.size]))
 
       for (const panel of panels) {
         if (panel.id !== targetId) {
@@ -120,7 +114,6 @@ export function ResizableGroup({
 
   useLayoutEffect(() => {
     context.registerGroup(ref)
-    return () => context.unregisterGroup(ref.id)
   }, [])
 
   useLayoutEffect(() => {

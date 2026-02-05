@@ -14,16 +14,8 @@ export { ResizableHandle } from "./handle"
 export { PanelContext, ResizablePanel, usePanelContext } from "./panel"
 
 export type {
-  ContextValue,
-  Direction,
-  GroupValue,
-  HandleValue,
-  PanelValue,
-  ResizableContextProps,
-  ResizableGroupProps,
-  ResizableHandleProps,
-  ResizablePanelProps,
-  SavedGroupLayout,
-  SavedPanelLayout
+  ContextProps, ContextValue,
+  Direction, GroupProps, GroupValue, HandleProps, HandleValue, PanelProps, PanelValue, SavedGroupState,
+  SavedPanelState
 } from "./types"
 

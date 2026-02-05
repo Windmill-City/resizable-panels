@@ -3,7 +3,7 @@
 import { createContext, useContext, useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
-import type { PanelValue, ResizablePanelProps } from "./types"
+import type { PanelProps, PanelValue } from "./types"
 
 export const PanelContext = createContext<PanelValue | null>(null)
 
@@ -26,7 +26,7 @@ export function ResizablePanel({
   collapsible = false,
   collapsed = false,
   okMaximize = false,
-}: ResizablePanelProps) {
+}: PanelProps) {
   const context = useResizableContext()
   const group = useGroupContext()
   const [, setDirty] = useReducer(() => ({}), {})
@@ -86,7 +86,6 @@ export function ResizablePanel({
 
   useLayoutEffect(() => {
     group.registerPanel(ref)
-    return () => group.unregisterPanel(id)
   }, [])
 
   useLayoutEffect(() => {
