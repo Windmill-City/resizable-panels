@@ -45,7 +45,7 @@ export function findEdgeIndexAtPoint(
     const rect = group.containerEl.current!.getBoundingClientRect()
 
     // Skip if group collapsed
-    if (rect.width * rect.height) continue
+    if (rect.width * rect.height === 0) continue
 
     // Skip if point is not within group bounds (with margin)
     if (
