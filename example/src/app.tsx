@@ -1,4 +1,6 @@
 import {
+  ContextValue,
+  fromJson,
   ResizableContext,
   ResizableGroup,
   ResizablePanel,
@@ -196,9 +198,28 @@ const EditorPanel = () => {
   )
 }
 
+// Storage key for saving state
+const STATE_STORAGE_KEY = "resizable-panels-state"
+
 function App() {
+  // Handle context mount - load saved state
+  const handleContextMount = (ctx: ContextValue) => {
+    ctx.setState(fromJson(localStorage.getItem(STATE_STORAGE_KEY)))
+    console.debug("[App] State loaded")
+  }
+
+  // Handle state changes - save changed state
+  const handleStateChanged = (ctx: ContextValue) => {
+    localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(ctx.getState()))
+    console.debug("[App] State saved")
+  }
+
   return (
-    <ResizableContext className="flex-1 flex flex-col min-w-fit">
+    <ResizableContext
+      className="flex-1 flex flex-col min-w-fit"
+      onContextMount={handleContextMount}
+      onStateChanged={handleStateChanged}
+    >
       {/* Menu Bar with panel toggle buttons */}
       <MenuBar>
         <span className="font-semibold text-sm m-2">Resizable Panels Demo</span>

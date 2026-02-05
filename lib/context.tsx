@@ -677,10 +677,11 @@ export function ResizableContext({
     onContextMount(ref)
   }, [])
 
+  let debounced = onStateChanged ? useDebounce(onStateChanged, 250) : null
   useEffect(() => {
-    if (!onStateChanged) return () => {}
-    return subscribe(useDebounce(onStateChanged, 250))
-  }, [onStateChanged])
+    if (!debounced) return () => {}
+    return subscribe(debounced)
+  }, [debounced])
 
   return (
     <ResizableContextType.Provider value={ref}>
