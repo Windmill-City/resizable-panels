@@ -91,14 +91,12 @@ export function ResizablePanel({
     return () => group.unregisterPanel(ref.id)
   }, [])
 
-  ref.expand = expand
-  ref.minSize = minSize
-  ref.maxSize = maxSize
-  ref.collapsible = collapsible
-  ref.okMaximize = okMaximize
-
   useEffect(() => {
-    ref.setDirty()
+    ref.expand = expand
+    ref.minSize = minSize
+    ref.maxSize = maxSize
+    ref.collapsible = collapsible
+    ref.okMaximize = okMaximize
   }, [expand, minSize, maxSize, collapsible, okMaximize])
 
   useLayoutEffect(() => {
