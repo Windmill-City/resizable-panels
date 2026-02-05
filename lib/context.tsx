@@ -21,7 +21,7 @@ export function useResizableContext() {
 export const HANDLE_SIZE = 8
 
 /**
- * The margin from window edges to exclude from edge detection (px)
+ * The margin from window edges to exclude from mouse hover style (px)
  * Prevents conflict with window resize handles.
  */
 export const WINDOW_EDGE_MARGIN = 8
