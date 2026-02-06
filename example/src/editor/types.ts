@@ -1,5 +1,8 @@
 import { ReactNode } from "react"
 
+/**
+ * Represents a single file tab in the editor
+ */
 export interface Tab {
   id: string
   name: string
@@ -8,14 +11,28 @@ export interface Tab {
   content: string[]
 }
 
+/**
+ * Direction for splitting the editor view
+ * - horizontal: Split side by side (left-right)
+ * - vertical: Split top and bottom (up-down)
+ */
 export type SplitDirection = "horizontal" | "vertical"
 
+/**
+ * A group of tabs that share the same editor pane
+ * Tracks the currently active tab within the group
+ */
 export interface EditorGroup {
   id: string
   tabs: Tab[]
   activeTabId: string
 }
 
+/**
+ * A node in the split tree that represents a split container
+ * Contains children that can be either nested SplitNodes or leaf data (EditorGroup)
+ * The sizes array controls the relative sizes of children
+ */
 export interface SplitNode<T = EditorGroup> {
   id: string
   direction: SplitDirection
@@ -23,17 +40,26 @@ export interface SplitNode<T = EditorGroup> {
   sizes: number[]
 }
 
-// 通用视图节点类型 - 可以是 EditorGroup 或任意自定义数据
+/**
+ * Generic view node type - can be EditorGroup or any custom data
+ * Used for flexible tree structures where leaf nodes hold data
+ */
 export interface ViewNode<T = unknown> {
   id: string
   data: T
   title?: string
 }
 
-// 通用分屏树类型
+/**
+ * Generic split tree type - recursively defined as either a SplitNode or leaf data
+ * Forms the complete tree structure for managing nested splits
+ */
 export type SplitTree<T> = SplitNode<T> | T
 
-// 渲染函数类型
+/**
+ * Render function type for leaf nodes in the split tree
+ * Provides callbacks for updating data, splitting, and closing the editor pane
+ */
 export type RenderLeafFn<T> = (props: {
   data: T
   onUpdate: (data: T) => void

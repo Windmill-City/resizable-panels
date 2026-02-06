@@ -6,20 +6,30 @@ import { isSplitNode, generateId } from "./utils"
 
 export interface SplitViewProps<T> {
   tree: SplitTree<T>
-  /** 渲染叶子节点的函数 */
+  /** Function to render leaf nodes */
   renderLeaf: RenderLeafFn<T>
-  /** 当树结构变化时的回调 */
+  /** Callback when tree structure changes */
   onUpdate: (tree: SplitTree<T>) => void
-  /** 关闭当前节点的回调 */
+  /** Callback to close current node */
   onClose: () => void
-  /** 是否可以关闭（当只有一个节点时通常不能关闭） */
+  /** Whether the node can be closed (usually false when there's only one node) */
   canClose: boolean
-  /** 创建新节点的工厂函数（用于分屏时创建新节点） */
+  /** Factory function to create new nodes (used when splitting) */
   createNode?: (originalData: T) => T
 }
 
 /**
- * 通用分屏视图组件
+ * Generic split view component
+ *
+ * Recursively renders a split tree structure with resizable panels.
+ * Each SplitNode is rendered as a ResizableGroup containing multiple panels.
+ * Leaf nodes are rendered using the renderLeaf function.
+ *
+ * Handles:
+ * - Recursive tree rendering
+ * - Panel resizing via ResizableGroup/ResizablePanel
+ * - Split operations (horizontal/vertical)
+ * - Close operations with automatic tree flattening
  */
 export const SplitView = <T extends { id: string }>({
   tree,
@@ -29,7 +39,7 @@ export const SplitView = <T extends { id: string }>({
   canClose,
   createNode,
 }: SplitViewProps<T>): ReactNode => {
-  // 渲染叶子节点
+  // Render leaf node directly when tree is not a SplitNode
   if (!isSplitNode(tree)) {
     const data = tree
 
@@ -62,7 +72,7 @@ export const SplitView = <T extends { id: string }>({
   const direction = tree.direction === "horizontal" ? "col" : "row"
   const childrenCount = tree.children.length
 
-  // 使用 useCallback 确保 onUpdate 回调稳定
+  // Update a child node at specific index (stable callback)
   const handleChildUpdate = useCallback((index: number, newChild: SplitTree<T>) => {
     const newChildren = [...tree.children]
     newChildren[index] = newChild
@@ -72,10 +82,10 @@ export const SplitView = <T extends { id: string }>({
   const handleChildClose = useCallback((index: number) => {
     const newChildren = tree.children.filter((_, i) => i !== index)
     if (newChildren.length === 1) {
-      // 如果只剩一个子节点，直接提升该子节点替换父节点
+        // If only one child remains, promote it to replace the parent
       onUpdate(newChildren[0])
     } else {
-      // 否则更新父节点的 children
+      // Otherwise update parent's children array
       onUpdate({ ...tree, children: newChildren, sizes: tree.sizes.slice(0, newChildren.length) })
     }
   }, [tree, onUpdate])
@@ -102,6 +112,9 @@ export const SplitView = <T extends { id: string }>({
   )
 }
 
+/**
+ * Props for the ChildView component
+ */
 interface ChildViewProps<T> {
   child: SplitTree<T>
   index: number
@@ -112,6 +125,11 @@ interface ChildViewProps<T> {
   createNode?: (originalData: T) => T
 }
 
+/**
+ * Renders a single child within a ResizablePanel
+ * Wraps the child with a resize handle (except for the first child)
+ * and recursively renders SplitView for nested structures
+ */
 const ChildView = <T extends { id: string }>({
   child,
   index,

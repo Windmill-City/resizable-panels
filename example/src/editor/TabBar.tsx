@@ -1,6 +1,18 @@
+import { Columns, Plus, Rows, X } from "lucide-react"
 import { useState } from "react"
-import { Plus, Columns, Rows, X } from "lucide-react"
-import { Tab, SplitDirection } from "./types"
+import { SplitDirection, Tab } from "./types"
+
+/**
+ * TabBar - Displays a horizontal tab bar with split controls and add tab button
+ *
+ * Renders a scrollable list of file tabs with:
+ * - Active/inactive tab styling with visual indicators
+ * - Close button on hover/active state
+ * - Add new tab button
+ * - Horizontal and vertical split controls
+ *
+ * Supports right-click context menu (placeholder for future menu implementation)
+ */
 
 export interface TabBarProps {
   tabs: Tab[]
@@ -12,6 +24,7 @@ export interface TabBarProps {
 }
 
 export const TabBar = ({ tabs, activeTabId, onTabClick, onTabClose, onSplit, onAddTab }: TabBarProps) => {
+  // State placeholder for future context menu implementation
   const [_, setShowSplitMenu] = useState(false)
 
   return (

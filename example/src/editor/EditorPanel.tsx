@@ -5,7 +5,20 @@ import { EditorGroup, SplitTree } from "./types"
 import { defaultTabs, generateId } from "./utils"
 
 /**
- * 创建新的编辑器组（用于分屏时复制当前标签）
+ * EditorPanel - The main container component for the code editor
+ *
+ * Manages the overall editor state including:
+ * - Tab management (open, close, switch tabs)
+ * - Split view layout (horizontal/vertical splits)
+ * - Editor group creation and duplication
+ *
+ * This is the top-level component that orchestrates SplitView and EditorView
+ * to provide a multi-tab, splittable editor experience.
+ */
+
+/**
+ * Creates a new editor group by duplicating the currently active tab
+ * Used when splitting the editor view to clone the current context
  */
 const createEditorGroup = (original: EditorGroup): EditorGroup => {
   const activeTab = original.tabs.find((t) => t.id === original.activeTabId)
@@ -19,19 +32,16 @@ const createEditorGroup = (original: EditorGroup): EditorGroup => {
   }
 }
 
-/**
- * 编辑器面板 - 使用通用的 SplitView 组件
- *
- * 展示了如何使用 SplitView 的 renderLeaf 属性来渲染编辑器内容
- */
 export const EditorPanel = () => {
+  // Root state for the split tree structure, initialized with default tabs
   const [splitTree, setSplitTree] = useState<SplitTree<EditorGroup>>({
     id: "root",
     tabs: defaultTabs,
     activeTabId: defaultTabs[0].id,
   })
 
-  // 渲染编辑器叶子节点
+  // Render function for editor leaf nodes in the split tree
+  // Each leaf represents an independent editor group with its own tabs
   const renderEditorLeaf = useCallback(
     ({
       data,

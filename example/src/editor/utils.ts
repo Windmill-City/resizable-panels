@@ -1,12 +1,37 @@
-import { Tab, EditorGroup, SplitNode, SplitTree } from "./types"
+import { EditorGroup, SplitDirection, SplitNode, SplitTree, Tab } from "./types"
 
-export const generateId = () => Math.random().toString(36).substr(2, 9)
+/**
+ * Utility functions for managing the editor state and split tree structure
+ *
+ * Provides helper functions for:
+ * - ID generation
+ * - Type guards for tree nodes
+ * - Tree traversal and manipulation (find, remove, update)
+ * - Split operations
+ * - Default sample data
+ */
 
-export const isSplitNode = <T,>(node: SplitTree<T>): node is SplitNode<T> =>
-  "children" in node && Array.isArray((node as SplitNode<T>).children)
+/**
+ * Generates a unique random ID string
+ * Uses base-36 encoding of a random number
+ */
+export const generateId = () => Math.random().toString(36).slice(2, 11)
 
+/**
+ * Type guard to check if a node is a SplitNode (has children)
+ */
+export const isSplitNode = <T>(node: SplitTree<T>): node is SplitNode<T> =>
+  Array.isArray((node as SplitNode<T>).children)
+
+/**
+ * Type guard to check if a node is an EditorGroup (has tabs property)
+ */
 export const isEditorGroup = (node: SplitNode | EditorGroup): node is EditorGroup => "tabs" in node
 
+/**
+ * Recursively searches for an EditorGroup by ID in the split tree
+ * Returns null if not found
+ */
 export const findGroup = (tree: SplitNode | EditorGroup, groupId: string): EditorGroup | null => {
   if (isEditorGroup(tree)) {
     return tree.id === groupId ? tree : null
@@ -18,6 +43,11 @@ export const findGroup = (tree: SplitNode | EditorGroup, groupId: string): Edito
   return null
 }
 
+/**
+ * Removes an EditorGroup by ID from the split tree
+ * Cleans up empty parent nodes and flattens single-child nodes
+ * Returns null if the entire tree is removed
+ */
 export const removeGroup = (tree: SplitNode | EditorGroup, groupId: string): SplitNode | EditorGroup | null => {
   if (isEditorGroup(tree)) {
     return tree.id === groupId ? null : tree
@@ -33,7 +63,15 @@ export const removeGroup = (tree: SplitNode | EditorGroup, groupId: string): Spl
   return { ...tree, children: newChildren, sizes: tree.sizes.slice(0, newChildren.length) }
 }
 
-// 通用树操作函数 - 适用于任意类型的叶子节点
+/**
+ * Generic tree operations - work with any leaf node type
+ * These functions provide flexible tree manipulation for custom data structures
+ */
+
+/**
+ * Recursively finds a leaf node matching the given predicate function
+ * Generic version that works with any leaf type
+ */
 export const findNode = <T>(tree: SplitTree<T>, predicate: (node: T) => boolean): T | null => {
   if (isSplitNode(tree)) {
     for (const child of tree.children) {
@@ -45,6 +83,11 @@ export const findNode = <T>(tree: SplitTree<T>, predicate: (node: T) => boolean)
   return predicate(tree) ? tree : null
 }
 
+/**
+ * Removes a leaf node by ID from the split tree
+ * Generic version that works with any leaf type
+ * Handles cleanup and flattening like removeGroup
+ */
 export const removeNode = <T>(tree: SplitTree<T>, nodeId: string): SplitTree<T> | null => {
   if (isSplitNode(tree)) {
     const newChildren = tree.children
@@ -59,6 +102,10 @@ export const removeNode = <T>(tree: SplitTree<T>, nodeId: string): SplitTree<T> 
   return (tree as { id: string }).id === nodeId ? null : tree
 }
 
+/**
+ * Updates a leaf node by ID using the provided updater function
+ * Returns a new tree with the updated node (immutable update)
+ */
 export const updateNode = <T>(tree: SplitTree<T>, nodeId: string, updater: (node: T) => T): SplitTree<T> => {
   if (isSplitNode(tree)) {
     return {
@@ -72,12 +119,15 @@ export const updateNode = <T>(tree: SplitTree<T>, nodeId: string, updater: (node
   return tree
 }
 
-// 创建一个分屏节点，将现有节点分成两个
+/**
+ * Creates a new split node containing two children
+ * Used when splitting an editor view to create a side-by-side or stacked layout
+ */
 export const createSplit = <T>(
   originalNode: T,
   newNode: T,
   direction: SplitDirection,
-  options?: { id?: string; sizes?: number[] }
+  options?: { id?: string; sizes?: number[] },
 ): SplitNode<T> => ({
   id: options?.id ?? generateId(),
   direction,
@@ -85,6 +135,10 @@ export const createSplit = <T>(
   sizes: options?.sizes ?? [50, 50],
 })
 
+/**
+ * Default tabs to display when the editor initializes
+ * Contains sample React/TypeScript files with code content
+ */
 export const defaultTabs: Tab[] = [
   {
     id: "1",
@@ -120,6 +174,10 @@ export const defaultTabs: Tab[] = [
   },
 ]
 
+/**
+ * Sample file metadata used for generating random new tabs
+ * Contains file names, languages, and icon colors
+ */
 export const sampleFiles = [
   { name: "utils.ts", language: "TS", iconColor: "text-blue-500" },
   { name: "styles.css", language: "CSS", iconColor: "text-sky-400" },

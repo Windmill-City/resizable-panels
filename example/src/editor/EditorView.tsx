@@ -1,8 +1,19 @@
 import { XIcon } from "lucide-react"
-import { TabBar } from "./TabBar"
 import { EditorContent } from "./EditorContent"
-import { Tab, EditorGroup, SplitDirection } from "./types"
+import { TabBar } from "./TabBar"
+import { EditorGroup, SplitDirection, Tab } from "./types"
 import { generateId, sampleFiles } from "./utils"
+
+/**
+ * EditorView - Renders a single editor group with tab bar, breadcrumbs, and content
+ *
+ * Manages tab interactions within one editor pane:
+ * - Tab switching, closing, and adding new tabs
+ * - Displays file breadcrumbs navigation
+ * - Provides close button for editor groups
+ *
+ * Used as the leaf component inside SplitView for each editor pane.
+ */
 
 export interface EditorViewProps {
   group: EditorGroup
@@ -15,10 +26,12 @@ export interface EditorViewProps {
 export const EditorView = ({ group, onUpdate, onSplit, onClose, canClose }: EditorViewProps) => {
   const activeTab = group.tabs.find((t) => t.id === group.activeTabId) || group.tabs[0]
 
+  // Switch to the clicked tab by updating the active tab ID
   const handleTabClick = (tabId: string) => {
     onUpdate({ ...group, activeTabId: tabId })
   }
 
+  // Close a tab and auto-switch to another tab if the active one is closed
   const handleTabClose = (tabId: string) => {
     if (group.tabs.length <= 1) return
     const newTabs = group.tabs.filter((t) => t.id !== tabId)
@@ -26,6 +39,7 @@ export const EditorView = ({ group, onUpdate, onSplit, onClose, canClose }: Edit
     onUpdate({ ...group, tabs: newTabs, activeTabId: newActiveId })
   }
 
+  // Create a new tab with randomly generated sample file content
   const handleAddTab = () => {
     const randomFile = sampleFiles[Math.floor(Math.random() * sampleFiles.length)]
     const newTab: Tab = {
