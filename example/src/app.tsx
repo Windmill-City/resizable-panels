@@ -163,7 +163,7 @@ function App() {
       </MenuBar>
 
       {/* Main content area */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-[160px]">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
 
