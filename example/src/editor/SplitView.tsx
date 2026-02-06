@@ -2,7 +2,7 @@ import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
 import { ReactNode, useCallback } from "react"
 import ResizeHandle from "../ui/resize-handle"
 import { RenderLeafFn, SplitDirection, SplitNode, SplitTree, WithId } from "./types"
-import { generateId, isSplitNode } from "./utils"
+import { generateId, isSplitNode as isNode } from "./utils"
 
 /**
  * Props for the SplitView component
@@ -20,18 +20,18 @@ export interface SplitViewProps<T extends WithId> {
 
 /**
  * Main entry component for rendering a split view tree.
- * Wraps the tree in a SplitNodeView for recursive rendering.
+ * Wraps the tree in a NodeView for recursive rendering.
  */
 export function SplitView<T extends WithId>(props: SplitViewProps<T>): ReactNode {
   const { tree, direction = "horizontal", ...rest } = props
-  const node = isSplitNode(tree) ? tree : wrapAsSplitNode(tree, direction)
-  return <SplitNodeView node={node} {...rest} />
+  const node = isNode(tree) ? tree : wrapAsNode(tree, direction)
+  return <NodeView node={node} {...rest} />
 }
 
 /**
- * Props for the SplitNodeView component
+ * Props for the NodeView component
  */
-interface SplitNodeViewProps<T extends WithId> {
+interface NodeViewProps<T extends WithId> {
   node: SplitNode<T>
   renderLeaf: RenderLeafFn<T>
   onTreeChange: (tree: SplitTree<T>) => void
@@ -44,14 +44,14 @@ interface SplitNodeViewProps<T extends WithId> {
  * Renders a split node with its children in a resizable group.
  * Provides callbacks to update, remove, or split child nodes.
  */
-function SplitNodeView<T extends WithId>({
+function NodeView<T extends WithId>({
   node,
   renderLeaf,
   onTreeChange,
   onDelete,
   canDelete,
   createNode,
-}: SplitNodeViewProps<T>): ReactNode {
+}: NodeViewProps<T>): ReactNode {
   // Map split direction to group direction ('col' for horizontal, 'row' for vertical)
   const groupDirection = node.direction === "horizontal" ? "col" : "row"
   const childCount = node.children.length
@@ -120,7 +120,7 @@ function SplitNodeView<T extends WithId>({
   return (
     <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio key={`${childCount}`}>
       {node.children.map((child, i) => (
-        <ChildView
+        <LeafView
           key={child.id}
           child={child}
           index={i}
@@ -137,9 +137,9 @@ function SplitNodeView<T extends WithId>({
 }
 
 /**
- * Props for the ChildView component
+ * Props for the LeafView component
  */
-interface ChildViewProps<T extends WithId> {
+interface LeafViewProps<T extends WithId> {
   child: SplitTree<T>
   index: number
   renderLeaf: RenderLeafFn<T>
@@ -151,12 +151,12 @@ interface ChildViewProps<T extends WithId> {
 }
 
 /**
- * Renders a single child node.
- * - If the child is a split node, recursively renders a SplitNodeView
+ * Renders a single leaf node.
+ * - If the child is a split node, recursively renders a NodeView
  * - Otherwise, renders the leaf using the provided renderLeaf function
  * - Adds a resize handle before each child except the first one
  */
-function ChildView<T extends WithId>({
+function LeafView<T extends WithId>({
   child,
   index,
   renderLeaf,
@@ -165,14 +165,14 @@ function ChildView<T extends WithId>({
   onSplit,
   canDelete,
   createNode,
-}: ChildViewProps<T>): ReactNode {
+}: LeafViewProps<T>): ReactNode {
   return (
     <>
       {/* Add resize handle between panels */}
       {index > 0 && <ResizeHandle className="w-px bg-(--rp-border-color)" />}
       <ResizablePanel id={`panel-${child.id}`} key={child.id}>
-        {isSplitNode(child) ? (
-          <SplitNodeView
+        {isNode(child) ? (
+          <NodeView
             node={child}
             renderLeaf={renderLeaf}
             onTreeChange={onUpdate}
@@ -192,6 +192,6 @@ function ChildView<T extends WithId>({
  * Wraps a leaf node as a split node with the specified direction.
  * Used to normalize the tree structure for consistent rendering.
  */
-function wrapAsSplitNode<T extends WithId>(leaf: T, direction: SplitDirection): SplitNode<T> {
+function wrapAsNode<T extends WithId>(leaf: T, direction: SplitDirection): SplitNode<T> {
   return { id: generateId(), direction, children: [leaf] }
 }
