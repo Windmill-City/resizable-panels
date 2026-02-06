@@ -9,7 +9,6 @@ import { generateId, sampleFiles } from "./utils"
  * Manages tab interactions within one editor pane:
  * - Tab switching, closing, and adding new tabs
  * - Displays file breadcrumbs navigation
- * - Provides close button for editor groups
  *
  * Used as the leaf component inside SplitView for each editor pane.
  */
