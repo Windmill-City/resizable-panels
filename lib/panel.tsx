@@ -119,7 +119,6 @@ export function ResizablePanel({
       <div
         ref={containerEl}
         data-resizable-panel={ref.id}
-        data-direction={group.direction}
         data-collapsed={ref.isCollapsed || undefined}
         data-maximized={ref.isMaximized || undefined}
         style={{
