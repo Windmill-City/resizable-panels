@@ -21,9 +21,7 @@ import { defaultTabs, generateId } from "./utils"
  * Used when splitting the editor view to clone the current context
  */
 const createEditorGroup = (original: EditorGroup): EditorGroup => {
-  const activeTab = original.tabs.find((t) => t.id === original.activeTabId)
-  if (!activeTab) return { ...original, id: generateId() }
-
+  const activeTab = original.tabs.find((t) => t.id === original.activeTabId)!
   const newTabId = generateId()
   return {
     id: generateId(),
