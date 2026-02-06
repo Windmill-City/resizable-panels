@@ -37,7 +37,6 @@ export interface SplitNode<T = EditorGroup> {
   id: string
   direction: SplitDirection
   children: (SplitNode<T> | T)[]
-  sizes: number[]
 }
 
 /**
