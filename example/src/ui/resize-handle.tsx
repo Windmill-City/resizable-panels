@@ -2,11 +2,12 @@ import { ResizableHandle } from "@local/resizable-panels"
 import { cn } from "../lib/utils"
 
 interface ResizeHandleProps {
+  className?: string
   onClick?: () => void
   onDoubleClick?: () => void
 }
 
-const ResizeHandle = ({ onClick, onDoubleClick }: ResizeHandleProps) => {
+const ResizeHandle = ({ className, onClick, onDoubleClick }: ResizeHandleProps) => {
   return (
     <ResizableHandle
       data-resizable-handle
@@ -22,6 +23,7 @@ const ResizeHandle = ({ onClick, onDoubleClick }: ResizeHandleProps) => {
         // col direction
         "data-[direction=col]:after:-translate-x-1/2",
         "data-[direction=col]:after:w-1",
+        className,
       )}
       onClick={onClick}
       onDoubleClick={onDoubleClick}

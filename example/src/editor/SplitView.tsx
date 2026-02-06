@@ -173,10 +173,10 @@ function ChildView<T extends WithId>({
   return (
     <>
       {/* Add resize handle between panels */}
-      {index > 0 && <ResizeHandle />}
+      {index > 0 && <ResizeHandle className="w-px bg-(--rp-border-color)" />}
       <ResizablePanel
         id={`panel-${childId}`}
-        className="min-w-0 data-[direction=row]:border-t data-[direction=col]:border-l"
+        className="min-w-0"
         key={childId}
       >
         {isSplitNode(child) ? (
