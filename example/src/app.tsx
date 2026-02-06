@@ -177,7 +177,13 @@ function App() {
           <ResizablePanel id="middle" expand>
             <ResizableGroup id="row" direction="row">
               {/* Editor */}
-              <ResizablePanel id="editor" minSize={80} collapsible expand className="overflow-auto!">
+              <ResizablePanel
+                id="editor"
+                minSize={80}
+                collapsible
+                expand
+                className={"overflow-auto! [&>*:first-child]:overflow-visible!"}
+              >
                 <EditorPanel />
               </ResizablePanel>
               <BottomResizeHandle />

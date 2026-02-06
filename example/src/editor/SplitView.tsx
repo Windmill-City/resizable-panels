@@ -2,7 +2,7 @@ import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
 import { ReactNode, useCallback } from "react"
 import ResizeHandle from "../ui/resize-handle"
 import { RenderLeafFn, SplitDirection, SplitNode, SplitTree, WithId } from "./types"
-import { generateId, isSplitNode as isNode } from "./utils"
+import { isSplitNode as isNode } from "./utils"
 
 /**
  * Props for the SplitView component
@@ -193,5 +193,5 @@ function LeafView<T extends WithId>({
  * Used to normalize the tree structure for consistent rendering.
  */
 function wrapAsNode<T extends WithId>(leaf: T, direction: SplitDirection): SplitNode<T> {
-  return { id: generateId(), direction, children: [leaf] }
+  return { id: leaf.id, direction, children: [leaf] }
 }
