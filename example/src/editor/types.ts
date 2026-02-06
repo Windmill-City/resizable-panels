@@ -29,11 +29,18 @@ export interface EditorGroup {
 }
 
 /**
+ * Constraint for leaf node data - must have an id
+ */
+export interface WithId {
+  id: string
+}
+
+/**
  * A node in the split tree that represents a split container
  * Contains children that can be either nested SplitNodes or leaf data (EditorGroup)
  * The sizes array controls the relative sizes of children
  */
-export interface SplitNode<T = EditorGroup> {
+export interface SplitNode<T extends WithId = EditorGroup> {
   id: string
   direction: SplitDirection
   children: (SplitNode<T> | T)[]
@@ -53,13 +60,13 @@ export interface ViewNode<T = unknown> {
  * Generic split tree type - recursively defined as either a SplitNode or leaf data
  * Forms the complete tree structure for managing nested splits
  */
-export type SplitTree<T> = SplitNode<T> | T
+export type SplitTree<T extends WithId> = SplitNode<T> | T
 
 /**
  * Render function type for leaf nodes in the split tree
  * Provides callbacks for updating data, splitting, and closing the editor pane
  */
-export type RenderLeafFn<T> = (props: {
+export type RenderLeafFn<T extends WithId> = (props: {
   data: T
   onUpdate: (data: T) => void
   onSplit: (direction: SplitDirection) => void

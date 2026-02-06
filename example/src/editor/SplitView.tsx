@@ -1,14 +1,14 @@
 import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
 import { ReactNode, useCallback } from "react"
 import ResizeHandle from "../ui/resize-handle"
-import { RenderLeafFn, SplitDirection, SplitNode, SplitTree } from "./types"
+import { RenderLeafFn, SplitDirection, SplitNode, SplitTree, WithId } from "./types"
 import { generateId, isSplitNode } from "./utils"
 
 /**
  * Props for the SplitView component
  * @template T - The type of leaf node data
  */
-export interface SplitViewProps<T> {
+export interface SplitViewProps<T extends WithId> {
   tree: SplitTree<T>
   renderLeaf: RenderLeafFn<T>
   onTreeChange: (tree: SplitTree<T>) => void
@@ -22,7 +22,7 @@ export interface SplitViewProps<T> {
  * Main entry component for rendering a split view tree.
  * Wraps the tree in a SplitNodeView for recursive rendering.
  */
-export function SplitView<T>(props: SplitViewProps<T>): ReactNode {
+export function SplitView<T extends WithId>(props: SplitViewProps<T>): ReactNode {
   const { tree, direction = "horizontal", ...rest } = props
   const node = isSplitNode(tree) ? tree : wrapAsSplitNode(tree, direction)
   return <SplitNodeView node={node} {...rest} />
@@ -31,7 +31,7 @@ export function SplitView<T>(props: SplitViewProps<T>): ReactNode {
 /**
  * Props for the SplitNodeView component
  */
-interface SplitNodeViewProps<T> {
+interface SplitNodeViewProps<T extends WithId> {
   node: SplitNode<T>
   renderLeaf: RenderLeafFn<T>
   onTreeChange: (tree: SplitTree<T>) => void
@@ -44,7 +44,7 @@ interface SplitNodeViewProps<T> {
  * Renders a split node with its children in a resizable group.
  * Provides callbacks to update, remove, or split child nodes.
  */
-function SplitNodeView<T>({
+function SplitNodeView<T extends WithId>({
   node,
   renderLeaf,
   onTreeChange,
@@ -72,16 +72,13 @@ function SplitNodeView<T>({
   /**
    * Removes a child node at the specified index.
    * - If no children left, triggers onDelete
-   * - If only one child left, promotes it to replace the current node
-   * - Otherwise, updates the node with remaining children
+   * - Otherwise, updates the node with remaining children (no promotion)
    */
   const removeChild = useCallback(
     (index: number) => {
       const children = node.children.filter((_, i) => i !== index)
       if (children.length === 0) {
         onDelete()
-      } else if (children.length === 1) {
-        onTreeChange(children[0])
       } else {
         onTreeChange({
           ...node,
@@ -112,7 +109,7 @@ function SplitNodeView<T>({
       } else {
         // Perpendicular direction: create a nested split node
         updateChild(index, {
-          id: generateId(),
+          id: child.id, // Use child's id to keep the Panel stable
           direction: splitDirection,
           children: [child, newNode],
         })
@@ -125,7 +122,7 @@ function SplitNodeView<T>({
     <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio key={`${childCount}`}>
       {node.children.map((child, i) => (
         <ChildView
-          key={(child as { id: string }).id}
+          key={child.id}
           child={child}
           index={i}
           renderLeaf={renderLeaf}
@@ -143,7 +140,7 @@ function SplitNodeView<T>({
 /**
  * Props for the ChildView component
  */
-interface ChildViewProps<T> {
+interface ChildViewProps<T extends WithId> {
   child: SplitTree<T>
   index: number
   renderLeaf: RenderLeafFn<T>
@@ -160,7 +157,7 @@ interface ChildViewProps<T> {
  * - Otherwise, renders the leaf using the provided renderLeaf function
  * - Adds a resize handle before each child except the first one
  */
-function ChildView<T>({
+function ChildView<T extends WithId>({
   child,
   index,
   renderLeaf,
@@ -170,14 +167,17 @@ function ChildView<T>({
   canDelete,
   createNode,
 }: ChildViewProps<T>): ReactNode {
+  // Get stable ID for the panel - use child.id for both leaf and split node
+  const childId = child.id
+
   return (
     <>
       {/* Add resize handle between panels */}
       {index > 0 && <ResizeHandle />}
       <ResizablePanel
-        id={`panel-${(child as { id: string }).id}`}
+        id={`panel-${childId}`}
         className="min-w-0 data-[direction=row]:border-t data-[direction=col]:border-l"
-        key={isSplitNode(child) ? "group" : "leaf"}
+        key={childId}
       >
         {isSplitNode(child) ? (
           <SplitNodeView
@@ -200,6 +200,6 @@ function ChildView<T>({
  * Wraps a leaf node as a split node with the specified direction.
  * Used to normalize the tree structure for consistent rendering.
  */
-function wrapAsSplitNode<T>(leaf: T, direction: SplitDirection): SplitNode<T> {
+function wrapAsSplitNode<T extends WithId>(leaf: T, direction: SplitDirection): SplitNode<T> {
   return { id: generateId(), direction, children: [leaf] }
 }
