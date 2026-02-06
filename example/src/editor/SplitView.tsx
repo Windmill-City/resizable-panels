@@ -56,8 +56,8 @@ function SplitNodeView<T>({
   const groupDirection = node.direction === "horizontal" ? "col" : "row"
   const childCount = node.children.length
 
-  // Used to force panel remount when splitting, so old panels reset their size
-  const [splitVersion, setSplitVersion] = useState(0)
+  // Used to force remount when tree structure changes (group added/removed)
+  const [structureVersion, setStructureVersion] = useState(0)
 
   /**
    * Updates a child node at the specified index.
@@ -65,9 +65,14 @@ function SplitNodeView<T>({
    */
   const updateChild = useCallback(
     (index: number, newChild: SplitTree<T>) => {
+      const oldChild = node.children[index]
       const children = [...node.children]
       children[index] = newChild
       onTreeChange({ ...node, children })
+      // Force remount when child type changes (group <-> leaf)
+      if (isSplitNode(oldChild) !== isSplitNode(newChild)) {
+        setStructureVersion((v) => v + 1)
+      }
     },
     [node, onTreeChange],
   )
@@ -84,6 +89,8 @@ function SplitNodeView<T>({
       if (children.length === 0) {
         onDelete()
       } else if (children.length === 1) {
+        // Force remount when promoting child (group removed)
+        setStructureVersion((v) => v + 1)
         onTreeChange(children[0])
       } else {
         onTreeChange({
@@ -105,9 +112,6 @@ function SplitNodeView<T>({
       const child = node.children[index]
       if (isSplitNode(child)) return
 
-      // Increment split version to force old panels remount and reset size
-      setSplitVersion((v) => v + 1)
-
       const newNode = createNode(child)
 
       if (splitDirection === node.direction) {
@@ -123,15 +127,17 @@ function SplitNodeView<T>({
           children: [child, newNode],
         })
       }
+      // Force remount when tree structure changes
+      setStructureVersion((v) => v + 1)
     },
     [node, createNode, onTreeChange, updateChild],
   )
 
   return (
-    <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio>
+    <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio key={`${childCount}-${structureVersion}`}>
       {node.children.map((child, i) => (
         <ChildView
-          key={`${(child as { id: string }).id}-${splitVersion}`}
+          key={(child as { id: string }).id}
           child={child}
           index={i}
           renderLeaf={renderLeaf}
@@ -180,7 +186,11 @@ function ChildView<T>({
     <>
       {/* Add resize handle between panels */}
       {index > 0 && <ResizeHandle />}
-      <ResizablePanel id={`panel-${(child as { id: string }).id}`} className="min-w-0 border-l" defaultSize={1}>
+      <ResizablePanel
+        id={`panel-${(child as { id: string }).id}`}
+        className="min-w-0 data-[direction=row]:border-t data-[direction=col]:border-l"
+        key={isSplitNode(child) ? "group" : "leaf"}
+      >
         {isSplitNode(child) ? (
           <SplitNodeView
             node={child}
