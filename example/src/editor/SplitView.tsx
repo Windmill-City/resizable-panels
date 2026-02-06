@@ -1,5 +1,5 @@
 import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
-import { ReactNode, useCallback, useState } from "react"
+import { ReactNode, useCallback } from "react"
 import ResizeHandle from "../ui/resize-handle"
 import { RenderLeafFn, SplitDirection, SplitNode, SplitTree } from "./types"
 import { generateId, isSplitNode } from "./utils"
@@ -56,23 +56,15 @@ function SplitNodeView<T>({
   const groupDirection = node.direction === "horizontal" ? "col" : "row"
   const childCount = node.children.length
 
-  // Used to force remount when tree structure changes (group added/removed)
-  const [structureVersion, setStructureVersion] = useState(0)
-
   /**
    * Updates a child node at the specified index.
    * Creates a new children array to maintain immutability.
    */
   const updateChild = useCallback(
     (index: number, newChild: SplitTree<T>) => {
-      const oldChild = node.children[index]
       const children = [...node.children]
       children[index] = newChild
       onTreeChange({ ...node, children })
-      // Force remount when child type changes (group <-> leaf)
-      if (isSplitNode(oldChild) !== isSplitNode(newChild)) {
-        setStructureVersion((v) => v + 1)
-      }
     },
     [node, onTreeChange],
   )
@@ -89,8 +81,6 @@ function SplitNodeView<T>({
       if (children.length === 0) {
         onDelete()
       } else if (children.length === 1) {
-        // Force remount when promoting child (group removed)
-        setStructureVersion((v) => v + 1)
         onTreeChange(children[0])
       } else {
         onTreeChange({
@@ -127,14 +117,12 @@ function SplitNodeView<T>({
           children: [child, newNode],
         })
       }
-      // Force remount when tree structure changes
-      setStructureVersion((v) => v + 1)
     },
     [node, createNode, onTreeChange, updateChild],
   )
 
   return (
-    <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio key={`${childCount}-${structureVersion}`}>
+    <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio key={`${childCount}`}>
       {node.children.map((child, i) => (
         <ChildView
           key={(child as { id: string }).id}
