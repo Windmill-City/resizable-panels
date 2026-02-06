@@ -1,5 +1,5 @@
 import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
-import { ReactNode, useCallback } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import ResizeHandle from "../ui/resize-handle"
 import { RenderLeafFn, SplitDirection, SplitNode, SplitTree } from "./types"
 import { generateId, isSplitNode } from "./utils"
@@ -56,6 +56,9 @@ function SplitNodeView<T>({
   const groupDirection = node.direction === "horizontal" ? "col" : "row"
   const childCount = node.children.length
 
+  // Used to force panel remount when splitting, so old panels reset their size
+  const [splitVersion, setSplitVersion] = useState(0)
+
   /**
    * Updates a child node at the specified index.
    * Creates a new children array to maintain immutability.
@@ -109,6 +112,8 @@ function SplitNodeView<T>({
         const children = [...node.children]
         children.splice(index + 1, 0, newNode)
         onTreeChange({ ...node, children })
+        // Increment split version to force old panels remount and reset size
+        setSplitVersion((v) => v + 1)
       } else {
         // Perpendicular direction: create a nested split node
         updateChild(index, {
@@ -125,7 +130,7 @@ function SplitNodeView<T>({
     <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio>
       {node.children.map((child, i) => (
         <ChildView
-          key={(child as { id: string }).id}
+          key={`${(child as { id: string }).id}-${splitVersion}`}
           child={child}
           index={i}
           renderLeaf={renderLeaf}
@@ -174,7 +179,7 @@ function ChildView<T>({
     <>
       {/* Add resize handle between panels */}
       {index > 0 && <ResizeHandle />}
-      <ResizablePanel id={`panel-${(child as { id: string }).id}`} className="min-w-0 border-l">
+      <ResizablePanel id={`panel-${(child as { id: string }).id}`} className="min-w-0 border-l" defaultSize={1}>
         {isSplitNode(child) ? (
           <SplitNodeView
             node={child}
