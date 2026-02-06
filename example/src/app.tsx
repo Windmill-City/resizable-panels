@@ -153,7 +153,7 @@ function App() {
 
   return (
     <ResizableContext
-      className="flex-1 flex flex-col min-w-fit"
+      className="flex-1 flex flex-col min-w-0 min-h-0"
       onContextMount={handleContextMount}
       onStateChanged={handleStateChanged}
     >
@@ -163,7 +163,7 @@ function App() {
       </MenuBar>
 
       {/* Main content area */}
-      <div className="flex-1 flex min-h-40">
+      <div className="flex-1 flex">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
 
@@ -177,7 +177,7 @@ function App() {
           <ResizablePanel id="middle" expand>
             <ResizableGroup id="row" direction="row">
               {/* Editor */}
-              <ResizablePanel id="editor" minSize={80} collapsible expand>
+              <ResizablePanel id="editor" minSize={80} collapsible expand className="overflow-auto!">
                 <EditorPanel />
               </ResizablePanel>
               <BottomResizeHandle />
