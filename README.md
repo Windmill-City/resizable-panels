@@ -69,7 +69,7 @@ pnpm dev:minify
 ## Quick Start
 
 ```tsx
-import { ResizableContext, ResizableGroup, ResizablePanel } from '@local/resizable-panels';
+import { ResizableContext, ResizableGroup, ResizablePanel, ResizableHandle } from '@local/resizable-panels';
 
 function App() {
   return (
@@ -102,8 +102,8 @@ interface ResizableContextProps {
   id?: string;                                          // Unique identifier
   children?: ReactNode;                                 // Child elements
   className?: string;                                   // CSS class name
-  onLayoutMount?: (context: ContextValue) => void;      // Layout mount callback - for loading saved layout
-  onLayoutChanged?: (context: ContextValue) => void;    // Layout change callback - for saving changed layout
+  onContextMount?: (context: ContextValue) => void;     // Context mount callback - for loading saved layout
+  onStateChanged?: (context: ContextValue) => void;     // State change callback - for saving changed layout
 }
 ```
 
@@ -165,7 +165,7 @@ interface ResizableHandleProps {
 Access the root context value outside of `ResizableContext`:
 
 ```tsx
-import { useResizableContext } from '@local/resizable-panels';
+import { useResizableContext, fromJson } from '@local/resizable-panels';
 
 function GlobalControls() {
   const context = useResizableContext();
@@ -173,16 +173,19 @@ function GlobalControls() {
   // Access all groups
   const groups = [...context.groups.values()];
   
-  // Save layout to localStorage
+  // Save state to localStorage
   const handleSave = () => {
-    const saved = context.saveLayout();
-    localStorage.setItem('layout', saved);
+    const saved = context.getState();
+    localStorage.setItem('layout', JSON.stringify(saved));
   };
   
-  // Load layout from localStorage
+  // Load state from localStorage
   const handleLoad = () => {
     const json = localStorage.getItem('layout');
-    context.applyLayout(context.loadLayout(json));
+    const state = fromJson(json);
+    if (state) {
+      context.setState(state);
+    }
   };
   
   return <div>Global Controls</div>;
@@ -303,34 +306,34 @@ const panel = usePanelContext();
 
 ### Layout Persistence Functions
 
-#### saveLayout
+#### getState
 
-Save the current layout of all groups to a Record object.
+Get the current state of all groups as a Record object.
 
 ```tsx
 const context = useResizableContext();
-const savedLayout = context.saveLayout();
-localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(savedLayout));
+const savedState = context.getState();
+localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(savedState));
 ```
 
-#### loadLayout
+#### setState
 
-Load and validate a layout from a JSON string.
+Apply a loaded state to all groups.
 
 ```tsx
 const context = useResizableContext();
+context.setState(fromJson(json));
+```
+
+#### fromJson
+
+Load and validate a state from a JSON string. Returns `null` if invalid.
+
+```tsx
+import { fromJson } from '@local/resizable-panels';
+
 const json = localStorage.getItem(LAYOUT_STORAGE_KEY);
-const layout = context.loadLayout(json);
-```
-
-#### applyLayout
-
-Apply a loaded layout to all groups.
-
-```tsx
-const context = useResizableContext();
-const layout = context.loadLayout(json);
-context.applyLayout(layout);
+context.setState(fromJson(json));
 ```
 
 ## Advanced Examples
@@ -415,29 +418,31 @@ Set `collapsed={true}` to make the panel initially collapsed (requires `collapsi
 </ResizableGroup>
 ```
 
-### Layout Change Callback
+### State Change Callback
 
-Listen to layout changes when resizing ends:
+Listen to state changes when resizing ends:
 
 ```tsx
 <ResizableContext 
-  onLayoutChanged={(context) => {
-  const handleLayoutChanged = useDebounce((ctx: ContextValue) => {
-    // Save layout to localStorage
-  }, 300)
+  onStateChanged={(context) => {
+    // Save state to localStorage
+    const state = context.getState();
+    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(state));
   }}
 >
 </ResizableContext>
 ```
 
-### Layout Mount Callback
+### Context Mount Callback
 
-Called when the context is mounted, useful for restoring previously saved layout data:
+Called when the context is mounted, useful for restoring previously saved state data:
 
 ```tsx
 <ResizableContext 
-  onLayoutMount={(context) => {
-    // Load layout from localStorage and apply
+  onContextMount={(context) => {
+    // Load state from localStorage and apply
+    const json = localStorage.getItem(LAYOUT_STORAGE_KEY);
+    context.setState(fromJson(json));
   }}
 >
 </ResizableContext>
@@ -458,8 +463,8 @@ function PanelControls() {
       <button onClick={() => group.dragHandle(100, 0)}>
         Expand Left
       </button>
-      <button onClick={() => group.maximizePanel(leftPanel.id)}>
-        Maximize Left
+      <button onClick={() => group.toggleMaximize(leftPanel.id)}>
+        Toggle Maximize
       </button>
       <button onClick={() => group.restorePanels()}>
         Restore All

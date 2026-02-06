@@ -69,7 +69,7 @@ pnpm dev:minify
 ## 快速开始
 
 ```tsx
-import { ResizableContext, ResizableGroup, ResizablePanel } from '@local/resizable-panels';
+import { ResizableContext, ResizableGroup, ResizablePanel, ResizableHandle } from '@local/resizable-panels';
 
 function App() {
   return (
@@ -102,8 +102,8 @@ interface ResizableContextProps {
   id?: string;                                          // 唯一标识符
   children?: ReactNode;                                 // 子元素
   className?: string;                                   // CSS 类名
-  onLayoutMount?: (context: ContextValue) => void;      // 布局挂载回调 - 用于加载保存的布局
-  onLayoutChanged?: (context: ContextValue) => void;    // 布局变化回调 - 用于保存变化的布局
+  onContextMount?: (context: ContextValue) => void;     // 上下文挂载回调 - 用于加载保存的布局
+  onStateChanged?: (context: ContextValue) => void;     // 状态变化回调 - 用于保存变化的布局
 }
 ```
 
@@ -165,7 +165,7 @@ interface ResizableHandleProps {
 在 `ResizableContext` 外部访问根上下文值：
 
 ```tsx
-import { useResizableContext } from '@local/resizable-panels';
+import { useResizableContext, fromJson } from '@local/resizable-panels';
 
 function GlobalControls() {
   const context = useResizableContext();
@@ -173,16 +173,19 @@ function GlobalControls() {
   // 访问所有分组
   const groups = [...context.groups.values()];
   
-  // 保存布局到 localStorage
+  // 保存状态到 localStorage
   const handleSave = () => {
-    const saved = context.saveLayout();
-    localStorage.setItem('layout', saved);
+    const saved = context.getState();
+    localStorage.setItem('layout', JSON.stringify(saved));
   };
   
-  // 从 localStorage 加载布局
+  // 从 localStorage 加载状态
   const handleLoad = () => {
     const json = localStorage.getItem('layout');
-    context.applyLayout(context.loadLayout(json));
+    const state = fromJson(json);
+    if (state) {
+      context.setState(state);
+    }
   };
   
   return <div>全局控制</div>;
@@ -301,34 +304,34 @@ const panel = usePanelContext();
 
 ### 布局持久化函数
 
-#### saveLayout
+#### getState
 
-将所有分组的当前布局保存为 Record 对象。
+将所有分组的当前状态保存为 Record 对象。
 
 ```tsx
 const context = useResizableContext();
-const savedLayout = context.saveLayout();
-localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(savedLayout));
+const savedState = context.getState();
+localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(savedState));
 ```
 
-#### loadLayout
+#### setState
 
-从 JSON 字符串加载并验证布局。
+将加载的状态应用到所有分组。
 
 ```tsx
 const context = useResizableContext();
+context.setState(fromJson(json));
+```
+
+#### fromJson
+
+从 JSON 字符串加载并验证状态。如果无效则返回 `null`。
+
+```tsx
+import { fromJson } from '@local/resizable-panels';
+
 const json = localStorage.getItem(LAYOUT_STORAGE_KEY);
-const layout = context.loadLayout(json);
-```
-
-#### applyLayout
-
-将加载的布局应用到所有分组。
-
-```tsx
-const context = useResizableContext();
-const layout = context.loadLayout(json);
-context.applyLayout(layout);
+context.setState(fromJson(json));
 ```
 
 ## 高级示例
@@ -413,29 +416,31 @@ context.applyLayout(layout);
 </ResizableGroup>
 ```
 
-### 布局变化回调
+### 状态变化回调
 
-监听调整大小结束时的布局变化：
+监听调整大小结束时的状态变化：
 
 ```tsx
 <ResizableContext 
-  onLayoutChanged={(context) => {
-  const handleLayoutChanged = useDebounce((ctx: ContextValue) => {
-    // 保存布局到 localStorage
-  }, 300)
+  onStateChanged={(context) => {
+    // 保存状态到 localStorage
+    const state = context.getState();
+    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(state));
   }}
 >
 </ResizableContext>
 ```
 
-### 布局挂载回调
+### 上下文挂载回调
 
-在 Context 挂载时调用，可用于恢复之前保存的布局数据：
+在 Context 挂载时调用，可用于恢复之前保存的状态数据：
 
 ```tsx
 <ResizableContext 
-  onLayoutMount={(context) => {
-    // 从 localStorage 加载布局
+  onContextMount={(context) => {
+    // 从 localStorage 加载状态
+    const json = localStorage.getItem(LAYOUT_STORAGE_KEY);
+    context.setState(fromJson(json));
   }}
 >
 </ResizableContext>
@@ -456,8 +461,8 @@ function PanelControls() {
       <button onClick={() => group.dragHandle(100, 0)}>
         展开左侧
       </button>
-      <button onClick={() => group.maximizePanel(leftPanel.id)}>
-        最大化左侧
+      <button onClick={() => group.toggleMaximize(leftPanel.id)}>
+        切换最大化
       </button>
       <button onClick={() => group.restorePanels()}>
         恢复所有
