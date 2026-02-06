@@ -105,6 +105,9 @@ function SplitNodeView<T>({
       const child = node.children[index]
       if (isSplitNode(child)) return
 
+      // Increment split version to force old panels remount and reset size
+      setSplitVersion((v) => v + 1)
+
       const newNode = createNode(child)
 
       if (splitDirection === node.direction) {
@@ -112,8 +115,6 @@ function SplitNodeView<T>({
         const children = [...node.children]
         children.splice(index + 1, 0, newNode)
         onTreeChange({ ...node, children })
-        // Increment split version to force old panels remount and reset size
-        setSplitVersion((v) => v + 1)
       } else {
         // Perpendicular direction: create a nested split node
         updateChild(index, {
