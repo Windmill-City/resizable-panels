@@ -1,19 +1,19 @@
-import { ReactNode, useCallback } from "react"
 import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
+import { ReactNode, useCallback } from "react"
 import ResizeHandle from "../ui/resize-handle"
-import { SplitNode, SplitTree, SplitDirection, RenderLeafFn } from "./types"
-import { isSplitNode, generateId } from "./utils"
+import { RenderLeafFn, SplitDirection, SplitNode, SplitTree } from "./types"
+import { generateId, isSplitNode } from "./utils"
 
 export interface SplitViewProps<T> {
   tree: SplitTree<T>
   /** Function to render leaf nodes */
   renderLeaf: RenderLeafFn<T>
   /** Callback when tree structure changes */
-  onUpdate: (tree: SplitTree<T>) => void
-  /** Callback to close current node */
-  onClose: () => void
-  /** Whether the node can be closed (usually false when there's only one node) */
-  canClose: boolean
+  onTreeChange: (tree: SplitTree<T>) => void
+  /** Callback to delete current node */
+  onDelete: () => void
+  /** Whether the node can be deleted (usually false when there's only one node) */
+  canDelete: boolean
   /** Factory function to create new nodes (used when splitting) */
   createNode?: (originalData: T) => T
 }
@@ -29,41 +29,41 @@ export interface SplitViewProps<T> {
  * - Recursive tree rendering
  * - Panel resizing via ResizableGroup/ResizablePanel
  * - Split operations (horizontal/vertical)
- * - Close operations with automatic tree flattening
+ * - Delete operations with automatic tree flattening
  */
 export const SplitView = <T extends { id: string }>({
   tree,
   renderLeaf,
-  onUpdate,
-  onClose,
-  canClose,
+  onTreeChange,
+  onDelete,
+  canDelete,
   createNode,
 }: SplitViewProps<T>): ReactNode => {
   // Render leaf node directly when tree is not a SplitNode
   if (!isSplitNode(tree)) {
-    const data = tree
+    const root = tree
 
     const handleSplit = (direction: SplitDirection) => {
       if (!createNode) return
 
-      const newNode = createNode(data)
+      const newNode = createNode(root)
       const splitNode: SplitNode<T> = {
         id: generateId(),
         direction,
-        children: direction === "horizontal" ? [data, newNode] : [data, newNode],
+        children: direction === "horizontal" ? [root, newNode] : [root, newNode],
         sizes: [50, 50],
       }
-      onUpdate(splitNode)
+      onTreeChange(splitNode)
     }
 
     return (
       <>
         {renderLeaf({
-          data,
-          onUpdate: (newData) => onUpdate(newData),
+          data: root,
+          onUpdate: (newData) => onTreeChange(newData),
           onSplit: handleSplit,
-          onClose,
-          canClose,
+          onClose: onDelete,
+          canClose: canDelete,
         })}
       </>
     )
@@ -73,28 +73,34 @@ export const SplitView = <T extends { id: string }>({
   const childrenCount = tree.children.length
 
   // Update a child node at specific index (stable callback)
-  const handleChildUpdate = useCallback((index: number, newChild: SplitTree<T>) => {
-    const newChildren = [...tree.children]
-    newChildren[index] = newChild
-    onUpdate({ ...tree, children: newChildren })
-  }, [tree, onUpdate])
+  const handleChildUpdate = useCallback(
+    (index: number, newChild: SplitTree<T>) => {
+      const newChildren = [...tree.children]
+      newChildren[index] = newChild
+      onTreeChange({ ...tree, children: newChildren })
+    },
+    [tree, onTreeChange],
+  )
 
-  const handleChildClose = useCallback((index: number) => {
-    const newChildren = tree.children.filter((_, i) => i !== index)
-    if (newChildren.length === 1) {
+  const handleChildClose = useCallback(
+    (index: number) => {
+      const newChildren = tree.children.filter((_, i) => i !== index)
+      if (newChildren.length === 1) {
         // If only one child remains, promote it to replace the parent
-      onUpdate(newChildren[0])
-    } else {
-      // Otherwise update parent's children array
-      onUpdate({ ...tree, children: newChildren, sizes: tree.sizes.slice(0, newChildren.length) })
-    }
-  }, [tree, onUpdate])
+        onTreeChange(newChildren[0])
+      } else {
+        // Otherwise update parent's children array
+        onTreeChange({ ...tree, children: newChildren, sizes: tree.sizes.slice(0, newChildren.length) })
+      }
+    },
+    [tree, onTreeChange],
+  )
 
   return (
     <ResizableGroup id={`group-${tree.id}`} direction={direction} ratio>
       {tree.children.map((child, index) => {
         const childCanClose = childrenCount > 1
-        
+
         return (
           <ChildView
             key={(child as { id: string }).id}
@@ -146,9 +152,9 @@ const ChildView = <T extends { id: string }>({
         <SplitView
           tree={child}
           renderLeaf={renderLeaf}
-          onUpdate={onUpdate}
-          onClose={onClose}
-          canClose={canClose}
+          onTreeChange={onUpdate}
+          onDelete={onClose}
+          canDelete={canClose}
           createNode={createNode}
         />
       </ResizablePanel>

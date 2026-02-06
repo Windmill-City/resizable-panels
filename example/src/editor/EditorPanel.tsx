@@ -53,9 +53,9 @@ export const EditorPanel = () => {
         tree={splitTree}
         renderLeaf={renderEditorLeaf}
         createNode={createEditorGroup}
-        onUpdate={setSplitTree}
-        onClose={() => {}}
-        canClose={false}
+        onTreeChange={setSplitTree}
+        onDelete={() => {}}
+        canDelete={false}
       />
     </div>
   )
