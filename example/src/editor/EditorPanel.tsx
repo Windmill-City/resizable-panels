@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { EditorView } from "./EditorView"
 import { SplitView } from "./SplitView"
-import { EditorGroup, SplitTree } from "./types"
+import { EditorGroup, RenderLeafFn, SplitTree } from "./types"
 import { defaultTabs, generateId } from "./utils"
 
 /**
@@ -42,20 +42,10 @@ export const EditorPanel = () => {
 
   // Render function for editor leaf nodes in the split tree
   // Each leaf represents an independent editor group with its own tabs
-  const renderEditorLeaf = useCallback(
-    ({
-      data,
-      onUpdate,
-      onSplit,
-      onClose,
-      canClose,
-    }: {
-      data: EditorGroup
-      onUpdate: (data: EditorGroup) => void
-      onSplit: (direction: "horizontal" | "vertical") => void
-      onClose: () => void
-      canClose: boolean
-    }) => <EditorView group={data} onUpdate={onUpdate} onSplit={onSplit} onClose={onClose} canClose={canClose} />,
+  const renderEditorLeaf = useCallback<RenderLeafFn<EditorGroup>>(
+    ({ data, onUpdate, onSplit, onClose, canClose }) => (
+      <EditorView group={data} onUpdate={onUpdate} onSplit={onSplit} onClose={onClose} canClose={canClose} />
+    ),
     [],
   )
 
