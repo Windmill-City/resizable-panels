@@ -167,14 +167,11 @@ function ChildView<T extends WithId>({
   canDelete,
   createNode,
 }: ChildViewProps<T>): ReactNode {
-  // Get stable ID for the panel - use child.id for both leaf and split node
-  const childId = child.id
-
   return (
     <>
       {/* Add resize handle between panels */}
       {index > 0 && <ResizeHandle className="w-px bg-(--rp-border-color)" />}
-      <ResizablePanel id={`panel-${childId}`} key={childId}>
+      <ResizablePanel id={`panel-${child.id}`} key={child.id}>
         {isSplitNode(child) ? (
           <SplitNodeView
             node={child}
