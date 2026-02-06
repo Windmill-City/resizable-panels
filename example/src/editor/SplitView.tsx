@@ -105,6 +105,13 @@ function NodeView<T extends WithId>({
         const children = [...node.children]
         children.splice(index + 1, 0, newNode)
         onTreeChange({ ...node, children })
+      } else if (node.children.length === 1) {
+        // Perpendicular direction with single child: change direction instead of nesting
+        onTreeChange({
+          ...node,
+          direction: splitDirection,
+          children: [child, newNode],
+        })
       } else {
         // Perpendicular direction: create a nested split node
         updateChild(index, {
