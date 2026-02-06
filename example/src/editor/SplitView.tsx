@@ -176,7 +176,9 @@ function LeafView<T extends WithId>({
   return (
     <>
       {/* Add resize handle between panels */}
-      {index > 0 && <ResizeHandle className="w-px bg-(--rp-border-color)" />}
+      {index > 0 && (
+        <ResizeHandle className={"data-[direction=row]:h-px data-[direction=col]:w-px bg-(--rp-border-color)"} />
+      )}
       <ResizablePanel id={`panel-${child.id}`} key={child.id}>
         {isNode(child) ? (
           <NodeView
