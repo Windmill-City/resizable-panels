@@ -1,4 +1,3 @@
-import { XIcon } from "lucide-react"
 import { EditorContent } from "./EditorContent"
 import { TabBar } from "./TabBar"
 import { EditorGroup, SplitDirection, Tab } from "./types"
@@ -33,7 +32,13 @@ export const EditorView = ({ group, onUpdate, onSplit, onClose, canClose }: Edit
 
   // Close a tab and auto-switch to another tab if the active one is closed
   const handleTabClose = (tabId: string) => {
-    if (group.tabs.length <= 1) return
+    if (group.tabs.length <= 1) {
+      // If in splitview, close the entire editor group
+      if (canClose) {
+        onClose()
+      }
+      return
+    }
     const newTabs = group.tabs.filter((t) => t.id !== tabId)
     const newActiveId = group.activeTabId === tabId ? newTabs[0].id : group.activeTabId
     onUpdate({ ...group, tabs: newTabs, activeTabId: newActiveId })
@@ -75,15 +80,6 @@ export const EditorView = ({ group, onUpdate, onSplit, onClose, canClose }: Edit
         <span>src</span>
         <span className="mx-1.5">›</span>
         <span>{activeTab?.name}</span>
-        {canClose && (
-          <button
-            onClick={onClose}
-            className="ml-auto p-1 rounded hover:bg-accent/80 text-muted-foreground hover:text-foreground transition-colors"
-            title="Close Editor Group"
-          >
-            <XIcon className="w-3 h-3" />
-          </button>
-        )}
       </div>
 
       {activeTab && <EditorContent tab={activeTab} />}
