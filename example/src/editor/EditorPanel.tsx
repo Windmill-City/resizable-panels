@@ -48,15 +48,13 @@ export const EditorPanel = () => {
   )
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <SplitView
-        tree={splitTree}
-        renderLeaf={renderEditorLeaf}
-        createNode={createEditorGroup}
-        onTreeChange={setSplitTree}
-        onDelete={() => {}}
-        canDelete={false}
-      />
-    </div>
+    <SplitView
+      tree={splitTree}
+      renderLeaf={renderEditorLeaf}
+      createNode={createEditorGroup}
+      onTreeChange={setSplitTree}
+      onDelete={() => {}}
+      canDelete={false}
+    />
   )
 }

@@ -118,7 +118,7 @@ function NodeView<T extends WithId>({
   )
 
   return (
-    <ResizableGroup id={`group-${node.id}`} direction={groupDirection} ratio key={`${childCount}`}>
+    <ResizableGroup id={`group-${node.id}`} key={`${childCount}`} direction={groupDirection} ratio>
       {node.children.map((child, i) => (
         <LeafView
           key={child.id}
