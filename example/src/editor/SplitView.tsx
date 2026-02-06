@@ -96,8 +96,7 @@ function SplitNodeView<T extends WithId>({
    */
   const splitChild = useCallback(
     (index: number, splitDirection: SplitDirection) => {
-      const child = node.children[index]
-      if (isSplitNode(child)) return
+      const child = node.children[index] as T
 
       const newNode = createNode(child)
 
