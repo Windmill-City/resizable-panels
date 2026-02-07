@@ -145,6 +145,7 @@ export function ResizableGroup({
   }, [direction, ratio])
 
   const isCol = ref.direction === "col"
+  const minSize = [...ref.panels.values()].reduce((sum, p) => (sum += p.minSize), 0)
 
   return (
     <GroupContext.Provider value={ref}>
@@ -158,6 +159,7 @@ export function ResizableGroup({
           display: "flex",
           flexDirection: isCol ? "row" : "column",
           overflow: "hidden",
+          [isCol ? "minWidth" : "minHeight"]: minSize,
         }}
         className={className}
       >

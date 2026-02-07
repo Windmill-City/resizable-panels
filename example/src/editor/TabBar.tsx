@@ -1,5 +1,5 @@
 import { Columns, Plus, Rows, X } from "lucide-react"
-import { useState } from "react"
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react"
 import { SplitDirection, Tab } from "./types"
 
 /**
@@ -24,60 +24,59 @@ export interface TabBarProps {
 }
 
 export const TabBar = ({ tabs, activeTabId, onTabClick, onTabClose, onSplit, onAddTab }: TabBarProps) => {
-  // State placeholder for future context menu implementation
-  const [_, setShowSplitMenu] = useState(false)
-
   return (
-    <div className="h-9 flex items-center bg-muted/30 overflow-x-auto scrollbar-hide relative">
-      {tabs.map((tab) => (
-        <div
-          key={tab.id}
-          onClick={() => onTabClick(tab.id)}
-          onContextMenu={(e) => {
-            e.preventDefault()
-            setShowSplitMenu(true)
-          }}
-          className={`
+    <div className="h-9 flex items-center bg-gray-200/60">
+      <OverlayScrollbarsComponent
+        options={{ scrollbars: { autoHide: "scroll" } }}
+        className="w-full h-12 [&>*:first-child]:flex"
+        defer
+      >
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            onClick={() => onTabClick(tab.id)}
+            className={`
             group h-full flex items-center gap-2 px-3 min-w-30 max-w-50 
-            border-r border-border cursor-pointer select-none text-sm
+            cursor-pointer select-none text-sm
             transition-colors duration-150
             ${
               activeTabId === tab.id
-                ? "bg-background text-foreground border-t-2 border-t-primary"
-                : "bg-tab text-muted-foreground hover:bg-tab-hover border-t border-t-transparent"
+                ? "bg-background text-foreground bg-gray-100"
+                : "bg-tab text-muted-foreground hover:bg-gray-100/40"
             }
           `}
-          title={tab.name}
-        >
-          <span className={`${tab.iconColor} text-xs font-medium`}>{tab.language}</span>
-          <span className="flex-1 truncate">{tab.name}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onTabClose(tab.id)
-            }}
-            className={`
+            title={tab.name}
+          >
+            <span className={`${tab.iconColor} text-xs font-medium`}>{tab.language}</span>
+            <span className="flex-1 truncate">{tab.name}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onTabClose(tab.id)
+              }}
+              className={`
               p-0.5 rounded hover:bg-accent/80 opacity-0 group-hover:opacity-100
               ${activeTabId === tab.id ? "opacity-100" : ""}
               transition-opacity
             `}
-          >
-            <X className="w-3 h-3" />
-          </button>
-        </div>
-      ))}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </OverlayScrollbarsComponent>
 
       {/* Add new tab button */}
       <button
         onClick={onAddTab}
-        className="h-full px-2 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+        className="h-full px-2 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-gray-100/80 transition-colors"
         title="New File"
       >
         <Plus className="w-4 h-4" />
       </button>
 
       {/* Split buttons */}
-      <div className="ml-auto flex items-center gap-1 px-2 border-l border-border">
+      <div className="ml-auto flex items-center gap-1 px-2 border-l border-(--rp-border-color)">
         <button
           onClick={() => onSplit("horizontal")}
           className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"

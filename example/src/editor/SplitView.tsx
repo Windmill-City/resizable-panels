@@ -140,7 +140,7 @@ function NodeView<T extends WithId>({
         key={`${childCount}`}
         direction={groupDirection}
         ratio
-        className={"overflow-visible! min-w-fit"}
+        className={"overflow-visible!"}
       >
         {node.children.map((child, i) => (
           <LeafView

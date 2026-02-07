@@ -75,7 +75,7 @@ export const EditorView = ({ group, onUpdate, onSplit, onClose, canClose }: Edit
       />
 
       {/* Breadcrumbs */}
-      <div className="h-6 flex items-center px-4 text-xs text-muted-foreground border-b bg-background">
+      <div className="h-6 flex items-center px-4 text-xs text-muted-foreground border-b border-(--rp-border-color)">
         <span>src</span>
         <span className="mx-1.5">›</span>
         <span>{activeTab?.name}</span>
