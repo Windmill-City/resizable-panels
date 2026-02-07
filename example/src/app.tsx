@@ -163,7 +163,7 @@ function App() {
       </MenuBar>
 
       {/* Main content area */}
-      <div className="flex-1 flex min-h-[160px]">
+      <div className="flex-1 flex min-h-40">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
 
@@ -177,13 +177,7 @@ function App() {
           <ResizablePanel id="middle" expand>
             <ResizableGroup id="row" direction="row">
               {/* Editor */}
-              <ResizablePanel
-                id="editor"
-                minSize={80}
-                collapsible
-                expand
-                className={"overflow-auto! [&>*:first-child]:overflow-visible!"}
-              >
+              <ResizablePanel id="editor" minSize={80} collapsible expand>
                 <EditorPanel />
               </ResizablePanel>
               <BottomResizeHandle />

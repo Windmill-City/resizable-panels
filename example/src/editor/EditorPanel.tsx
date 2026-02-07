@@ -1,3 +1,4 @@
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react"
 import { useCallback, useState } from "react"
 import { EditorView } from "./EditorView"
 import { SplitView } from "./SplitView"
@@ -48,13 +49,20 @@ export const EditorPanel = () => {
   )
 
   return (
-    <SplitView
-      tree={splitTree}
-      renderLeaf={renderEditorLeaf}
-      createNode={createEditorGroup}
-      onTreeChange={setSplitTree}
-      onDelete={() => {}}
-      canDelete={false}
-    />
+    <OverlayScrollbarsComponent
+      element="span"
+      options={{ scrollbars: { autoHide: "scroll" } }}
+      className={"h-full w-full [&>*:first-child]:h-full [&>*:first-child>*:first-child]:overflow-visible!"}
+      defer
+    >
+      <SplitView
+        tree={splitTree}
+        renderLeaf={renderEditorLeaf}
+        createNode={createEditorGroup}
+        onTreeChange={setSplitTree}
+        onDelete={() => {}}
+        canDelete={false}
+      />
+    </OverlayScrollbarsComponent>
   )
 }
