@@ -26,11 +26,7 @@ export interface TabBarProps {
 export const TabBar = ({ tabs, activeTabId, onTabClick, onTabClose, onSplit, onAddTab }: TabBarProps) => {
   return (
     <div className="h-9 flex items-center bg-gray-200/60">
-      <OverlayScrollbarsComponent
-        options={{ scrollbars: { autoHide: "scroll" } }}
-        className="w-full h-12 [&>*:first-child]:flex"
-        defer
-      >
+      <OverlayScrollbarsComponent className="w-full h-12 [&>*:first-child]:flex" defer>
         {tabs.map((tab) => (
           <div
             key={tab.id}

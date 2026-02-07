@@ -130,11 +130,7 @@ function NodeView<T extends WithId>({
   )
 
   return (
-    <OverlayScrollbarsComponent
-      options={{ scrollbars: { autoHide: "scroll" } }}
-      className={"h-full w-full [&>*:first-child]:h-full"}
-      defer
-    >
+    <OverlayScrollbarsComponent className={"h-full w-full [&>*:first-child]:h-full"} defer>
       <ResizableGroup
         id={`group-${node.id}`}
         key={`${childCount}`}

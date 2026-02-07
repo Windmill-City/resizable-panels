@@ -18,11 +18,7 @@ export interface EditorContentProps {
 
 export const EditorContent = ({ tab }: EditorContentProps) => {
   return (
-    <OverlayScrollbarsComponent
-      options={{ scrollbars: { autoHide: "scroll" } }}
-      className={"h-full w-full [&>*:first-child]:h-full"}
-      defer
-    >
+    <OverlayScrollbarsComponent className={"h-full w-full [&>*:first-child]:h-full"} defer>
       <div className="flex-1 font-mono">
         <div className="p-4">
           {tab.content.map((line, index) => (
