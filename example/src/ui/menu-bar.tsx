@@ -1,5 +1,5 @@
 import { ContextValue, useResizableContext } from "@local/resizable-panels"
-import { PanelBottom, PanelLeft, PanelRight, RotateCcw } from "lucide-react"
+import { Github, PanelBottom, PanelLeft, PanelRight, RotateCcw } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toggleCollapse } from "../lib/utils"
 
@@ -112,7 +112,6 @@ const MenuBar = ({ children }: MenuBarProps) => {
         >
           <PanelRight className="w-4 h-4" />
         </button>
-        <div className="w-px h-4 bg-border mx-1" />
         <button
           onClick={() => {
             localStorage.removeItem("resizable-panels-state")
@@ -122,6 +121,16 @@ const MenuBar = ({ children }: MenuBarProps) => {
           title="Reset layout"
         >
           <RotateCcw className="w-4 h-4" />
+        </button>
+        <div className="w-px h-4 bg-border mx-1" />
+        <button
+          onClick={() => {
+            window.open("https://github.com/Windmill-City/resizable-panels", "_blank")
+          }}
+          className="p-1.5 rounded transition-colors hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+          title="View on GitHub"
+        >
+          <Github className="w-4 h-4" />
         </button>
       </div>
     </div>
