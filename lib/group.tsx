@@ -153,7 +153,8 @@ export function ResizableGroup({
         data-resizable-group={ref.id}
         data-direction={ref.direction}
         style={{
-          flex: 1,
+          width: "100%",
+          height: "100%",
           display: "flex",
           flexDirection: isCol ? "row" : "column",
           overflow: "hidden",
