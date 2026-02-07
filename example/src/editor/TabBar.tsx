@@ -10,8 +10,6 @@ import { SplitDirection, Tab } from "./types"
  * - Close button on hover/active state
  * - Add new tab button
  * - Horizontal and vertical split controls
- *
- * Supports right-click context menu (placeholder for future menu implementation)
  */
 
 export interface TabBarProps {
