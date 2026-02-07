@@ -79,6 +79,8 @@ function NodeView<T extends WithId>({
       const children = node.children.filter((_, i) => i !== index)
       if (children.length === 0) {
         onDelete()
+      } else if (children.length === 1) {
+        onTreeChange(children[0])
       } else {
         onTreeChange({
           ...node,
