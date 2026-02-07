@@ -1,4 +1,5 @@
 import { ResizableGroup, ResizablePanel } from "@local/resizable-panels"
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react"
 import { ReactNode, useCallback } from "react"
 import ResizeHandle from "../ui/resize-handle"
 import { RenderLeafFn, SplitDirection, SplitNode, SplitTree, WithId } from "./types"
@@ -129,21 +130,33 @@ function NodeView<T extends WithId>({
   )
 
   return (
-    <ResizableGroup id={`group-${node.id}`} key={`${childCount}`} direction={groupDirection} ratio>
-      {node.children.map((child, i) => (
-        <LeafView
-          key={child.id}
-          child={child}
-          index={i}
-          renderLeaf={renderLeaf}
-          onUpdate={(c) => updateChild(i, c)}
-          onClose={() => removeChild(i)}
-          onSplit={(d) => splitChild(i, d)}
-          canDelete={childCount > 1 || canDelete}
-          createNode={createNode}
-        />
-      ))}
-    </ResizableGroup>
+    <OverlayScrollbarsComponent
+      options={{ scrollbars: { autoHide: "scroll" } }}
+      className={"h-full w-full [&>*:first-child]:h-full"}
+      defer
+    >
+      <ResizableGroup
+        id={`group-${node.id}`}
+        key={`${childCount}`}
+        direction={groupDirection}
+        ratio
+        className={"overflow-visible! min-w-fit"}
+      >
+        {node.children.map((child, i) => (
+          <LeafView
+            key={child.id}
+            child={child}
+            index={i}
+            renderLeaf={renderLeaf}
+            onUpdate={(c) => updateChild(i, c)}
+            onClose={() => removeChild(i)}
+            onSplit={(d) => splitChild(i, d)}
+            canDelete={childCount > 1 || canDelete}
+            createNode={createNode}
+          />
+        ))}
+      </ResizableGroup>
+    </OverlayScrollbarsComponent>
   )
 }
 
