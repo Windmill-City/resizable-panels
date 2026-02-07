@@ -33,7 +33,7 @@ const createEditorGroup = (original: EditorGroup): EditorGroup => {
 export const EditorPanel = () => {
   // Root state for the split tree structure, initialized with default tabs
   const [splitTree, setSplitTree] = useState<SplitTree<EditorGroup>>({
-    id: "root",
+    id: generateId(),
     tabs: defaultTabs,
     activeTabId: defaultTabs[0].id,
   })
