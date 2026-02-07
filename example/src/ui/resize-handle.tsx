@@ -23,6 +23,7 @@ const ResizeHandle = ({ className, onClick, onDoubleClick }: ResizeHandleProps) 
         // col direction
         "data-[direction=col]:after:-translate-x-1/2",
         "data-[direction=col]:after:w-1",
+        "z-100",
         className,
       )}
       onClick={onClick}
