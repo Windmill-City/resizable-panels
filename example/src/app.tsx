@@ -153,7 +153,7 @@ function App() {
 
   return (
     <ResizableContext
-      className="flex-1 flex flex-col min-w-0 min-h-0"
+      className="flex-1 flex flex-col min-w-0"
       onContextMount={handleContextMount}
       onStateChanged={handleStateChanged}
     >
@@ -163,7 +163,7 @@ function App() {
       </MenuBar>
 
       {/* Main content area */}
-      <div className="flex-1 flex min-h-40">
+      <div className="flex-1 flex min-h-0">
         {/* Activity Bar */}
         <ActivityBar>Activity Bar</ActivityBar>
 
