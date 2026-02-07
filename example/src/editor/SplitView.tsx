@@ -72,7 +72,8 @@ function NodeView<T extends WithId>({
   /**
    * Removes a child node at the specified index.
    * - If no children left, triggers onDelete
-   * - Otherwise, updates the node with remaining children (no promotion)
+   * - If only one child left, promotes that child to replace the current node
+   * - Otherwise, updates the node with remaining children
    */
   const removeChild = useCallback(
     (index: number) => {
@@ -94,7 +95,8 @@ function NodeView<T extends WithId>({
   /**
    * Splits a leaf node at the specified index.
    * - If split direction matches the node's direction, inserts a new sibling
-   * - If perpendicular, creates a new nested split node containing both the original and new node
+   * - If perpendicular and only one child exists, changes direction instead of nesting
+   * - If perpendicular and multiple children exist, creates a nested split node
    */
   const splitChild = useCallback(
     (index: number, splitDirection: SplitDirection) => {
