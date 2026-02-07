@@ -699,14 +699,7 @@ export function ResizableContext({
 
   return (
     <ResizableContextType.Provider value={ref}>
-      <div
-        data-resizable-context={ref.id}
-        style={{
-          flex: 1,
-          display: "flex",
-        }}
-        className={className}
-      >
+      <div data-resizable-context={ref.id} className={className}>
         {children}
       </div>
     </ResizableContextType.Provider>
