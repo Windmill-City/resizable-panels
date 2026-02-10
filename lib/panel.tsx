@@ -59,6 +59,7 @@ export function ResizablePanel({
     id,
     size: collapsed ? 0 : defaultSize,
     openSize: defaultSize,
+    defaultSize: defaultSize,
     expand,
     minSize,
     maxSize,
@@ -95,9 +96,10 @@ export function ResizablePanel({
     ref.expand = expand
     ref.minSize = minSize
     ref.maxSize = maxSize
+    ref.defaultSize = defaultSize
     ref.collapsible = collapsible
     ref.okMaximize = okMaximize
-  }, [expand, minSize, maxSize, collapsible, okMaximize])
+  }, [expand, minSize, maxSize, defaultSize, collapsible, okMaximize])
 
   useLayoutEffect(() => {
     ref.updateSizeFromDOM()

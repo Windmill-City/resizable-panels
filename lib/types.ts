@@ -96,6 +96,8 @@ export interface PanelValue {
   size: number
   // Size before collapse (px)
   openSize: number
+  // Default size (px)
+  defaultSize: number
   // Grow/shirk when group size change?
   expand?: boolean
   // Minimum size (px)
