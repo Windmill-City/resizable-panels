@@ -590,6 +590,7 @@ export function ResizableContext({
       // Reset drag state
       ref.isDragging = false
       ref.dragIndex = []
+      ref.notify()
 
       console.debug("[Context] DragEnd")
 
