@@ -125,7 +125,6 @@ export function ResizablePanel({
         data-maximized={ref.isMaximized || undefined}
         style={{
           flex: flexValue,
-          display: "flex",
           overflow: "hidden",
           [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? undefined : ref.minSize,
           [isCol ? "maxWidth" : "maxHeight"]: ref.maxSize === Infinity ? undefined : ref.maxSize,
