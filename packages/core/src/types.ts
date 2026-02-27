@@ -58,7 +58,7 @@ export interface GroupValue {
   // Handles in the group
   handles: HandleValue[]
   // Ref of the ResizableGroup element
-  containerEl: RefObject<HTMLElement>
+  containerEl: RefObject<HTMLElement | null>
   // Is maximized?
   isMaximized: boolean
   // Register panel
@@ -117,7 +117,7 @@ export interface PanelValue {
   // State before maximize - [isCollapsed, size]
   prevMaximize: [boolean, number]
   // Ref of the ResizablePanel element
-  containerEl: RefObject<HTMLElement>
+  containerEl: RefObject<HTMLElement | null>
   // Trigger Re-render
   setDirty: () => void
   // Update size from DOM

@@ -21,7 +21,7 @@ cd /path/to/resizable-panels
 ```
 
 ```bash
-pnpm install
+pnpm install && pnpm build
 ```
 
 然后在你的项目中添加依赖：
@@ -29,7 +29,7 @@ pnpm install
 ```json
 {
   "dependencies": {
-    "@local/resizable-panels": "file:/absolute/path/to/resizable-panels"
+    "@local/resizable-panels": "link:/absolute/path/to/resizable-panels"
   }
 }
 ```

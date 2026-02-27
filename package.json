@@ -1,47 +1,20 @@
 {
-  "name": "@local/resizable-panels",
+  "name": "@local/resizable-panels-monorepo",
   "version": "1.0.0",
-  "description": "Headless Resizable Panels",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
+  "description": "Headless Resizable Panels - Monorepo",
   "scripts": {
-    "build": "tsup --minify",
-    "dev": "concurrently \"tsup --watch\" \"pnpm -r dev\"",
-    "dev:minify": "concurrently \"tsup --watch --minify\" \"pnpm -r dev\"",
-    "postinstall": "pnpm build",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.4.0"
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
-    "@types/react": "^18.3.27",
-    "@types/react-dom": "^18.3.7",
-    "concurrently": "^9.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^9.2.1",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
-  "keywords": [
-    "react",
-    "resizable",
-    "panels",
-    "headless",
-    "typescript"
-  ],
-  "license": "MIT",
-  "private": true,
   "packageManager": "pnpm@10.28.2"
 }

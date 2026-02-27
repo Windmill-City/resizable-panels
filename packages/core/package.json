@@ -1,0 +1,48 @@
+{
+  "name": "@local/resizable-panels",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Headless Resizable Panels",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup --minify",
+    "dev": "tsup --watch",
+    "dev:minify": "tsup --watch --minify",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
+  },
+  "keywords": [
+    "react",
+    "resizable",
+    "panels",
+    "headless",
+    "typescript"
+  ],
+  "license": "MIT"
+}

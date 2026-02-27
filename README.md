@@ -21,7 +21,7 @@ cd /path/to/resizable-panels
 ```
 
 ```bash
-pnpm install
+pnpm install && pnpm build
 ```
 
 In your project's `package.json` add the following
@@ -29,7 +29,7 @@ In your project's `package.json` add the following
 ```json
 {
   "dependencies": {
-    "@local/resizable-panels": "file:/absolute/path/to/resizable-panels"
+    "@local/resizable-panels": "link:/absolute/path/to/resizable-panels"
   }
 }
 ```
