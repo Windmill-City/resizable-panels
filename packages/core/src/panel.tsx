@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useId, useLayoutEffect, useReducer, useRef } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useRef, useState } from "react"
 import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
 import type { PanelProps, PanelValue } from "./types"
@@ -29,7 +29,6 @@ export function ResizablePanel({
 }: PanelProps) {
   const context = useResizableContext()
   const group = useGroupContext()
-  const [, setDirty] = useReducer(() => ({}), {})
 
   const id = idProp ?? useId()
   const containerEl = useRef<HTMLDivElement>(null)
@@ -55,22 +54,30 @@ export function ResizablePanel({
   })
   console.assert(minSize >= 0, "[Panel] minSize < 0:", { id, minSize, maxSize })
 
+  const [size, setSize] = useState(collapsed ? 0 : defaultSize)
+  const [isCollapsed, setCollapsed] = useState(collapsed)
+  const [isMaximized, setMaximized] = useState(false)
+
   const ref = useRef<PanelValue>({
     id,
-    size: collapsed ? 0 : defaultSize,
+    size,
     openSize: defaultSize,
     defaultSize: defaultSize,
     expand,
     minSize,
     maxSize,
     collapsible,
-    isCollapsed: collapsed,
+    isCollapsed,
     okMaximize,
-    isMaximized: false,
+    isMaximized,
     prevDrag: [collapsed, defaultSize],
     prevMaximize: [collapsed, defaultSize],
     containerEl,
-    setDirty,
+    setDirty: () => {
+      setSize(ref.size)
+      setCollapsed(ref.isCollapsed)
+      setMaximized(ref.isMaximized)
+    },
     updateSizeFromDOM: () => {
       if (ref.isCollapsed) return
 
