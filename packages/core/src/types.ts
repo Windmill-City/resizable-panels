@@ -145,7 +145,7 @@ export interface HandleValue {
   // Is mouse hovered
   isHover: boolean
   // Set if mouse hovered
-  setHover: (isHover: boolean) => void
+  setHover: (value: boolean) => void
   // Click callback
   onClick?: () => void
   // Double click callback
