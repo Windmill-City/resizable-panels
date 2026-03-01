@@ -100,8 +100,12 @@ export function ResizablePanel({
   }, [])
 
   useLayoutEffect(() => {
-    ref.updateSizeFromDOM()
-  })
+    const observer = new ResizeObserver((_) => {
+      ref.updateSizeFromDOM()
+    })
+    observer.observe(ref.containerEl.current!)
+    return () => observer.disconnect()
+  }, [])
 
   let flexValue: string
   if (ref.isMaximized || (ref.expand && !ref.isCollapsed)) {

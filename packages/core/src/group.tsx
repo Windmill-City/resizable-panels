@@ -128,17 +128,6 @@ export function ResizableGroup({
     return () => context.unregisterGroup(ref.id)
   }, [])
 
-  useLayoutEffect(() => {
-    const observer = new ResizeObserver((_) => {
-      // Trigger panel.updateSizeFromDOM in a sync layout
-      for (const panel of ref.panels.values()) {
-        panel.setDirty()
-      }
-    })
-    observer.observe(ref.containerEl.current!)
-    return () => observer.disconnect()
-  }, [])
-
   const isCol = ref.direction === "col"
 
   return (
