@@ -130,6 +130,7 @@ export function ResizableGroup({
 
   useLayoutEffect(() => {
     const observer = new ResizeObserver((_) => {
+      // Trigger panel.updateSizeFromDOM in a sync layout
       for (const panel of ref.panels.values()) {
         panel.setDirty()
       }
