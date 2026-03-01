@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
 import type { ContextProps, ContextValue, GroupValue, PanelValue, SavedGroupState, SavedPanelState } from "./types"
 import { useDebounce } from "./utils"
 
@@ -397,19 +397,6 @@ export function ResizableContext({
 
   // Store subscribers
   const subscribers = useRef<Set<(context: ContextValue) => void>>(new Set())
-  const contextRef = useRef<ContextValue | null>(null)
-
-  const notify = useCallback(
-    useDebounce(() => {
-      subscribers.current.forEach((cb) => cb(contextRef.current!))
-    }),
-    [],
-  )
-
-  const subscribe = useCallback((callback: (context: ContextValue) => void) => {
-    subscribers.current.add(callback)
-    return () => subscribers.current.delete(callback)
-  }, [])
 
   const ref = useRef<ContextValue>({
     id,
@@ -422,8 +409,13 @@ export function ResizableContext({
       ref.groups.delete(groupId)
       console.debug(`[Context] Unregister: (${groupId}) => [${[...ref.groups.keys()]}]`)
     },
-    subscribe,
-    notify,
+    subscribe: (callback: (context: ContextValue) => void) => {
+      subscribers.current.add(callback)
+      return () => subscribers.current.delete(callback)
+    },
+    notify: useDebounce(() => {
+      subscribers.current.forEach((cb) => cb(ref))
+    }),
     getState: () => {
       const state: Record<string, SavedGroupState> = {}
       for (const [groupId, group] of ref.groups) {
@@ -535,8 +527,6 @@ export function ResizableContext({
       }
     },
   }).current
-
-  contextRef.current = ref
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
@@ -695,7 +685,7 @@ export function ResizableContext({
 
   // Update hover state after layout changed
   useEffect(() => {
-    const unsubscribe = subscribe((context) => {
+    const unsubscribe = ref.subscribe((context) => {
       context.updateHoverState()
     })
     return () => {
@@ -711,7 +701,7 @@ export function ResizableContext({
   let debounced = onStateChanged ? useDebounce(onStateChanged, 250) : null
   useEffect(() => {
     if (!debounced) return () => {}
-    return subscribe(debounced)
+    return ref.subscribe(debounced)
   }, [debounced])
 
   return (
