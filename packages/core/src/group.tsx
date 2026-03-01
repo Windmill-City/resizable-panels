@@ -131,7 +131,7 @@ export function ResizableGroup({
   const isCol = ref.direction === "col"
 
   return (
-    <GroupContext.Provider value={ref}>
+    <GroupContext.Provider value={{ ...ref }}>
       <div
         ref={containerEl}
         data-resizable-group={ref.id}
