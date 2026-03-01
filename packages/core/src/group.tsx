@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
 import { adjustPanelByDelta, useResizableContext } from "./context"
 import type { GroupProps, GroupValue, HandleValue, PanelValue } from "./types"
 
@@ -120,6 +120,9 @@ export function ResizableGroup({
     },
   }).current
 
+  ref.direction = direction
+  ref.ratio = ratio
+
   useLayoutEffect(() => {
     context.registerGroup(ref)
     return () => context.unregisterGroup(ref.id)
@@ -134,15 +137,6 @@ export function ResizableGroup({
     observer.observe(ref.containerEl.current!)
     return () => observer.disconnect()
   }, [])
-
-  useEffect(() => {
-    ref.direction = direction
-    ref.ratio = ratio
-
-    for (const panel of ref.panels.values()) {
-      panel.setDirty()
-    }
-  }, [direction, ratio])
 
   const isCol = ref.direction === "col"
 

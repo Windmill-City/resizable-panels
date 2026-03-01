@@ -144,8 +144,8 @@ export interface HandleValue {
   id: string
   // Is mouse hovered
   isHover: boolean
-  // Trigger Re-render
-  setDirty: () => void
+  // Set if mouse hovered
+  setHover: (isHover: boolean) => void
   // Click callback
   onClick?: () => void
   // Double click callback

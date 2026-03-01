@@ -468,8 +468,7 @@ export function ResizableContext({
       for (const [group, index] of ref.hoverIndex) {
         const handle = group.handles.at(index)
         if (handle) {
-          handle.isHover = false
-          handle.setDirty()
+          handle.setHover(false)
         }
       }
 
@@ -482,8 +481,7 @@ export function ResizableContext({
       for (const [group, index] of ref.hoverIndex) {
         const handle = group.handles.at(index)
         if (handle) {
-          handle.isHover = true
-          handle.setDirty()
+          handle.setHover(true)
         }
       }
 
@@ -650,8 +648,7 @@ export function ResizableContext({
       for (const [group, index] of ref.hoverIndex.values()) {
         const handle = group.handles.at(index)
         if (handle) {
-          handle.isHover = false
-          handle.setDirty()
+          handle.setHover(false)
         }
       }
       ref.hoverIndex = []

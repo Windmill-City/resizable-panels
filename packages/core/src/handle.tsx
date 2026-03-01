@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useId, useLayoutEffect, useReducer, useRef } from "react"
+import { useId, useLayoutEffect, useRef, useState } from "react"
 import { useGroupContext } from "./group"
 import type { HandleProps, HandleValue } from "./types"
 
@@ -8,12 +8,12 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
   const group = useGroupContext()
 
   const id = useId()
-  const [, setDirty] = useReducer(() => ({}), {})
+  const [isHover, setHover] = useState(false)
 
   const ref = useRef<HandleValue>({
     id,
-    isHover: false,
-    setDirty,
+    isHover,
+    setHover,
     onClick,
     onDoubleClick,
   }).current
@@ -23,20 +23,15 @@ export function ResizableHandle({ className = undefined, children, onClick, onDo
     return () => group.unregisterHandle(ref.id)
   }, [])
 
-  // Update callback when it changes
-  useEffect(() => {
-    ref.onClick = onClick
-    ref.onDoubleClick = onDoubleClick
-  }, [onClick, onDoubleClick])
+  ref.isHover = isHover
+  ref.onClick = onClick
+  ref.onDoubleClick = onDoubleClick
 
   return (
     <div
       data-resizable-handle={ref.id}
       data-direction={group.direction}
       data-hover={ref.isHover || undefined}
-      style={{
-        flex: "0 0 auto",
-      }}
       className={className}
     >
       {children}

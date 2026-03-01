@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useReducer, useRef } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
 import type { PanelProps, PanelValue } from "./types"
@@ -87,19 +87,17 @@ export function ResizablePanel({
     },
   }).current
 
+  ref.expand = expand
+  ref.minSize = minSize
+  ref.maxSize = maxSize
+  ref.defaultSize = defaultSize
+  ref.collapsible = collapsible
+  ref.okMaximize = okMaximize
+
   useLayoutEffect(() => {
     group.registerPanel(ref)
     return () => group.unregisterPanel(ref.id)
   }, [])
-
-  useEffect(() => {
-    ref.expand = expand
-    ref.minSize = minSize
-    ref.maxSize = maxSize
-    ref.defaultSize = defaultSize
-    ref.collapsible = collapsible
-    ref.okMaximize = okMaximize
-  }, [expand, minSize, maxSize, defaultSize, collapsible, okMaximize])
 
   useLayoutEffect(() => {
     ref.updateSizeFromDOM()
