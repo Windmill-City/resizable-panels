@@ -108,7 +108,7 @@ export function ResizablePanel({
   }, [])
 
   let flexValue: string
-  if (ref.isMaximized || (ref.expand && !ref.isCollapsed)) {
+  if (ref.isMaximized || ref.expand) {
     flexValue = `1 1 0%`
   } else if (group.ratio) {
     flexValue = `${ref.size} ${ref.size} 0%`
@@ -121,6 +121,7 @@ export function ResizablePanel({
   return (
     <PanelContext.Provider value={{ ...ref }}>
       <div
+        hidden={ref.isCollapsed}
         ref={containerEl}
         data-resizable-panel={ref.id}
         data-collapsed={ref.isCollapsed || undefined}
@@ -128,7 +129,7 @@ export function ResizablePanel({
         style={{
           flex: flexValue,
           overflow: "hidden",
-          [isCol ? "minWidth" : "minHeight"]: ref.isCollapsed ? undefined : ref.minSize,
+          [isCol ? "minWidth" : "minHeight"]: ref.minSize,
           [isCol ? "maxWidth" : "maxHeight"]: ref.maxSize === Infinity ? undefined : ref.maxSize,
         }}
         className={className}

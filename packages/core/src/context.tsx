@@ -62,29 +62,49 @@ export function findEdgeIndexAtPoint(
     if (group.direction === "row") {
       // Calculate edge positions along y-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        // If both collapsed, then the handle is hidden
-        if (panels[i].isCollapsed && panels[i + 1].isCollapsed) continue
-        // Check if point at the edge
-        const el = panels[i].containerEl.current!
-        const rect = el.getBoundingClientRect()
-        const edgeY = rect.bottom
-        if (Math.abs(point.y - edgeY) <= margin) {
-          result = [...result, [group, i]]
-          break
+        if (!panels[i].isCollapsed) {
+          // Check if point at the edge
+          const el = panels[i].containerEl.current!
+          const rect = el.getBoundingClientRect()
+          const edgeY = rect.bottom
+          if (Math.abs(point.y - edgeY) <= margin) {
+            result = [...result, [group, i]]
+            break
+          }
+        }
+        if (!panels[i + 1].isCollapsed) {
+          // Check if point at the edge
+          const el = panels[i + 1].containerEl.current!
+          const rect = el.getBoundingClientRect()
+          const edgeY = rect.top
+          if (Math.abs(point.y - edgeY) <= margin) {
+            result = [...result, [group, i]]
+            break
+          }
         }
       }
     } else {
       // Calculate edge positions along x-axis using actual DOM rects
       for (let i = 0; i < panels.length - 1; i++) {
-        // If both collapsed, then the handle is hidden
-        if (panels[i].isCollapsed && panels[i + 1].isCollapsed) continue
-        // Check if point at the edge
-        const el = panels[i].containerEl.current!
-        const rect = el.getBoundingClientRect()
-        const edgeX = rect.right
-        if (Math.abs(point.x - edgeX) <= margin) {
-          result = [...result, [group, i]]
-          break
+        if (!panels[i].isCollapsed) {
+          // Check if point at the edge
+          const el = panels[i].containerEl.current!
+          const rect = el.getBoundingClientRect()
+          const edgeX = rect.right
+          if (Math.abs(point.x - edgeX) <= margin) {
+            result = [...result, [group, i]]
+            break
+          }
+        }
+        if (!panels[i + 1].isCollapsed) {
+          // Check if point at the edge
+          const el = panels[i + 1].containerEl.current!
+          const rect = el.getBoundingClientRect()
+          const edgeX = rect.left
+          if (Math.abs(point.x - edgeX) <= margin) {
+            result = [...result, [group, i]]
+            break
+          }
         }
       }
     }
