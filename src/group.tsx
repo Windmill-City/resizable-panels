@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useId, useLayoutEffect, useRef } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useMemo, useRef } from "react"
 import { adjustPanelByDelta, useResizableContext } from "./context"
 import type { GroupProps, GroupValue, HandleValue, PanelValue } from "./types"
 
@@ -129,9 +129,10 @@ export function ResizableGroup({
   }, [])
 
   const isCol = ref.direction === "col"
+  const value = useMemo(() => ({ ...ref }), [ref.direction, ref.ratio])
 
   return (
-    <GroupContext.Provider value={{ ...ref }}>
+    <GroupContext.Provider value={value}>
       <div
         ref={containerEl}
         data-resizable-group={ref.id}

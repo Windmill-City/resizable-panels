@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useId, useLayoutEffect, useRef, useState } from "react"
+import { createContext, useContext, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useResizableContext } from "./context"
 import { useGroupContext } from "./group"
 import type { PanelProps, PanelValue } from "./types"
@@ -124,9 +124,10 @@ export function ResizablePanel({
   }
 
   const isCol = group.direction === "col"
+  const value = useMemo(() => ({ ...ref }), [ref.isMaximized, ref.isCollapsed])
 
   return (
-    <PanelContext.Provider value={{ ...ref }}>
+    <PanelContext.Provider value={value}>
       <div
         hidden={ref.isCollapsed}
         ref={containerEl}
