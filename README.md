@@ -29,7 +29,7 @@ In your project's `package.json` add the following
 ```json
 {
   "dependencies": {
-    "@local/resizable-panels": "link:/absolute/path/to/resizable-panels"
+    "@local/resizable-panels": "link:/path/to/resizable-panels"
   }
 }
 ```

@@ -29,7 +29,7 @@ pnpm install && pnpm build
 ```json
 {
   "dependencies": {
-    "@local/resizable-panels": "link:/absolute/path/to/resizable-panels"
+    "@local/resizable-panels": "link:/path/to/resizable-panels"
   }
 }
 ```
