@@ -543,7 +543,9 @@ export function ResizableContext({
 
         // Save Initial State
         for (const [group] of ref.dragIndex.values()) {
-          ;[...group.panels.values()].forEach((p) => (p.prevDrag = [p.isCollapsed, p.size]))
+          const panels = [...group.panels.values()]
+          panels.forEach((p) => (p.size = p.domSize))
+          panels.forEach((p) => (p.prevDrag = [p.isCollapsed, p.size]))
         }
 
         console.debug("[Context] DragStart", {

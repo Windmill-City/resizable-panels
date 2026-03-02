@@ -92,8 +92,10 @@ export interface SavedGroupState {
 export interface PanelValue {
   // Unique identifier
   id: string
-  // Active size (px)
+  // Requested size (px)
   size: number
+  // DOM size (px)
+  domSize: number
   // Size before collapse (px)
   openSize: number
   // Default size (px)

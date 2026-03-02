@@ -61,6 +61,7 @@ export function ResizablePanel({
   const ref = useRef<PanelValue>({
     id,
     size,
+    domSize: size,
     openSize: defaultSize,
     defaultSize: defaultSize,
     expand,
@@ -79,16 +80,14 @@ export function ResizablePanel({
       setMaximized(ref.isMaximized)
     },
     updateSizeFromDOM: () => {
-      if (ref.isCollapsed) return
-
       const el = ref.containerEl.current!
       const isCol = group.direction === "col"
 
       const newSize = isCol ? el.offsetWidth : el.offsetHeight
 
-      console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.openSize, newSize: newSize })
-      ref.size = newSize
-      ref.openSize = newSize
+      console.debug("[Resize] Panel:", { id: ref.id, oldSize: ref.domSize, newSize: newSize })
+      ref.domSize = newSize
+      if (!ref.isCollapsed) ref.openSize = newSize
 
       context.notify()
     },
