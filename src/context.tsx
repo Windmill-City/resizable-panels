@@ -617,7 +617,7 @@ export function ResizableContext({
     }, 250)
   }, [])
 
-  const handleMouseLeave = useCallback((_: MouseEvent) => {
+  const handleMouseLeave = useCallback(() => {
     ref.mousePos = undefined
     if (ref.isDragging) return
     // Update hover state
