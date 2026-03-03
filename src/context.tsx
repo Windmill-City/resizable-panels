@@ -617,19 +617,6 @@ export function ResizableContext({
     }, 250)
   }, [])
 
-  const handleMouseLeave = useCallback(() => {
-    ref.mousePos = undefined
-    if (ref.isDragging) return
-    // Update hover state
-    for (const [group, index] of ref.hoverIndex.values()) {
-      const handle = group.handles.at(index)
-      if (handle) {
-        handle.setHover(false)
-      }
-    }
-    ref.hoverIndex = []
-  }, [])
-
   const handleDoubleClick = useCallback((e: MouseEvent) => {
     // Cancel pending click if double click occurs
     if (deferredClick.current) {
@@ -666,6 +653,19 @@ export function ResizableContext({
 
       ref.updateHoverState()
     })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    ref.mousePos = undefined
+    if (ref.isDragging) return
+    // Update hover state
+    for (const [group, index] of ref.hoverIndex.values()) {
+      const handle = group.handles.at(index)
+      if (handle) {
+        handle.setHover(false)
+      }
+    }
+    ref.hoverIndex = []
   }, [])
 
   // Update hover state after layout changed
