@@ -637,6 +637,19 @@ export function ResizableContext({
     }
   }, [])
 
+  const handleMouseLeave = useCallback(() => {
+    ref.mousePos = undefined
+    if (ref.isDragging) return
+    // Update hover state
+    for (const [group, index] of ref.hoverIndex.values()) {
+      const handle = group.handles.at(index)
+      if (handle) {
+        handle.setHover(false)
+      }
+    }
+    ref.hoverIndex = []
+  }, [])
+
   // Listen for mouseup at the document level,
   // or the drag state won't end if the cursor leaves the element
   useEffect(() => {
@@ -653,19 +666,6 @@ export function ResizableContext({
 
       ref.updateHoverState()
     })
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    ref.mousePos = undefined
-    if (ref.isDragging) return
-    // Update hover state
-    for (const [group, index] of ref.hoverIndex.values()) {
-      const handle = group.handles.at(index)
-      if (handle) {
-        handle.setHover(false)
-      }
-    }
-    ref.hoverIndex = []
   }, [])
 
   // Update hover state after layout changed
