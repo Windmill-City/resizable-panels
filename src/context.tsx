@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
+import { createContext, MouseEvent, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef } from "react"
 import type { ContextProps, ContextValue, GroupValue, PanelValue, SavedGroupState, SavedPanelState } from "./types"
 import { useDebounce } from "./utils"
 
@@ -528,160 +528,139 @@ export function ResizableContext({
     },
   }).current
 
-  useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      ref.downPos = { x: e.clientX, y: e.clientY }
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    ref.downPos = { x: e.clientX, y: e.clientY }
 
-      const handles = findEdgeIndexAtPoint(ref.groups, {
-        x: e.clientX,
-        y: e.clientY,
-      })
-      if (handles.length) {
-        ref.dragIndex = handles
-        ref.isDragging = true
-        ref.hasDragged = false
+    const handles = findEdgeIndexAtPoint(ref.groups, {
+      x: e.clientX,
+      y: e.clientY,
+    })
+    if (handles.length) {
+      ref.dragIndex = handles
+      ref.isDragging = true
+      ref.hasDragged = false
 
-        // Save Initial State
-        for (const [group] of ref.dragIndex.values()) {
-          const panels = [...group.panels.values()]
-          panels.forEach((p) => (p.size = p.domSize))
-          panels.forEach((p) => (p.prevDrag = [p.isCollapsed, p.size]))
-        }
-
-        console.debug("[Context] DragStart", {
-          startPos: ref.downPos,
-          dragIndex: [...handles.entries()].map(([direction, [group, index]]) => ({
-            direction,
-            groupId: group.id,
-            index,
-          })),
-        })
-        e.preventDefault()
-      }
-    }
-
-    const handleMouseMove = (e: MouseEvent) => {
-      ref.mousePos = { x: e.clientX, y: e.clientY }
-      ref.updateHoverState()
-
-      if (!ref.isDragging) {
-        return
-      }
-
-      ref.hasDragged = true
-
-      const deltaX = e.clientX - ref.downPos.x
-      const deltaY = e.clientY - ref.downPos.y
-
-      for (const [group, index] of ref.dragIndex.values()) {
+      // Save Initial State
+      for (const [group] of ref.dragIndex.values()) {
         const panels = [...group.panels.values()]
-        const panelsBefore = panels.slice(0, index + 1).reverse()
-        const panelsAfter = panels.slice(index + 1)
-
-        // Get delta based on direction
-        const delta = group.direction === "row" ? deltaY : deltaX
-
-        // Restore initial states
-        for (let i = 0; i < panels.length; i++) {
-          const panel = panels[i]
-          panel.isCollapsed = panel.prevDrag[0]
-          panel.size = panel.prevDrag[1]
-        }
-
-        adjustPanelByDelta(panelsBefore, panelsAfter, delta, group)
-      }
-    }
-
-    const handleMouseUp = (_: MouseEvent) => {
-      if (!ref.isDragging) {
-        return
+        panels.forEach((p) => (p.size = p.domSize))
+        panels.forEach((p) => (p.prevDrag = [p.isCollapsed, p.size]))
       }
 
-      // Reset drag state
-      ref.isDragging = false
-      ref.dragIndex = []
-
-      console.debug("[Context] DragEnd")
-
-      ref.updateHoverState()
-    }
-
-    let deferredClick: ReturnType<typeof setTimeout> | null = null
-
-    const handleClick = (e: MouseEvent) => {
-      const edges = findEdgeIndexAtPoint(ref.groups, {
-        x: e.clientX,
-        y: e.clientY,
+      console.debug("[Context] DragStart", {
+        startPos: ref.downPos,
+        dragIndex: [...handles.entries()].map(([direction, [group, index]]) => ({
+          direction,
+          groupId: group.id,
+          index,
+        })),
       })
+      e.preventDefault()
+    }
+  }, [])
 
-      // Clear any existing timer
-      if (deferredClick) {
-        clearTimeout(deferredClick)
-      }
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    ref.mousePos = { x: e.clientX, y: e.clientY }
+    ref.updateHoverState()
 
-      // Delay click execution to wait for potential double click
-      deferredClick = setTimeout(() => {
-        for (const [group, index] of edges.values()) {
-          if (ref.hasDragged) return
-          // Emit click event
-          const handle = group.handles.at(index)
-          if (handle && handle.onClick) {
-            handle.onClick()
-          }
-        }
-        deferredClick = null
-      }, 250)
+    if (!ref.isDragging) {
+      return
     }
 
-    const handleDoubleClick = (e: MouseEvent) => {
-      // Cancel pending click if double click occurs
-      if (deferredClick) {
-        clearTimeout(deferredClick)
-        deferredClick = null
+    ref.hasDragged = true
+
+    const deltaX = e.clientX - ref.downPos.x
+    const deltaY = e.clientY - ref.downPos.y
+
+    for (const [group, index] of ref.dragIndex.values()) {
+      const panels = [...group.panels.values()]
+      const panelsBefore = panels.slice(0, index + 1).reverse()
+      const panelsAfter = panels.slice(index + 1)
+
+      // Get delta based on direction
+      const delta = group.direction === "row" ? deltaY : deltaX
+
+      // Restore initial states
+      for (let i = 0; i < panels.length; i++) {
+        const panel = panels[i]
+        panel.isCollapsed = panel.prevDrag[0]
+        panel.size = panel.prevDrag[1]
       }
 
-      const handles = findEdgeIndexAtPoint(ref.groups, {
-        x: e.clientX,
-        y: e.clientY,
-      })
+      adjustPanelByDelta(panelsBefore, panelsAfter, delta, group)
+    }
+  }, [])
 
-      for (const [group, index] of handles.values()) {
+  const handleMouseUp = useCallback((_: MouseEvent) => {
+    if (!ref.isDragging) {
+      return
+    }
+
+    // Reset drag state
+    ref.isDragging = false
+    ref.dragIndex = []
+
+    console.debug("[Context] DragEnd")
+
+    ref.updateHoverState()
+  }, [])
+
+  const deferredClick = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const handleClick = useCallback((e: MouseEvent) => {
+    const edges = findEdgeIndexAtPoint(ref.groups, {
+      x: e.clientX,
+      y: e.clientY,
+    })
+
+    // Clear any existing timer
+    if (deferredClick.current) {
+      clearTimeout(deferredClick.current)
+    }
+
+    // Delay click execution to wait for potential double click
+    deferredClick.current = setTimeout(() => {
+      for (const [group, index] of edges.values()) {
+        if (ref.hasDragged) return
+        // Emit click event
         const handle = group.handles.at(index)
-        if (handle && handle.onDoubleClick) {
-          handle.onDoubleClick()
+        if (handle && handle.onClick) {
+          handle.onClick()
         }
       }
-    }
+      deferredClick.current = null
+    }, 250)
+  }, [])
 
-    const handleMouseLeave = (_: MouseEvent) => {
-      ref.mousePos = undefined
-      if (ref.isDragging) return
-      // Update hover state
-      for (const [group, index] of ref.hoverIndex.values()) {
-        const handle = group.handles.at(index)
-        if (handle) {
-          handle.setHover(false)
-        }
+  const handleMouseLeave = useCallback((_: MouseEvent) => {
+    ref.mousePos = undefined
+    if (ref.isDragging) return
+    // Update hover state
+    for (const [group, index] of ref.hoverIndex.values()) {
+      const handle = group.handles.at(index)
+      if (handle) {
+        handle.setHover(false)
       }
-      ref.hoverIndex = []
+    }
+    ref.hoverIndex = []
+  }, [])
+
+  const handleDoubleClick = useCallback((e: MouseEvent) => {
+    // Cancel pending click if double click occurs
+    if (deferredClick.current) {
+      clearTimeout(deferredClick.current)
+      deferredClick.current = null
     }
 
-    document.addEventListener("mouseleave", handleMouseLeave)
-    document.addEventListener("mousedown", handleMouseDown)
-    document.addEventListener("mousemove", handleMouseMove)
-    document.addEventListener("mouseup", handleMouseUp)
-    document.addEventListener("click", handleClick)
-    document.addEventListener("dblclick", handleDoubleClick)
+    const handles = findEdgeIndexAtPoint(ref.groups, {
+      x: e.clientX,
+      y: e.clientY,
+    })
 
-    console.debug("[Context] ContextValue:", ref)
-
-    return () => {
-      document.removeEventListener("mouseleave", handleMouseLeave)
-      document.removeEventListener("mousedown", handleMouseDown)
-      document.removeEventListener("mousemove", handleMouseMove)
-      document.removeEventListener("mouseup", handleMouseUp)
-      document.removeEventListener("click", handleClick)
-      document.removeEventListener("dblclick", handleDoubleClick)
+    for (const [group, index] of handles.values()) {
+      const handle = group.handles.at(index)
+      if (handle && handle.onDoubleClick) {
+        handle.onDoubleClick()
+      }
     }
   }, [])
 
@@ -698,6 +677,7 @@ export function ResizableContext({
   useLayoutEffect(() => {
     if (!onContextMount) return
     onContextMount(ref)
+    console.debug("[Context] ContextValue:", ref)
   }, [])
 
   let debounced = onStateChanged ? useDebounce(onStateChanged, 250) : null
@@ -708,7 +688,16 @@ export function ResizableContext({
 
   return (
     <ResizableContextType.Provider value={ref}>
-      <div data-resizable-context={ref.id} className={className}>
+      <div
+        data-resizable-context={ref.id}
+        className={className}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+      >
         {children}
       </div>
     </ResizableContextType.Provider>
