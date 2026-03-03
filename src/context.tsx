@@ -591,20 +591,6 @@ export function ResizableContext({
     }
   }, [])
 
-  const handleMouseUp = useCallback((_: MouseEvent) => {
-    if (!ref.isDragging) {
-      return
-    }
-
-    // Reset drag state
-    ref.isDragging = false
-    ref.dragIndex = []
-
-    console.debug("[Context] DragEnd")
-
-    ref.updateHoverState()
-  }, [])
-
   const deferredClick = useRef<ReturnType<typeof setTimeout> | null>(null)
   const handleClick = useCallback((e: MouseEvent) => {
     const edges = findEdgeIndexAtPoint(ref.groups, {
@@ -664,6 +650,24 @@ export function ResizableContext({
     }
   }, [])
 
+  // Listen for mouseup at the document level,
+  // or the drag state won't end if the cursor leaves the element
+  useEffect(() => {
+    window.addEventListener("mouseup", () => {
+      if (!ref.isDragging) {
+        return
+      }
+
+      // Reset drag state
+      ref.isDragging = false
+      ref.dragIndex = []
+
+      console.debug("[Context] DragEnd")
+
+      ref.updateHoverState()
+    })
+  }, [])
+
   // Update hover state after layout changed
   useEffect(() => {
     const unsubscribe = ref.subscribe((context) => {
@@ -693,7 +697,6 @@ export function ResizableContext({
         className={className}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
