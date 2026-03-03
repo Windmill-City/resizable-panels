@@ -637,6 +637,7 @@ export function ResizableContext({
     }
   }, [])
 
+  // Fix: ResizableHandle hover state persists after mouse moves out
   const handleMouseLeave = useCallback(() => {
     ref.mousePos = undefined
     if (ref.isDragging) return
